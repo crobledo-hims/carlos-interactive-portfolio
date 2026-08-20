@@ -9,18 +9,54 @@ import { keepWheelIfScrollable } from "../wheel";
 let demoPlayed = false;
 
 const REVEAL_MS = 620; // pause between Avery's question and Carlos's reply
+const BEAT_MS = 520; // beat before Carlos starts typing at the composer
+const SEND_MS = 380; // finger-off-Enter pause between the last keystroke and the post
 const TYPING_MS = 900; // "Rex is generating a report…" — spec asks for 700–1000ms
+
+// Carlos types 85-90 WPM, which at five characters per word is ~130-140ms per
+// character. A metronome reads as fake, so the base is jittered, letter runs
+// inside a word are a touch quicker, and there are real beats at word
+// boundaries and before the parenthetical.
+const CHAR_BASE = 122;
+const CHAR_JITTER = 0.22;
+const WORD_PAUSE = 110;
+const PAREN_PAUSE = 300;
+const LETTER = /[A-Za-z]/;
+
+function charDelay(script: string, i: number) {
+  const ch = script[i];
+  const prev = i > 0 ? script[i - 1] : " ";
+  let d = CHAR_BASE * (1 - CHAR_JITTER + Math.random() * CHAR_JITTER * 2);
+  if (LETTER.test(ch) && LETTER.test(prev)) d *= 0.9;
+  if (ch === " ") d += WORD_PAUSE;
+  if (ch === "(") d += PAREN_PAUSE;
+  return d;
+}
 
 function reducedMotion() {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** Renders *bold* spans without pulling in a markdown dependency. */
+/** *bold* spans and @mentions, without pulling in a markdown dependency. */
+const TOKEN = /(\*[^*]+\*|@[A-Za-z][\w-]*)/g;
+
 function RichText({ text }: { text: string }) {
-  const parts = text.split("*");
   return (
     <>
-      {parts.map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>))}
+      {text.split(TOKEN).map((part, i) => {
+        if (!part) return null;
+        if (part.startsWith("@")) {
+          return (
+            <span className="rex-mention" key={i}>
+              {part}
+            </span>
+          );
+        }
+        if (part.length > 2 && part.startsWith("*") && part.endsWith("*")) {
+          return <strong key={i}>{part.slice(1, -1)}</strong>;
+        }
+        return <span key={i}>{part}</span>;
+      })}
     </>
   );
 }
@@ -178,12 +214,16 @@ function Message({ m, last }: { m: RexMessage; last: boolean }) {
 const CHANNEL_ORDER = rexChannels.map((c) => c.id);
 const DEMO = rexChannels.find((c) => c.id === rexDefaultChannel) as RexChannel;
 const DEMO_TOTAL = DEMO.messages.length;
+/** Messages on screen while the composer types the next one out. */
+const COMPOSER_AFTER = DEMO.composerAfter ?? DEMO_TOTAL;
+const SCRIPT = DEMO.messages[COMPOSER_AFTER]?.text ?? "";
 
 function RexAppImpl() {
   const live = useScreenLive();
   const [activeId, setActiveId] = useState(rexDefaultChannel);
   const [revealed, setRevealed] = useState(() => (demoPlayed || reducedMotion() ? DEMO_TOTAL : 0));
   const [typing, setTyping] = useState(false);
+  const [composer, setComposer] = useState<string | null>(null);
 
   const timers = useRef<number[]>([]);
   const streamRef = useRef<HTMLElement>(null);
@@ -197,26 +237,42 @@ function RexAppImpl() {
   /** `animate: false` jumps straight to the finished conversation. */
   const play = useCallback((animate = true) => {
     clearTimers();
+    setComposer(null);
     if (!animate || reducedMotion()) {
       setTyping(false);
       setRevealed(DEMO_TOTAL);
       return;
     }
-    const pause = DEMO.typingAfter ?? DEMO_TOTAL;
+
+    const at = (ms: number, fn: () => void) => timers.current.push(window.setTimeout(fn, ms));
+
+    // Avery asks, Carlos answers, then Carlos types the Rex command out at the
+    // composer before it posts and Rex goes to work.
     setTyping(false);
     setRevealed(1);
-    timers.current.push(
-      window.setTimeout(() => {
-        setRevealed(pause);
-        setTyping(true);
-      }, REVEAL_MS),
-    );
-    timers.current.push(
-      window.setTimeout(() => {
-        setTyping(false);
-        setRevealed(DEMO_TOTAL);
-      }, REVEAL_MS + TYPING_MS),
-    );
+    at(REVEAL_MS, () => setRevealed(COMPOSER_AFTER));
+    at(REVEAL_MS + BEAT_MS, () => {
+      setComposer("");
+      let i = 0;
+      const key = () => {
+        i += 1;
+        setComposer(SCRIPT.slice(0, i));
+        if (i < SCRIPT.length) {
+          at(charDelay(SCRIPT, i), key);
+          return;
+        }
+        at(SEND_MS, () => {
+          setComposer(null);
+          setRevealed(COMPOSER_AFTER + 1);
+          setTyping(true);
+          at(TYPING_MS, () => {
+            setTyping(false);
+            setRevealed(DEMO_TOTAL);
+          });
+        });
+      };
+      at(charDelay(SCRIPT, 0), key);
+    });
   }, []);
 
   // Wait for the monitor to actually be on camera before telling the story.
@@ -236,6 +292,8 @@ function RexAppImpl() {
   const active = rexChannels.find((c) => c.id === activeId) ?? DEMO;
   const isDemo = active.id === DEMO.id;
   const messages = isDemo ? active.messages.slice(0, revealed) : active.messages;
+  // The live keystrokes only belong to the channel that is telling the story.
+  const typedText = isDemo ? composer : null;
 
   // Channels open at the top, and the newest message is only scrolled to when
   // it would otherwise be out of sight — so the whole question → answer →
@@ -400,11 +458,22 @@ function RexAppImpl() {
         </section>
 
         <div className="rex-composer">
-          <div className="rex-composer-box">
-            <span className="rex-composer-placeholder">
-              Message {active.kind === "channel" ? `#${active.name}` : active.name}
-            </span>
-            <span className="rex-send" aria-hidden="true">
+          {/* Never an editable control — the demo "types" into static text, so
+              clicking it mid-sequence cannot hijack the composer. The
+              keystroke animation is presentational and hidden from assistive
+              tech; the posted message in the stream carries the content. */}
+          <div className={`rex-composer-box${typedText !== null ? " typing" : ""}`}>
+            {typedText === null ? (
+              <span className="rex-composer-placeholder">
+                Message {active.kind === "channel" ? `#${active.name}` : active.name}
+              </span>
+            ) : (
+              <span className="rex-composer-typed" aria-hidden="true">
+                {typedText}
+                <span className="rex-caret" />
+              </span>
+            )}
+            <span className={`rex-send${typedText ? " ready" : ""}`} aria-hidden="true">
               ➤
             </span>
           </div>

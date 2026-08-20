@@ -86,6 +86,11 @@ export interface RexChannel {
   unread: number;
   /** One of the three headline story channels. */
   primary?: boolean;
+  /**
+   * Number of messages shown before the composer types the next one out
+   * character by character. That message's own text is the script.
+   */
+  composerAfter?: number;
   /** Number of messages shown before the "Rex is working" pause. */
   typingAfter?: number;
   typingLabel?: string;
@@ -120,7 +125,8 @@ export const rexChannels: RexChannel[] = [
     topic: "Live status for open searches — ask Rex for a report any time",
     unread: 1,
     primary: true,
-    typingAfter: 2,
+    composerAfter: 2,
+    typingAfter: 3,
     typingLabel: "Rex is generating a report…",
     messages: [
       {
@@ -136,8 +142,16 @@ export const rexChannels: RexChannel[] = [
         text: "Absolutely. I'm going to use Rex to pull the live pipeline and generate a status report.",
       },
       {
-        ...REX,
+        // The composer types this one out live before posting it — @Rex
+        // renders as a mention chip.
+        ...CARLOS,
         id: "rs-3",
+        time: "9:14 AM",
+        text: "@Rex Provide a pipeline update for Staff Backend Engineer (Payments)",
+      },
+      {
+        ...REX,
+        id: "rs-4",
         time: "9:15 AM",
         text: "Pipeline report ready — Staff Backend Engineer (Payments)",
         card: {

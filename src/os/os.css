@@ -1380,10 +1380,21 @@ body.os-dragging {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 10px 13px;
   border-radius: 9px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.03);
+  /* Static text, never an input: the demo cannot be typed into. */
+  user-select: none;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+/* While the scripted command is being typed the composer reads as focused. */
+.rex-composer-box.typing {
+  border-color: rgba(126, 158, 240, 0.65);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 3px rgba(77, 107, 216, 0.16);
 }
 
 .rex-composer-placeholder {
@@ -1391,7 +1402,45 @@ body.os-dragging {
   color: #868c96;
 }
 
+.rex-composer-typed {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #eceef3;
+}
+
+.rex-caret {
+  display: inline-block;
+  width: 2px;
+  height: 15px;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: #9cc0ff;
+  animation: rexCaret 1.05s steps(1) infinite;
+}
+
+@keyframes rexCaret {
+  50% {
+    opacity: 0;
+  }
+}
+
+.rex-mention {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(93, 130, 230, 0.2);
+  color: #a8c5ff;
+  font-weight: 600;
+}
+
 .rex-send {
+  flex: none;
+  color: #4a5058;
+  transition: color 0.18s ease;
+}
+
+.rex-send.ready {
   color: #4ec27e;
 }
 
@@ -2788,6 +2837,10 @@ body.os-dragging {
   .rex-dots i {
     animation: none;
     opacity: 0.55;
+  }
+
+  .rex-caret {
+    animation: none;
   }
 
   .term-cursor {
