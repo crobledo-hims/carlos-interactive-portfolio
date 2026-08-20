@@ -56,7 +56,8 @@
   border-radius: 6px;
 }
 
-.rex-sr {
+.rex-sr,
+.gauge-sr {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -2242,46 +2243,216 @@ body.os-dragging {
   color: #6d7078;
 }
 
-.gauge-verdict {
+/* ------------------------------------------------- pre-evaluation state */
+
+.gauge-role-stage {
+  margin-top: 4px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #7d8590;
+}
+
+.gauge-precheck {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.gauge-precheck .gauge-dial {
+  width: 190px;
+  opacity: 0.5;
+}
+
+.gauge-precheck-note {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #565b64;
+  text-align: center;
+}
+
+.gauge-evaluate {
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(160deg, #e0933c, #b85c28);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 650;
+  line-height: 1.4;
+  text-align: center;
+  box-shadow: 0 8px 18px rgba(169, 78, 38, 0.28);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+
+.gauge-evaluate:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 10px 22px rgba(169, 78, 38, 0.34);
+}
+
+.gauge-evaluate:active {
+  transform: translateY(1px) scale(0.995);
+  box-shadow: 0 5px 12px rgba(169, 78, 38, 0.3);
+}
+
+/* ------------------------------------------------------------- the dial */
+
+.gauge-dial {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.gauge-dial-zone {
+  fill: none;
+  stroke-width: 9;
+  stroke-linecap: butt;
+  opacity: 0.32;
+}
+
+.gauge-dial-zone.red {
+  stroke: #c9524b;
+}
+.gauge-dial-zone.yellow {
+  stroke: #d79a2b;
+}
+.gauge-dial-zone.green {
+  stroke: #2f9e63;
+}
+
+.gauge-dial-progress {
+  fill: none;
+  stroke: #2b3038;
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+
+.gauge-dial-tick {
+  stroke: #b9bdc6;
+  stroke-width: 1.2;
+}
+
+.gauge-dial-tick.major {
+  stroke: #7d8590;
+  stroke-width: 1.8;
+}
+
+.gauge-dial-needle path {
+  fill: #22262d;
+}
+
+.gauge-dial-hub {
+  fill: #22262d;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+/* Big and centred while it sweeps, compact summary once it has landed. */
+.gauge-dial-stage {
   margin-top: 12px;
 }
 
-.gauge-arc {
+.gauge-dial-stage.sweeping {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.gauge-dial-stage.sweeping .gauge-dial {
+  width: 100%;
+  max-width: 230px;
+}
+
+.gauge-dial-stage.done {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f4f5f8;
+  border: 1px solid #e4e6eb;
+}
+
+.gauge-dial-stage.done .gauge-dial {
   flex: none;
-  width: 120px;
+  width: 116px;
 }
 
-.gauge-arc-track {
-  fill: none;
-  stroke: #e6e8ee;
-  stroke-width: 9;
-  stroke-linecap: round;
+.gauge-readout {
+  min-width: 0;
+  text-align: center;
 }
 
-.gauge-arc-fill {
-  fill: none;
-  stroke: #2f9e63;
-  stroke-width: 9;
-  stroke-linecap: round;
+.gauge-dial-stage.done .gauge-readout {
+  text-align: left;
 }
 
-.gauge-arc-num {
-  fill: #1c1f25;
+.gauge-score {
   font-size: 27px;
   font-weight: 700;
+  line-height: 1.1;
+  color: #1c1f25;
+  font-variant-numeric: tabular-nums;
 }
 
-.gauge-band {
-  font-size: 16px;
+.gauge-score small {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8d9098;
+}
+
+.gauge-zone {
+  font-size: 13.5px;
   font-weight: 700;
+}
+
+.gauge-zone.red {
+  color: #b3453e;
+}
+.gauge-zone.yellow {
+  color: #a9761c;
+}
+.gauge-zone.green {
   color: #2f9e63;
 }
 
-.gauge-action {
-  font-size: 13px;
+.gauge-verdict-line {
+  margin-top: 1px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: #3c414a;
+}
+
+/* Results cascade in quickly behind the needle. `both` keeps the finished
+   state on screen even if the animation is skipped or interrupted. */
+.gauge-reveal {
+  animation: gaugeReveal 0.28s ease-out both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+@keyframes gaugeReveal {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+}
+
+.gauge-rerun {
+  padding: 4px 12px;
+  border-radius: 14px;
+  border: 1px dashed #9aa0ab;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5c616a;
+}
+
+.gauge-rerun:hover {
+  background: #eef0f4;
   color: #3c414a;
 }
 
@@ -2840,6 +3011,10 @@ body.os-dragging {
   }
 
   .rex-caret {
+    animation: none;
+  }
+
+  .gauge-reveal {
     animation: none;
   }
 

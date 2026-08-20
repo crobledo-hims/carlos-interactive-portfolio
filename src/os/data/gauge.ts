@@ -24,7 +24,30 @@ export const gaugeRole = {
   locked: "Criteria locked Aug 12 · v3",
   owner: "Carlos Robledo",
   project: "Payments Staff+ · 2026",
+  /** Same candidate Rex is chasing an onsite loop for in #role-status. */
+  stage: "Onsite — loop being scheduled",
 };
+
+/** Verbatim call-to-action shown before an evaluation has been run. */
+export const gaugeCta =
+  "Would you like to evaluate Maya for Staff Backend Engineer, Payments Platform?";
+
+/**
+ * Dial zones. Every zone carries a label so the reading never depends on
+ * colour alone.
+ */
+export interface GaugeZone {
+  /** Upper bound, exclusive. */
+  max: number;
+  label: string;
+  tone: "red" | "yellow" | "green";
+}
+
+export const gaugeZones: GaugeZone[] = [
+  { max: 40, label: "Weak match", tone: "red" },
+  { max: 70, label: "Partial match", tone: "yellow" },
+  { max: 101, label: "Strong match", tone: "green" },
+];
 
 export const gaugeCandidate = {
   name: "Maya Okafor",
