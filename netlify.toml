@@ -1,0 +1,23 @@
+# Netlify configuration for the interactive portfolio.
+# Vite multi-page build: / (3D experience) and /resume.html (static fallback).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Vite 7 requires Node 20.19+ / 22.12+
+  NODE_VERSION = "22"
+
+# Clean alias for the resume (the site links to /resume.html directly;
+# this just makes the short URL work when shared).
+[[redirects]]
+  from = "/resume"
+  to = "/resume.html"
+  status = 200
+
+# Vite emits content-hashed filenames under /assets — safe to cache forever.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
