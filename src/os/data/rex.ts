@@ -221,7 +221,7 @@ export const rexChannels: RexChannel[] = [
         time: "Mon 8:00 AM",
         text:
           "Estimated recruiter time returned this week: *6.4 hours* across 5 recruiters (reporting + follow-up automation).",
-        reactions: [{ emoji: "⏱️", count: 6 }],
+        reactions: [{ emoji: "🙌", count: 6 }],
       },
     ],
   },

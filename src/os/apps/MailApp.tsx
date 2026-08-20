@@ -1,6 +1,6 @@
 import { memo, useState } from "react";
-import { keepWheelIfScrollable } from "../ScrollArea";
 import { resumeMeta } from "../data/resume";
+import { keepWheelIfScrollable } from "../wheel";
 
 const DEFAULT_SUBJECT = "Hello from your portfolio";
 

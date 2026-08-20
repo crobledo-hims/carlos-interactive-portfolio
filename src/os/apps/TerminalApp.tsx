@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { keepWheelIfScrollable } from "../ScrollArea";
 import type { AppId, AppProps } from "../types";
+import { keepWheelIfScrollable } from "../wheel";
 
 type LineKind = "in" | "out" | "dim" | "err" | "ok";
 
@@ -54,9 +54,9 @@ const OPENABLE: Record<string, AppId> = {
 };
 
 function TerminalAppImpl({ openApp }: AppProps) {
-  const seed = useRef(0);
+  const seed = useRef(INTRO.length);
   const [lines, setLines] = useState<Line[]>(() =>
-    INTRO.map((text) => ({ id: seed.current++, kind: "dim" as LineKind, text })),
+    INTRO.map((text, i) => ({ id: i, kind: "dim" as LineKind, text })),
   );
   const [value, setValue] = useState("");
   const history = useRef<string[]>([]);
@@ -147,7 +147,16 @@ function TerminalAppImpl({ openApp }: AppProps) {
   };
 
   return (
-    <div className="term" onMouseDown={() => inputRef.current?.focus()}>
+    <div
+      className="term"
+      onMouseDown={(e) => {
+        // Without preventDefault the browser's own focus handling fires after
+        // ours and drops focus back to <body>, so typing would go nowhere.
+        if (e.target === inputRef.current) return;
+        e.preventDefault();
+        inputRef.current?.focus();
+      }}
+    >
       <div className="term-body" ref={bodyRef} onWheel={keepWheelIfScrollable}>
         {lines.map((l) => (
           <div className={`term-line ${l.kind}`} key={l.id}>

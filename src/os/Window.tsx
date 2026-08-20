@@ -2,8 +2,8 @@ import { memo, useRef } from "react";
 import type { PointerEvent as ReactPointerEvent, RefObject } from "react";
 import { APPS } from "./apps/registry";
 import { MENUBAR_H, SCREEN_H, SCREEN_W } from "./constants";
-import { keepWheelIfScrollable } from "./ScrollArea";
 import type { AppId, OsAction, Rect, WinState } from "./types";
+import { keepWheelIfScrollable } from "./wheel";
 
 const HANDLES = ["n", "s", "e", "w", "ne", "nw", "se", "sw"] as const;
 

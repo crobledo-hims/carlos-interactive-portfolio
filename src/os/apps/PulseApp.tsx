@@ -56,7 +56,7 @@ function ForecastChart() {
   const { months, actual, projected, plan, max } = pulseForecast;
   const n = months.length;
   const areaTop = linePath(actual);
-  const lastActual = actual.reduce((acc, v, i) => (v === null ? acc : i), 0);
+  const lastActual = actual.reduce<number>((acc, v, i) => (v === null ? acc : i), 0);
   const area = areaTop
     ? `${areaTop} L${px(lastActual, n).toFixed(1)} ${py(0).toFixed(1)} L${px(0, n).toFixed(1)} ${py(0).toFixed(1)} Z`
     : "";
@@ -72,7 +72,7 @@ function ForecastChart() {
 
       {[0, max / 3, (max * 2) / 3, max].map((v) => (
         <g key={v}>
-          <line className="pulse-grid" x1={PAD.l} x2={CW - PAD.r} y1={py(v)} y2={py(v)} />
+          <line className="pulse-gridline" x1={PAD.l} x2={CW - PAD.r} y1={py(v)} y2={py(v)} />
           <text className="pulse-axis" x={PAD.l - 8} y={py(v) + 3.5} textAnchor="end">
             {Math.round(v)}
           </text>
@@ -181,7 +181,7 @@ function PulseAppImpl() {
         </div>
 
         <h3 className="pulse-section">Role scorecards</h3>
-        <div className="pulse-grid">
+        <div className="pulse-cards">
           {pulseRoles.map((r) => (
             <RoleCard
               key={r.id}

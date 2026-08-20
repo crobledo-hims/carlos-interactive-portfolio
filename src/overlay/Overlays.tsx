@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { overlayState } from "../overlayState";
+import { Desktop } from "../os/Desktop";
 
 function forwardWheel(e: React.WheelEvent) {
   overlayState.scrollEl?.scrollBy({ top: e.deltaY });
@@ -15,6 +16,7 @@ function useDrivenOpacity(read: () => number) {
         const a = read();
         el.style.opacity = String(a);
         el.style.pointerEvents = a > 0.5 ? "auto" : "none";
+        el.inert = a <= 0.5; // keep the hidden desktop out of the Tab order
       }
       raf = requestAnimationFrame(tick);
     };
@@ -28,14 +30,7 @@ export function LeftMonitorOverlay() {
   const ref = useDrivenOpacity(() => overlayState.left);
   return (
     <div className="monitor-overlay" ref={ref} onWheel={forwardWheel}>
-      <div className="panel">
-        <h2>Rex — Recruiting Pipeline Alerts</h2>
-        <p>
-          Placeholder for the Rex Slack mock: live pipeline alerts, offer-stage
-          notifications, stale-candidate nudges. This panel becomes a real,
-          scrollable DOM app in the content phase.
-        </p>
-      </div>
+      <Desktop screen="left" />
     </div>
   );
 }
@@ -44,13 +39,7 @@ export function RightMonitorOverlay() {
   const ref = useDrivenOpacity(() => overlayState.right);
   return (
     <div className="monitor-overlay" ref={ref} onWheel={forwardWheel}>
-      <div className="panel">
-        <h2>Carlos Robledo — Resume</h2>
-        <p>
-          Placeholder for the resume view in browser chrome. The full static
-          version lives at <a href="/resume.html" style={{ color: "#8fb4ff" }}>/resume.html</a>.
-        </p>
-      </div>
+      <Desktop screen="right" />
     </div>
   );
 }

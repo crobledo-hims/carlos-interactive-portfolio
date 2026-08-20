@@ -14,23 +14,24 @@ body,
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+/* Bottom-right so it never overlaps the PortfolioOS menu bar/clock. */
 .skip-link {
   position: fixed;
-  top: 16px;
+  bottom: 16px;
   right: 16px;
   z-index: 100;
   padding: 8px 14px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #eaeaea;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(30, 30, 36, 0.18);
+  color: rgba(30, 30, 36, 0.85);
   font-size: 13px;
   text-decoration: none;
   backdrop-filter: blur(8px);
 }
 
 .skip-link:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.85);
 }
 
 .scroll-hint {
@@ -62,25 +63,5 @@ body,
   pointer-events: none;
 }
 
-.monitor-overlay .panel {
-  width: min(760px, 86vw);
-  height: min(480px, 72vh);
-  border-radius: 12px;
-  background: #1e1e24;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
-  color: #eaeaea;
-  padding: 28px;
-  overflow-y: auto;
-}
-
-.monitor-overlay .panel h2 {
-  font-size: 20px;
-  margin-bottom: 10px;
-}
-
-.monitor-overlay .panel p {
-  font-size: 14px;
-  line-height: 1.6;
-  color: #b9b9c3;
-}
+/* The monitor overlays host the PortfolioOS desktops (src/os). Their own
+   styles live in src/os/os.css. */

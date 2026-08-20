@@ -128,7 +128,7 @@ export function osReducer(state: OsState, action: OsAction): OsState {
           ? { ...w, zoomed: false, rect: w.restore ?? w.rect, restore: null }
           : { ...w, zoomed: true, restore: w.rect, rect: zoomedRect() },
       );
-      return { ...raise(next, action.id) };
+      return raise(next, action.id);
     }
 
     case "setRect":
