@@ -133,3 +133,318 @@ body,
 
 /* The monitor overlays host the PortfolioOS desktops (src/os). Their own
    styles live in src/os/os.css. */
+
+/* ---- Workspace navigation ------------------------------------------------
+   Sits above the desktops (z 50) and below the intro (z 60). The root never
+   takes pointer events; only the controls inside it do, so the desktops stay
+   fully clickable underneath. Everything is position:fixed, so none of this
+   can add document scroll width. */
+.wsnav-root {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+}
+
+.wsnav-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.wsnav-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The bezel of the monitor sitting just off screen, intruding a little into
+   the view. Its own dark ground keeps the chevron legible whether the desktop
+   behind it is a bright document or a dark terminal. */
+.wsnav-edge {
+  position: absolute;
+  top: 22%;
+  bottom: 22%;
+  width: 20px;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wsnav-edge.right {
+  right: 0;
+  border-radius: 11px 0 0 11px;
+  background: linear-gradient(
+    90deg,
+    rgba(17, 18, 22, 0) 0%,
+    rgba(17, 18, 22, 0.8) 42%,
+    rgba(32, 34, 41, 0.96) 100%
+  );
+}
+
+.wsnav-edge.left {
+  left: 0;
+  border-radius: 0 11px 11px 0;
+  background: linear-gradient(
+    270deg,
+    rgba(17, 18, 22, 0) 0%,
+    rgba(17, 18, 22, 0.8) 42%,
+    rgba(32, 34, 41, 0.96) 100%
+  );
+}
+
+/* Hovering leans the neighbouring monitor a little further into view. */
+.wsnav-edge:hover,
+.wsnav-edge:focus-visible {
+  width: 34px;
+}
+
+/* Screen light spilling off the edge of the next display. */
+.wsnav-edge-light {
+  position: absolute;
+  top: 8%;
+  bottom: 8%;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(
+    180deg,
+    rgba(122, 150, 255, 0) 0%,
+    rgba(146, 172, 255, 0.85) 50%,
+    rgba(122, 150, 255, 0) 100%
+  );
+  box-shadow: 0 0 12px rgba(120, 150, 255, 0.5);
+  animation: wsnavPulse 4.2s ease-in-out infinite;
+}
+
+.wsnav-edge.right .wsnav-edge-light {
+  right: 3px;
+}
+.wsnav-edge.left .wsnav-edge-light {
+  left: 3px;
+}
+
+@keyframes wsnavPulse {
+  0%,
+  100% {
+    opacity: 0.36;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.wsnav-chev {
+  position: relative;
+  width: 11px;
+  height: 18px;
+  fill: none;
+  stroke: rgba(234, 237, 246, 0.92);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wsnav-edge:focus-visible {
+  outline: 2px solid #8ca8ff;
+  outline-offset: -3px;
+}
+
+/* ---- First-visit tip ---- */
+.wsnav-tip {
+  position: absolute;
+  right: 42px;
+  top: 50%;
+  /* Also set by the entrance animation's fill, but stated here so the tip is
+     positioned correctly with the animation disabled. */
+  transform: translateY(-50%);
+  width: 236px;
+  pointer-events: auto;
+  padding: 13px 14px 12px;
+  border-radius: 12px;
+  background: rgba(20, 22, 27, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #eef0f6;
+  animation: wsnavTipIn 420ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes wsnavTipIn {
+  from {
+    opacity: 0;
+    transform: translate(12px, -50%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+}
+
+.wsnav-tip-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin-bottom: 5px;
+}
+
+.wsnav-tip-body {
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(212, 217, 230, 0.82);
+  margin-bottom: 11px;
+}
+
+.wsnav-tip-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wsnav-tip-go {
+  flex: 1;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f7f8fc;
+  background: #6172e4;
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 10px;
+  min-height: 30px;
+  cursor: pointer;
+  transition: background 180ms ease;
+}
+
+.wsnav-tip-go:hover {
+  background: #7182ef;
+}
+
+.wsnav-tip-x {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.wsnav-tip-x:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.wsnav-tip-x svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: rgba(226, 230, 240, 0.85);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.wsnav-tip-go:focus-visible,
+.wsnav-tip-x:focus-visible {
+  outline: 2px solid #8ca8ff;
+  outline-offset: 2px;
+}
+
+/* ---- Monitor switcher ----
+   Reads as a small plaque on the desk in front of the displays, not a
+   carousel: it carries its own ground so it never depends on what is behind.
+   Bottom left rather than bottom centre, because the desktop's own dock is
+   centred there: the switcher must sit beside the applications, not on them. */
+.wsnav-switch {
+  position: absolute;
+  left: 14px;
+  bottom: 11px;
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 999px;
+  pointer-events: auto;
+  background: rgba(16, 17, 21, 0.74);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+}
+
+.wsnav-tab {
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: rgba(224, 228, 238, 0.68);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 13px;
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 200ms ease, color 200ms ease;
+}
+
+.wsnav-tab:hover {
+  color: #f2f4fa;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.wsnav-tab.on {
+  color: #f7f8fc;
+  background: rgba(97, 114, 228, 0.92);
+}
+
+.wsnav-tab-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.wsnav-tab.on .wsnav-tab-dot {
+  opacity: 1;
+}
+
+.wsnav-tab:focus-visible {
+  outline: 2px solid #8ca8ff;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wsnav-edge,
+  .wsnav-tab,
+  .wsnav-tip-go {
+    transition: none;
+  }
+  .wsnav-edge:hover,
+  .wsnav-edge:focus-visible {
+    width: 20px;
+  }
+  .wsnav-edge-light {
+    animation: none;
+    opacity: 0.66;
+  }
+  .wsnav-tip {
+    animation: none;
+    transform: translateY(-50%);
+  }
+}

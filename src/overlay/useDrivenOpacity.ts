@@ -13,8 +13,13 @@ import { useEffect, useRef } from "react";
  * The attributes are only touched when visibility actually flips, so the
  * per-frame cost stays at one property read. Focus is moved out *before* the
  * scene is hidden: aria-hidden must never contain the focused element.
+ *
+ * `capturePointer` controls whether a visible scene also takes pointer events.
+ * A full-bleed scene like a desktop wants that. A sparse control layer laid
+ * over the desktops does not: it must stay click-through except on its own
+ * controls, which opt back in through CSS.
  */
-export function useDrivenOpacity(read: () => number) {
+export function useDrivenOpacity(read: () => number, capturePointer = true) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,7 +34,7 @@ export function useDrivenOpacity(read: () => number) {
         const visible = a > 0.5;
         if (visible !== shown) {
           shown = visible;
-          el.style.pointerEvents = visible ? "auto" : "none";
+          if (capturePointer) el.style.pointerEvents = visible ? "auto" : "none";
           if (visible) {
             el.inert = false;
             el.removeAttribute("aria-hidden");
@@ -46,7 +51,7 @@ export function useDrivenOpacity(read: () => number) {
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [read]);
+  }, [read, capturePointer]);
 
   return ref;
 }

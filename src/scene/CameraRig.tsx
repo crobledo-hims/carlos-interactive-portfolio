@@ -29,9 +29,10 @@ const KEYS: { t: number; v: View }[] = [
 const LEFT_WINDOW = { inLo: 0.27, inHi: 0.4, fade: 0.035 };
 const RIGHT_WINDOW = { inLo: 0.57, inHi: 0.7, fade: 0.035 };
 
-// Scroll offset the "Enter workspace" button animates to (center of the
-// left-monitor hold).
+// Scroll offsets the scripted navigation animates to: the center of each
+// monitor's hold, where that desktop is fully opaque and interactive.
 export const WORK_DOCK_OFFSET = (LEFT_WINDOW.inLo + LEFT_WINDOW.inHi) / 2;
+export const PERSONAL_DOCK_OFFSET = (RIGHT_WINDOW.inLo + RIGHT_WINDOW.inHi) / 2;
 
 function smoothstep(x: number) {
   return x * x * (3 - 2 * x);

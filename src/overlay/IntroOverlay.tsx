@@ -1,35 +1,12 @@
 import { overlayState } from "../overlayState";
 import { WORK_DOCK_OFFSET } from "../scene/CameraRig";
+import { scrollToOffset } from "./scrollTo";
 import { useDrivenOpacity } from "./useDrivenOpacity";
 
-function easeInOutCubic(x: number) {
-  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-}
-
-// Smooth-scrolls the drei scroll container to the Work-desktop dock.
-// The camera rig reads scroll offset, so driving scrollTop drives the camera;
-// its damping supplies the final settle. ~850ms + settle ≈ the 700–1000ms brief.
+// Docks the camera on the Work desktop. Shares the scripted-scroll helper with
+// the monitor navigation controls, so both obey the same transition lock.
 function enterWorkspace() {
-  const el = overlayState.scrollEl;
-  if (!el) return;
-  const target = (el.scrollHeight - el.clientHeight) * WORK_DOCK_OFFSET;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    el.scrollTop = target;
-    return;
-  }
-  const start = el.scrollTop;
-  const t0 = performance.now();
-  const duration = 850;
-  const step = (now: number) => {
-    const p = Math.min(1, (now - t0) / duration);
-    el.scrollTop = start + (target - start) * easeInOutCubic(p);
-    if (p < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-  // If rAF stalls (tab backgrounded mid-transition), land on target anyway.
-  setTimeout(() => {
-    if (Math.abs(el.scrollTop - target) > 1) el.scrollTop = target;
-  }, duration + 250);
+  scrollToOffset(WORK_DOCK_OFFSET);
 }
 
 export function IntroOverlay() {
