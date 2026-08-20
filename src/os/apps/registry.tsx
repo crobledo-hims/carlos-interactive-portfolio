@@ -3,6 +3,7 @@ import {
   LinkedInGlyph,
   MailGlyph,
   PulseGlyph,
+  RelayGlyph,
   ResumeGlyph,
   RexGlyph,
   TerminalGlyph,
@@ -11,6 +12,7 @@ import type { AppDef, AppId, ScreenId } from "../types";
 import { GaugeApp } from "./GaugeApp";
 import { MailApp } from "./MailApp";
 import { PulseApp } from "./PulseApp";
+import { RelayApp } from "./RelayApp";
 import { ResumeApp } from "./ResumeApp";
 import { RexApp } from "./RexApp";
 import { TerminalApp } from "./TerminalApp";
@@ -53,6 +55,17 @@ export const APPS: Record<AppId, AppDef> = {
     minW: 580,
     minH: 380,
     Component: GaugeApp,
+  },
+  relay: {
+    id: "relay",
+    name: "Relay",
+    subtitle: "Candidate communication and recruiter preparation",
+    tile: "linear-gradient(155deg,#6172e4,#2b3590)",
+    glyph: <RelayGlyph />,
+    rect: { x: 78, y: 38, w: 946, h: 574 },
+    minW: 620,
+    minH: 380,
+    Component: RelayApp,
   },
   resume: {
     id: "resume",
@@ -103,7 +116,7 @@ export const APPS: Record<AppId, AppDef> = {
 
 /** Apps pinned to each screen's desktop and dock. */
 export const SCREEN_APPS: Record<ScreenId, AppId[]> = {
-  left: ["rex", "pulse", "gauge"],
+  left: ["rex", "pulse", "gauge", "relay"],
   right: ["resume", "linkedin", "mail", "terminal"],
 };
 

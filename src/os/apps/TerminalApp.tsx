@@ -24,7 +24,7 @@ const HELP: string[] = [
   "  help              show this list",
   "  whoami            who is behind this desk",
   "  ls projects       list the things I have built",
-  "  open <project>    open an app window (rex | pulse | gauge)",
+  "  open <project>    open an app window (rex | pulse | gauge | relay)",
   "  open resume       open the resume viewer",
   "  contact           how to reach me",
   "  clear             clear the screen",
@@ -34,6 +34,7 @@ const PROJECTS: string[] = [
   "rex/     automated recruiting operations — Ashby + Slack + Airtable + AI",
   "pulse/   recruiting intelligence — rules-based R/Y/G health + forecasts",
   "gauge/   AI-assisted Chrome extension for LinkedIn Recruiter",
+  "relay/   candidate communication and recruiter prep workflows",
 ];
 
 const WHOAMI: string[] = [
@@ -48,6 +49,7 @@ const OPENABLE: Record<string, AppId> = {
   rex: "rex",
   pulse: "pulse",
   gauge: "gauge",
+  relay: "relay",
   resume: "resume",
   mail: "mail",
   contact: "mail",

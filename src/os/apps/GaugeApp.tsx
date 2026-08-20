@@ -3,23 +3,24 @@ import type { CSSProperties } from "react";
 import { ScrollArea } from "../ScrollArea";
 import { LockGlyph } from "../icons";
 import {
+  gaugeAssessment,
   gaugeCandidate,
-  gaugeCriteria,
+  gaugeCriteriaLock,
   gaugeCta,
-  gaugeRecommendation,
+  gaugeEvidence,
+  gaugeGaps,
+  gaugeResponsibleUse,
   gaugeRole,
   gaugeZones,
 } from "../data/gauge";
-import type { CriterionStatus, GaugeZone } from "../data/gauge";
-
-const MARK: Record<CriterionStatus, string> = { pass: "✓", partial: "!", fail: "✕" };
+import type { GaugeZone } from "../data/gauge";
 
 /** The evaluation is run once per page session, like the Rex demo. */
 let gaugeEvaluated = false;
 
 type Phase = "idle" | "sweeping" | "done";
 
-const SWEEP_MS = 1900;
+const SWEEP_MS = 820; // restrained evaluation state, not a progress theatre
 const OVERSHOOT = 1.09; // the needle passes the reading, then settles back
 const RISE = 0.45; // fraction of the sweep spent climbing
 
@@ -132,6 +133,8 @@ function Dial({ score, phase, needleRef, progressRef }: DialProps) {
 
 function GaugeAppImpl() {
   const [panelOpen, setPanelOpen] = useState(true);
+  const [criteriaOpen, setCriteriaOpen] = useState(false);
+  const [evidenceOpen, setEvidenceOpen] = useState(true);
   const [phase, setPhase] = useState<Phase>(() => (gaugeEvaluated ? "done" : "idle"));
   const [cascade, setCascade] = useState(false);
 
@@ -142,7 +145,7 @@ function GaugeAppImpl() {
   const rafRef = useRef(0);
   const timerRef = useRef(0);
 
-  const score = gaugeRecommendation.score;
+  const score = gaugeAssessment.score;
   const finalZone = zoneFor(score);
 
   const stop = useCallback(() => {
@@ -337,22 +340,54 @@ function GaugeAppImpl() {
             <ScrollArea className="gauge-panel-body">
               <div className="gauge-role">
                 <div className="gauge-role-title">{gaugeRole.title}</div>
-                <div className="gauge-role-meta">
-                  <LockGlyph /> {gaugeRole.locked}
+                <div className="gauge-role-lock">
+                  <span className="gauge-lock-badge">
+                    <LockGlyph /> Criteria locked
+                  </span>
+                  <span className="gauge-lock-meta">
+                    {gaugeCriteriaLock.version} · locked {gaugeCriteriaLock.lockedOn}
+                  </span>
                 </div>
                 <div className="gauge-role-stage">{gaugeRole.stage}</div>
+                <button
+                  type="button"
+                  className="gauge-criteria-toggle"
+                  aria-expanded={criteriaOpen}
+                  aria-controls="gauge-criteria-drawer"
+                  onClick={() => setCriteriaOpen(!criteriaOpen)}
+                >
+                  {criteriaOpen ? "Hide locked criteria" : "View locked criteria"}
+                </button>
               </div>
+
+              {criteriaOpen && (
+                <div className="gauge-drawer" id="gauge-criteria-drawer">
+                  <h4>Role scope</h4>
+                  <p>{gaugeCriteriaLock.scope}</p>
+                  <h4>Non-negotiables</h4>
+                  <ol>
+                    {gaugeCriteriaLock.nonNegotiables.map((c) => (
+                      <li key={c}>{c}</li>
+                    ))}
+                  </ol>
+                  <h4>Nice to have</h4>
+                  <ol>
+                    {gaugeCriteriaLock.niceToHaves.map((c) => (
+                      <li key={c}>{c}</li>
+                    ))}
+                  </ol>
+                  <p className="gauge-drawer-note">{gaugeCriteriaLock.note}</p>
+                </div>
+              )}
 
               {phase === "idle" ? (
                 <div className="gauge-precheck">
                   <Dial score={score} phase={phase} needleRef={needleRef} progressRef={progressRef} />
-                  <p className="gauge-precheck-note">
-                    Nothing has been scored yet. Gauge reads this profile against the locked criteria and
-                    returns a recommendation — it never rejects anyone.
-                  </p>
+                  <p className="gauge-precheck-note">{gaugeCta}</p>
                   <button className="gauge-evaluate" type="button" onClick={evaluate}>
-                    {gaugeCta}
+                    Evaluate candidate
                   </button>
+                  <p className="gauge-hitl">{gaugeResponsibleUse}</p>
                 </div>
               ) : (
                 <>
@@ -365,70 +400,105 @@ function GaugeAppImpl() {
                   >
                     <Dial score={score} phase={phase} needleRef={needleRef} progressRef={progressRef} />
                     <div className="gauge-readout">
-                      <p className="gauge-score">
-                        <span ref={numRef}>{phase === "done" ? score : 0}</span>
-                        <small>/100</small>
-                      </p>
-                      <p
-                        ref={zoneRef}
-                        className={`gauge-zone ${phase === "done" ? finalZone.tone : zoneFor(0).tone}`}
-                      >
-                        {phase === "done" ? finalZone.label : zoneFor(0).label}
-                      </p>
-                      <p className="gauge-verdict-line">
-                        {phase === "done" ? gaugeRecommendation.verdict : "Evaluating against locked criteria…"}
-                      </p>
+                      {phase === "done" ? (
+                        <>
+                          <p className="gauge-verdict-head">{gaugeAssessment.recommendation}</p>
+                          <p className="gauge-verdict-sub">
+                            Domain context: {gaugeAssessment.domainContext.level}
+                          </p>
+                          <p className="gauge-score-line">
+                            <span ref={numRef}>{score}</span>
+                            <small>/100</small>
+                            <span ref={zoneRef} className={`gauge-zone ${finalZone.tone}`}>
+                              {finalZone.label}
+                            </span>
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="gauge-verdict-head dim">Evaluating</p>
+                          <p className="gauge-score-line">
+                            <span ref={numRef}>0</span>
+                            <small>/100</small>
+                            <span ref={zoneRef} className={`gauge-zone ${zoneFor(0).tone}`}>
+                              {zoneFor(0).label}
+                            </span>
+                          </p>
+                          <p className="gauge-verdict-sub">Reading the profile against locked criteria</p>
+                        </>
+                      )}
                     </div>
                   </div>
 
                   <p className="gauge-sr" role="status">
                     {phase === "sweeping"
                       ? `Evaluating ${gaugeCandidate.name} against the locked criteria`
-                      : `Score ${score} of 100. ${finalZone.label}. ${gaugeRecommendation.verdict}.`}
+                      : `Recommendation: ${gaugeAssessment.recommendation}. Domain context ${gaugeAssessment.domainContext.level}. Score ${score} of 100.`}
                   </p>
 
                   {phase === "done" && (
                     <>
                       <div className={revealClass} style={reveal(0)}>
-                        <div className="gauge-crit-head">
-                          Criteria checks
-                          <span>
-                            {gaugeCriteria.filter((c) => c.status === "pass").length}/{gaugeCriteria.length} clear
-                          </span>
-                        </div>
+                        <section className="gauge-block">
+                          <h4>Summary</h4>
+                          <p>{gaugeAssessment.summary}</p>
+                        </section>
                       </div>
-                      <ul className="gauge-crits">
-                        {gaugeCriteria.map((c, i) => (
-                          <li className={`gauge-crit ${c.status} ${revealClass ?? ""}`} key={c.id} style={reveal(i + 1)}>
-                            <span className="gauge-mark" aria-hidden="true">
-                              {MARK[c.status]}
-                            </span>
-                            <div>
-                              <div className="gauge-crit-label">{c.label}</div>
-                              <div className="gauge-crit-weight">
-                                {c.weight} · {c.status === "pass" ? "Met" : c.status === "partial" ? "Partial" : "Not evidenced"}
-                              </div>
-                              <div className="gauge-crit-evidence">{c.evidence}</div>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
 
-                      <div className={revealClass} style={reveal(gaugeCriteria.length + 1)}>
-                        <div className="gauge-summary">
-                          <h5>Why</h5>
-                          <p>{gaugeRecommendation.summary}</p>
-                          <h5>Probe on the screen</h5>
-                          <ul>
-                            {gaugeRecommendation.probe.map((p) => (
-                              <li key={p}>{p}</li>
+                      <div className={revealClass} style={reveal(1)}>
+                        <section className="gauge-block">
+                          <h4>Domain context</h4>
+                          <p>
+                            <strong>{gaugeAssessment.domainContext.level}</strong>{" "}
+                            {gaugeAssessment.domainContext.why}
+                          </p>
+                        </section>
+                      </div>
+
+                      <div className={revealClass} style={reveal(2)}>
+                        <section className="gauge-block">
+                          <div className="gauge-block-head">
+                            <h4>Evidence used</h4>
+                            <button
+                              type="button"
+                              className="gauge-mini-toggle"
+                              aria-expanded={evidenceOpen}
+                              aria-controls="gauge-evidence"
+                              onClick={() => setEvidenceOpen(!evidenceOpen)}
+                            >
+                              {evidenceOpen ? "Collapse" : "Expand"}
+                            </button>
+                          </div>
+                          {evidenceOpen && (
+                            <ul className="gauge-evidence" id="gauge-evidence">
+                              {gaugeEvidence.map((e) => (
+                                <li key={e.conclusion}>
+                                  <span className="gauge-ev-conclusion">{e.conclusion}</span>
+                                  <span className="gauge-ev-quote">{e.quote}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </section>
+                      </div>
+
+                      <div className={revealClass} style={reveal(3)}>
+                        <section className="gauge-block">
+                          <h4>Missing or unconfirmed evidence</h4>
+                          <ul className="gauge-gaps">
+                            {gaugeGaps.map((g) => (
+                              <li key={g.item}>
+                                <span className="gauge-gap-item">{g.item}</span>
+                                <span className="gauge-gap-why">{g.why}</span>
+                              </li>
                             ))}
                           </ul>
-                        </div>
+                        </section>
                       </div>
 
-                      <div className={revealClass} style={reveal(gaugeCriteria.length + 2)}>
-                        <div className="gauge-hitl">{gaugeRecommendation.disclaimer}</div>
+                      <div className={revealClass} style={reveal(4)}>
+                        <p className="gauge-source">Source: {gaugeAssessment.source}</p>
+                        <div className="gauge-hitl">{gaugeResponsibleUse}</div>
                         <div className="gauge-panel-actions">
                           <span className="gauge-btn primary">Copy summary</span>
                           <span className="gauge-btn">Log decision</span>

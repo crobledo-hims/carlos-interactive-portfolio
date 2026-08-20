@@ -193,6 +193,32 @@ export function MailGlyph() {
   );
 }
 
+export function RelayGlyph() {
+  return (
+    <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+      <path
+        d="M8.5 12.2a11 11 0 0 1 15 0"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity="0.45"
+      />
+      <circle cx="7" cy="19.4" r="3.3" fill="#fff" />
+      <circle cx="25" cy="19.4" r="3.3" fill="#fff" opacity="0.72" />
+      <path d="M11.6 19.4h7.2" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
+      <path
+        d="M16.4 16.2 20.5 19.4l-4.1 3.2"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function TerminalGlyph() {
   return (
     <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">

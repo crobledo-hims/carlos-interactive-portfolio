@@ -4,6 +4,7 @@ export type AppId =
   | "rex"
   | "pulse"
   | "gauge"
+  | "relay"
   | "resume"
   | "linkedin"
   | "mail"

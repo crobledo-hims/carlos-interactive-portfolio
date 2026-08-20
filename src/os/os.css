@@ -2248,6 +2248,94 @@ body.os-dragging {
   font-weight: 650;
 }
 
+.gauge-role-lock {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.gauge-lock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 11px;
+  background: #e7efe9;
+  border: 1px solid #c6dccd;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2c5c46;
+}
+
+.gauge-lock-meta {
+  font-size: 11px;
+  color: #6d7078;
+}
+
+.gauge-criteria-toggle {
+  margin-top: 8px;
+  padding: 4px 11px;
+  border-radius: 13px;
+  border: 1px solid #b9bdc6;
+  background: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #3c414a;
+}
+
+.gauge-criteria-toggle:hover {
+  background: #eef0f4;
+}
+
+.gauge-drawer {
+  margin-top: 9px;
+  padding: 11px 13px;
+  border-radius: 9px;
+  background: #f4f5f8;
+  border: 1px solid #e0e3e9;
+}
+
+.gauge-drawer h4 {
+  margin: 10px 0 5px;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8d9098;
+}
+
+.gauge-drawer h4:first-child {
+  margin-top: 0;
+}
+
+.gauge-drawer p {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #3c414a;
+}
+
+.gauge-drawer ol {
+  margin: 0 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gauge-drawer li {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #3c414a;
+}
+
+.gauge-drawer-note {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #e0e3e9;
+  font-style: italic;
+  color: #565b64 !important;
+}
+
 .gauge-role-meta {
   display: flex;
   align-items: center;
@@ -2405,18 +2493,44 @@ body.os-dragging {
   text-align: left;
 }
 
-.gauge-score {
-  font-size: 27px;
+.gauge-verdict-head {
+  font-size: 21px;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.15;
   color: #1c1f25;
+}
+
+.gauge-verdict-head.dim {
+  color: #8d9098;
+}
+
+.gauge-verdict-sub {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: #565b64;
+}
+
+/* The number is supporting evidence, not the headline. */
+.gauge-score-line {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 650;
+  color: #565b64;
   font-variant-numeric: tabular-nums;
 }
 
-.gauge-score small {
-  font-size: 12px;
+.gauge-score-line small {
+  font-size: 11px;
   font-weight: 600;
   color: #8d9098;
+}
+
+.gauge-score-line .gauge-zone {
+  margin-left: 6px;
+  font-size: 12px;
 }
 
 .gauge-zone {
@@ -2432,13 +2546,6 @@ body.os-dragging {
 }
 .gauge-zone.green {
   color: #2f9e63;
-}
-
-.gauge-verdict-line {
-  margin-top: 1px;
-  font-size: 12.5px;
-  line-height: 1.4;
-  color: #3c414a;
 }
 
 /* Results cascade in quickly behind the needle. `both` keeps the finished
@@ -2470,107 +2577,109 @@ body.os-dragging {
   color: #3c414a;
 }
 
-.gauge-crit-head {
+.gauge-block {
+  margin-top: 14px;
+}
+
+.gauge-block-head {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  margin: 16px 0 7px;
-  font-size: 11.5px;
-  letter-spacing: 0.07em;
+  gap: 10px;
+}
+
+.gauge-block h4 {
+  margin-bottom: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #8d9098;
 }
 
-.gauge-crits {
+.gauge-block p {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #3c414a;
+}
+
+.gauge-block p strong {
+  color: #1c1f25;
+}
+
+.gauge-mini-toggle {
+  padding: 2px 9px;
+  border-radius: 11px;
+  border: 1px solid #d5d8de;
+  background: none;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #6b707a;
+}
+
+.gauge-mini-toggle:hover {
+  background: #eef0f4;
+}
+
+.gauge-evidence,
+.gauge-gaps {
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.gauge-crit {
-  display: flex;
-  gap: 9px;
+.gauge-evidence li,
+.gauge-gaps li {
   padding: 9px 11px;
   border-radius: 8px;
   background: #f7f8fa;
   border: 1px solid #e8eaee;
 }
 
-.gauge-mark {
-  flex: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  font-weight: 800;
-  color: #fff;
+.gauge-evidence li {
+  border-left: 3px solid #2f9e63;
 }
 
-.gauge-crit.pass .gauge-mark {
-  background: #2f9e63;
-}
-.gauge-crit.partial .gauge-mark {
-  background: #d79a2b;
-}
-.gauge-crit.fail .gauge-mark {
-  background: #9aa0ab;
+.gauge-gaps li {
+  border-left: 3px solid #c9a23f;
 }
 
-.gauge-crit-label {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.gauge-crit-weight {
-  margin-top: 2px;
-  font-size: 10.5px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #8d9098;
-}
-
-.gauge-crit-evidence {
-  margin-top: 4px;
+.gauge-ev-conclusion,
+.gauge-gap-item {
+  display: block;
   font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.4;
+  color: #1c1f25;
+}
+
+.gauge-ev-quote {
+  display: block;
+  margin-top: 4px;
+  padding-left: 9px;
+  border-left: 2px solid #cdd2da;
+  font-size: 11.5px;
+  line-height: 1.45;
+  font-style: italic;
+  color: #565b64;
+}
+
+.gauge-gap-why {
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
   line-height: 1.45;
   color: #565b64;
 }
 
-.gauge-summary {
-  margin-top: 16px;
-}
-
-.gauge-summary h5 {
-  margin-bottom: 5px;
+.gauge-source {
+  margin-top: 14px;
+  padding-top: 9px;
+  border-top: 1px solid #e6e5e1;
   font-size: 11.5px;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: #8d9098;
+  color: #6d7078;
 }
 
-.gauge-summary p {
-  font-size: 13px;
-  line-height: 1.55;
-  color: #3c414a;
-}
-
-.gauge-summary ul {
-  margin: 0 0 4px 16px;
-}
-
-.gauge-summary li {
-  font-size: 13px;
-  line-height: 1.5;
-  color: #3c414a;
-  margin-bottom: 4px;
-}
-
-.gauge-summary h5:nth-of-type(2) {
-  margin-top: 12px;
-}
 
 .gauge-hitl {
   margin-top: 14px;
@@ -3035,4 +3144,721 @@ body.os-dragging {
   .term-cursor {
     animation: none;
   }
+}
+
+/* ==========================================================================
+   Relay — three prompt-driven recruiting workflows, each a local fixture
+   ========================================================================== */
+
+.relay {
+  display: flex;
+  background: #191b20;
+  color: #dcdee4;
+}
+
+.relay-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ left rail */
+
+.relay-rail {
+  flex: 0 0 176px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #20232b;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.relay-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.relay-brand-tile {
+  flex: 0 0 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(155deg, #6172e4, #2b3590);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+
+.relay-brand-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.relay-brand-sub {
+  font-size: 11.5px;
+  color: #8b909b;
+}
+
+.relay-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px 8px;
+}
+
+.relay-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 7px;
+  background: none;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.relay-tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.relay-tab.active {
+  background: rgba(97, 114, 228, 0.2);
+  border-left-color: #7f8ded;
+}
+
+.relay-tab-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #e4e6ec;
+}
+
+.relay-tab.active .relay-tab-label {
+  color: #fff;
+}
+
+.relay-tab-hint {
+  font-size: 11px;
+  color: #878c98;
+}
+
+.relay-rail-foot {
+  margin-top: auto;
+  padding: 12px 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 11px;
+  line-height: 1.45;
+  color: #767b86;
+}
+
+/* ------------------------------------------------------------- main area */
+
+.relay-main {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.relay-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.relay-panel-head {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 18px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.relay-h2 {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.relay-sub {
+  margin-top: 2px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #969ba6;
+}
+
+.relay-synthetic {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 11px;
+  border: 1px dashed rgba(255, 255, 255, 0.24);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: #a2a8b4;
+  white-space: nowrap;
+}
+
+.relay-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 264px 1fr;
+}
+
+.relay-col-inputs {
+  min-width: 0;
+  padding: 14px 16px 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #1c1f26;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(190, 196, 210, 0.3) transparent;
+}
+
+.relay-col-output {
+  min-width: 0;
+  padding: 14px 18px 22px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(190, 196, 210, 0.34) transparent;
+}
+
+.relay-col-inputs::-webkit-scrollbar,
+.relay-col-output::-webkit-scrollbar,
+.relay-screen-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.relay-col-inputs::-webkit-scrollbar-thumb,
+.relay-col-output::-webkit-scrollbar-thumb,
+.relay-screen-scroll::-webkit-scrollbar-thumb {
+  background: rgba(190, 196, 210, 0.32);
+  border-radius: 9px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* ---------------------------------------------------------- source cards */
+
+.relay-h3 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #8b909b;
+  margin-bottom: 8px;
+}
+
+.relay-source-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.relay-source {
+  padding: 9px 11px;
+  border-radius: 9px;
+  background: #23262f;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.relay-source.empty {
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.relay-source-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.relay-rank {
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  background: rgba(97, 114, 228, 0.28);
+  color: #b9c4fb;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.relay-source-label {
+  font-size: 12.5px;
+  font-weight: 650;
+  color: #eceef3;
+}
+
+.relay-source-note {
+  width: 100%;
+  font-size: 10.5px;
+  color: #7d828d;
+}
+
+.relay-source-lines {
+  margin: 6px 0 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.relay-source-lines li {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #b3b8c3;
+}
+
+.relay-source-lines.empty {
+  margin-left: 0;
+  font-size: 12px;
+  font-style: italic;
+  color: #767b86;
+}
+
+.relay-priority {
+  margin: 10px 0 14px;
+  padding: 8px 11px;
+  border-radius: 8px;
+  background: rgba(97, 114, 228, 0.1);
+  border: 1px solid rgba(97, 114, 228, 0.24);
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #b7bfe4;
+}
+
+.relay-guardrails ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.relay-guardrails li {
+  position: relative;
+  padding-left: 15px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #9aa0ab;
+}
+
+.relay-guardrails li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: rgba(126, 158, 240, 0.6);
+}
+
+/* -------------------------------------------------------------- controls */
+
+.relay-output-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.relay-actions,
+.relay-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.relay-controls {
+  margin-bottom: 8px;
+}
+
+.relay-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e4ea;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.relay-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.relay-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.relay-btn.primary {
+  background: linear-gradient(160deg, #6172e4, #3a46b4);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(43, 53, 144, 0.35);
+}
+
+.relay-btn.primary:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+
+.relay-btn.ghost {
+  background: none;
+  border-style: dashed;
+  color: #9aa0ab;
+}
+
+.relay-btn.sm {
+  padding: 4px 11px;
+  font-size: 11.5px;
+}
+
+.relay-seg {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.relay-seg-btn {
+  padding: 4px 11px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: #9aa0ab;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.relay-seg-btn:hover {
+  color: #fff;
+}
+
+.relay-seg-btn.on {
+  background: rgba(97, 114, 228, 0.34);
+  color: #fff;
+}
+
+.relay-variant-note {
+  margin-bottom: 12px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #868c98;
+}
+
+/* ---------------------------------------------------------- brief output */
+
+.relay-output,
+.relay-script,
+.relay-clarify {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #22252d;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.relay-output-who {
+  padding-bottom: 9px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 12px;
+  color: #969ba6;
+}
+
+.relay-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding-left: 17px;
+}
+
+.relay-bullets li {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #dfe1e7;
+}
+
+.relay-stack {
+  margin-top: 13px;
+  font-size: 13px;
+  color: #c8ccd5;
+}
+
+.relay-stack span {
+  font-weight: 700;
+  color: #fff;
+}
+
+.relay-reference {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 11.5px;
+  color: #7d828d;
+}
+
+.relay-placeholder {
+  padding: 22px 18px;
+  border-radius: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #868c98;
+}
+
+.relay-placeholder.working {
+  border-style: solid;
+  border-color: rgba(97, 114, 228, 0.4);
+  background: rgba(97, 114, 228, 0.08);
+  color: #b7bfe4;
+}
+
+.relay-toast {
+  margin-top: 10px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: rgba(79, 189, 136, 0.14);
+  border: 1px solid rgba(79, 189, 136, 0.36);
+  font-size: 12px;
+  color: #8fdcb4;
+}
+
+/* ------------------------------------------------------ outreach timeline */
+
+.relay-timeline {
+  list-style: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-left: 20px;
+}
+
+.relay-timeline::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: rgba(97, 114, 228, 0.3);
+}
+
+.relay-touch {
+  position: relative;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #22252d;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.relay-touch::before {
+  content: "";
+  position: absolute;
+  left: -19px;
+  top: 17px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6172e4;
+  box-shadow: 0 0 0 3px #191b20;
+}
+
+.relay-touch-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.relay-touch-title {
+  font-size: 13px;
+  font-weight: 650;
+  color: #fff;
+}
+
+.relay-touch-timing {
+  font-size: 11px;
+  color: #868c98;
+}
+
+.relay-touch-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.relay-touch-body p {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #cfd3db;
+}
+
+.relay-foot-note {
+  margin-top: 12px;
+  font-size: 11.5px;
+  color: #767b86;
+}
+
+/* ------------------------------------------------------------ talk track */
+
+.relay-clarify-lead {
+  margin-bottom: 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #a9aeb9;
+}
+
+.relay-clarify-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 14px 17px;
+}
+
+.relay-clarify-list li {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #dfe1e7;
+}
+
+.relay-clarify-foot {
+  margin-top: 11px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #767b86;
+}
+
+.relay-script {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.relay-script p {
+  font-size: 13.5px;
+  line-height: 1.62;
+  color: #dfe1e7;
+}
+
+/* ----------------------------------------------------------- screen mode */
+
+.relay-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  background: #14161b;
+}
+
+.relay-screen-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.relay-screen-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.relay-screen-meta strong {
+  font-size: 19px;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.relay-screen-meta span {
+  font-size: 11.5px;
+  color: #868c98;
+}
+
+.relay-screen-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.relay-screen-calm {
+  font-size: 11px;
+  color: #868c98;
+}
+
+.relay-screen-progress {
+  flex: none;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.relay-screen-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: #6172e4;
+}
+
+.relay-screen-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(190, 196, 210, 0.34) transparent;
+}
+
+.relay-screen-text {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 26px 26px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.relay-screen-text p {
+  font-size: 19px;
+  line-height: 1.62;
+  color: #e8eaef;
+}
+
+.relay-screen-end {
+  font-size: 12px !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6d727c !important;
 }

@@ -1,14 +1,24 @@
 // Editable sample content for the Gauge browser-extension mock.
 // The candidate below is entirely fictional. Never put a real profile here.
 
-export type CriterionStatus = "pass" | "partial" | "fail";
+/**
+ * Locked role criteria. Carlos writes and locks these from the hiring-manager
+ * intake before any candidate is evaluated; the evaluation only ever runs
+ * against what is locked.
+ */
+export interface GaugeCriteriaLock {
+  version: string;
+  lockedOn: string;
+  scope: string;
+  nonNegotiables: string[];
+  niceToHaves: string[];
+  note: string;
+}
 
-export interface GaugeCriterion {
-  id: string;
-  label: string;
-  status: CriterionStatus;
-  weight: "Must have" | "Strong signal" | "Nice to have";
-  evidence: string;
+/** A conclusion tied to the exact profile statement that supports it. */
+export interface GaugeEvidence {
+  conclusion: string;
+  quote: string;
 }
 
 export interface GaugeExperience {
@@ -16,6 +26,12 @@ export interface GaugeExperience {
   title: string;
   dates: string;
   detail: string;
+}
+
+/** Something plausible that the profile does not actually establish. */
+export interface GaugeGap {
+  item: string;
+  why: string;
 }
 
 export const gaugeRole = {
@@ -26,6 +42,26 @@ export const gaugeRole = {
   project: "Payments Staff+ · 2026",
   /** Same candidate Rex is chasing an onsite loop for in #role-status. */
   stage: "Onsite — loop being scheduled",
+};
+
+export const gaugeCriteriaLock: GaugeCriteriaLock = {
+  version: "v3",
+  lockedOn: "August 12",
+  scope:
+    "Staff Backend Engineer on the Payments Platform team. Owns the services behind money movement, end to end, including the reliability of what they ship.",
+  nonNegotiables: [
+    "Recent backend systems ownership at Staff-equivalent scope",
+    "Production experience with payments, ledgers, or financial transactions",
+    "Distributed or event-driven systems experience",
+    "Ownership through design, launch, operation, and reliability",
+    "Evidence of cross-functional technical influence",
+  ],
+  niceToHaves: [
+    "High-volume money movement",
+    "Reconciliation or idempotency systems",
+    "Experience setting architecture direction across teams",
+  ],
+  note: "Carlos defines and locks the criteria before candidate evaluation.",
 };
 
 /** Verbatim call-to-action shown before an evaluation has been run. */
@@ -93,68 +129,57 @@ export const gaugeCandidate = {
   education: "B.S. Computer Science — University of Illinois",
 };
 
-export const gaugeCriteria: GaugeCriterion[] = [
+export const gaugeAssessment = {
+  score: 82,
+  recommendation: "Advance",
+  summary:
+    "Nine years of backend work, seven inside financial services. Currently owns the ledger re-platform behind card settlement, including idempotency and reconciliation at roughly four million transactions a day. Ledger, payout and event-driven work are each stated explicitly rather than implied. Staff-level scope reads as platform ownership; influence beyond the immediate team is not evidenced on the profile and is worth probing live.",
+  domainContext: {
+    level: "Direct",
+    why: "Owns settlement and ledger systems that are the same class of system this role is responsible for.",
+  },
+  source: "LinkedIn — Maya Okafor",
+};
+
+/** Conclusions mapped to the explicit profile statements behind them. */
+export const gaugeEvidence: GaugeEvidence[] = [
   {
-    id: "c1",
-    label: "8+ yrs backend engineering, production ownership",
-    status: "pass",
-    weight: "Must have",
-    evidence: "9 yrs across three backend roles; on-call owner for settlement since 2022.",
+    conclusion: "Backend ownership at Staff-equivalent scope, currently",
+    quote: "Staff Software Engineer, Payments Platform, 2022 to present.",
   },
   {
-    id: "c2",
-    label: "Payments / ledger domain depth",
-    status: "pass",
-    weight: "Must have",
-    evidence: "Led a double-entry ledger re-platform; reconciliation and idempotency named explicitly.",
+    conclusion: "Payments and ledger experience is direct, not adjacent",
+    quote: "Led the ledger re-platform behind card settlement.",
   },
   {
-    id: "c3",
-    label: "Staff-level scope: multi-team technical leadership",
-    status: "partial",
-    weight: "Must have",
-    evidence: "Staff title and platform ownership shown; cross-org influence not evidenced on the profile.",
+    conclusion: "Ledger internals were built, not consumed",
+    quote: "Built the double-entry ledger service and the payout scheduler.",
   },
   {
-    id: "c4",
-    label: "High-scale distributed systems (>1M txn/day)",
-    status: "pass",
-    weight: "Strong signal",
-    evidence: "~4M daily transactions stated on the current role.",
+    conclusion: "Event-driven systems experience is stated outright",
+    quote: "Migrated billing off a monolith onto event-driven services.",
   },
   {
-    id: "c5",
-    label: "Regulated / financial-services environment",
-    status: "pass",
-    weight: "Strong signal",
-    evidence: "Seven years inside financial services across two employers.",
-  },
-  {
-    id: "c6",
-    label: "Located in or open to a hub location",
-    status: "partial",
-    weight: "Nice to have",
-    evidence: "Austin, TX. Relocation preference not stated — confirm on the screen.",
-  },
-  {
-    id: "c7",
-    label: "Prior experience at a hyper-growth startup",
-    status: "fail",
-    weight: "Nice to have",
-    evidence: "No startup-stage experience visible; both employers are late-stage.",
+    conclusion: "Owns the operational half, not only the build",
+    quote: "Owns idempotency and reconciliation for ~4M daily transactions.",
   },
 ];
 
-export const gaugeRecommendation = {
-  verdict: "Advance to recruiter screen",
-  score: 82,
-  band: "Strong match",
-  summary:
-    "Meets both must-have technical criteria with direct ledger and settlement depth. Staff-level scope reads as platform ownership rather than cross-org leadership — that is the one gap worth probing live.",
-  probe: [
-    "Ask for a concrete example of influence outside the immediate team.",
-    "Confirm relocation and comp expectations before the hiring-manager screen.",
-  ],
-  disclaimer:
-    "Gauge scores against locked criteria only. It never rejects a candidate — the recruiter makes every decision.",
-};
+/** Plausible but unsupported. Named rather than assumed. */
+export const gaugeGaps: GaugeGap[] = [
+  {
+    item: "Cross-functional technical influence",
+    why: "The profile establishes platform ownership. It says nothing about influence beyond the immediate team, and that is not inferred from a Staff title.",
+  },
+  {
+    item: "Setting architecture direction across teams",
+    why: "A nice-to-have with no explicit statement behind it. Left unconfirmed rather than credited.",
+  },
+  {
+    item: "Scale of money movement in dollar terms",
+    why: "Transaction count is stated. Dollar volume is not, so it is not treated as evidence either way.",
+  },
+];
+
+export const gaugeResponsibleUse =
+  "Gauge provides an evidence-based recommendation. Carlos reviews the evidence and makes the final decision.";
