@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
+import { getLocalTime, subscribeLocalTime } from "../lib/localClock";
 import { APPS } from "./apps/registry";
 import { BatteryGlyph, ChevronDown, ControlGlyph, Monogram, SearchGlyph, WifiGlyph } from "./icons";
 import { scrollOnward } from "./pageScroll";
@@ -21,14 +22,12 @@ interface MenuGroup {
   items: MenuItem[];
 }
 
+// Shares src/lib/localClock with the scene's wall TV: one timer, one snapshot,
+// so the two clocks can never disagree across a minute boundary. Renders once
+// per minute; the date line stays fresh because midnight is a minute change.
 function Clock() {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const date = now.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
-  const time = now.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const time = useSyncExternalStore(subscribeLocalTime, getLocalTime, getLocalTime);
+  const date = new Date().toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
   return (
     <span className="os-clock">
       {date} {time}
