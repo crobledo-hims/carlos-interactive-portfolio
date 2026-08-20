@@ -8,30 +8,22 @@ import { keepWheelIfScrollable } from "../wheel";
 /** The scripted intro plays once per page session, not once per window. */
 let demoPlayed = false;
 
-const REVEAL_MS = 620; // pause between Avery's question and Carlos's reply
-const BEAT_MS = 520; // beat before Carlos starts typing at the composer
-const SEND_MS = 380; // finger-off-Enter pause between the last keystroke and the post
-const TYPING_MS = 900; // "Rex is generating a report…" — spec asks for 700–1000ms
-
-// Carlos types 85-90 WPM, which at five characters per word is ~130-140ms per
-// character. A metronome reads as fake, so the base is jittered, letter runs
-// inside a word are a touch quicker, and there are real beats at word
-// boundaries and before the parenthetical.
-const CHAR_BASE = 122;
-const CHAR_JITTER = 0.22;
-const WORD_PAUSE = 110;
-const PAREN_PAUSE = 300;
-const LETTER = /[A-Za-z]/;
-
-function charDelay(script: string, i: number) {
-  const ch = script[i];
-  const prev = i > 0 ? script[i - 1] : " ";
-  let d = CHAR_BASE * (1 - CHAR_JITTER + Math.random() * CHAR_JITTER * 2);
-  if (LETTER.test(ch) && LETTER.test(prev)) d *= 0.9;
-  if (ch === " ") d += WORD_PAUSE;
-  if (ch === "(") d += PAREN_PAUSE;
-  return d;
-}
+/*
+ * Accelerated first run. Avery's question and Carlos's reply are on screen the
+ * moment Rex opens — the channel is never empty — and only the part that shows
+ * what Rex *does* is animated:
+ *
+ *   0ms      two messages already visible
+ *   420ms    the @Rex command fills the composer
+ *   900ms    ...and posts; the composer collapses to its read-only footer
+ *   1060ms   "Rex is generating a pipeline report…"
+ *   1660ms   the report card
+ */
+const PRE_TYPE_MS = 420;
+const TYPE_MS = 480;
+const SEND_MS = 160;
+const THINK_MS = 600;
+const SETTLE_MS = 400; // grace after the report before scroll-follow lets go
 
 function reducedMotion() {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -217,106 +209,179 @@ const DEMO_TOTAL = DEMO.messages.length;
 /** Messages on screen while the composer types the next one out. */
 const COMPOSER_AFTER = DEMO.composerAfter ?? DEMO_TOTAL;
 const SCRIPT = DEMO.messages[COMPOSER_AFTER]?.text ?? "";
+/** Messages already on screen when Rex opens — the channel is never empty. */
+const SEED = COMPOSER_AFTER;
 
 function RexAppImpl() {
   const live = useScreenLive();
   const [activeId, setActiveId] = useState(rexDefaultChannel);
-  const [revealed, setRevealed] = useState(() => (demoPlayed || reducedMotion() ? DEMO_TOTAL : 0));
+  const [revealed, setRevealed] = useState(() => (demoPlayed || reducedMotion() ? DEMO_TOTAL : SEED));
   const [typing, setTyping] = useState(false);
+  /** null collapses the composer to its footer; a string shows the box. */
   const [composer, setComposer] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [announce, setAnnounce] = useState("");
 
   const timers = useRef<number[]>([]);
+  const rafRef = useRef(0);
+  /** Bumped on every cancel; stale callbacks check it and bail. */
+  const token = useRef(0);
+  const sent = useRef(false);
+  const playingRef = useRef(false);
   const streamRef = useRef<HTMLElement>(null);
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const scrollMem = useRef<Record<string, number>>({});
+  const shownChannel = useRef(activeId);
+  const activeRef = useRef(activeId);
 
-  const clearTimers = () => {
+  useEffect(() => {
+    activeRef.current = activeId;
+  }, [activeId]);
+
+  const cancel = useCallback(() => {
+    token.current += 1;
     timers.current.forEach(clearTimeout);
     timers.current = [];
-  };
-
-  /** `animate: false` jumps straight to the finished conversation. */
-  const play = useCallback((animate = true) => {
-    clearTimers();
-    setComposer(null);
-    if (!animate || reducedMotion()) {
-      setTyping(false);
-      setRevealed(DEMO_TOTAL);
-      return;
-    }
-
-    const at = (ms: number, fn: () => void) => timers.current.push(window.setTimeout(fn, ms));
-
-    // Avery asks, Carlos answers, then Carlos types the Rex command out at the
-    // composer before it posts and Rex goes to work.
-    setTyping(false);
-    setRevealed(1);
-    at(REVEAL_MS, () => setRevealed(COMPOSER_AFTER));
-    at(REVEAL_MS + BEAT_MS, () => {
-      setComposer("");
-      let i = 0;
-      const key = () => {
-        i += 1;
-        setComposer(SCRIPT.slice(0, i));
-        if (i < SCRIPT.length) {
-          at(charDelay(SCRIPT, i), key);
-          return;
-        }
-        at(SEND_MS, () => {
-          setComposer(null);
-          setRevealed(COMPOSER_AFTER + 1);
-          setTyping(true);
-          at(TYPING_MS, () => {
-            setTyping(false);
-            setRevealed(DEMO_TOTAL);
-          });
-        });
-      };
-      at(charDelay(SCRIPT, 0), key);
-    });
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = 0;
   }, []);
 
-  // Wait for the monitor to actually be on camera before telling the story.
-  // A window that mounted before the demo ran elsewhere simply catches up.
+  const setPlay = useCallback((on: boolean) => {
+    playingRef.current = on;
+    setPlaying(on);
+  }, []);
+
+  /** Jump to the finished conversation and drop everything in flight. */
+  const complete = useCallback(() => {
+    cancel();
+    setRevealed(DEMO_TOTAL);
+    setTyping(false);
+    setComposer(null);
+    setPlay(false);
+  }, [cancel, setPlay]);
+
+  /** `animate: false` shows the completed conversation immediately. */
+  const play = useCallback(
+    (animate = true) => {
+      cancel();
+      if (!animate || reducedMotion()) {
+        complete();
+        return;
+      }
+      const mine = token.current;
+      const alive = () => token.current === mine;
+      const at = (ms: number, fn: () => void) =>
+        timers.current.push(
+          window.setTimeout(() => {
+            if (alive()) fn();
+          }, ms),
+        );
+
+      sent.current = false;
+      setRevealed(SEED);
+      setTyping(false);
+      setComposer(null);
+      setPlay(true);
+      // Replays start from the top of the conversation.
+      if (streamRef.current) streamRef.current.scrollTop = 0;
+
+      const send = () => {
+        if (sent.current || !alive()) return;
+        sent.current = true;
+        const cmd = DEMO.messages[SEED];
+        setComposer(null); // the composer collapses the moment it sends
+        setRevealed(SEED + 1);
+        setTyping(true);
+        setAnnounce(`${cmd.author} sent: ${cmd.text}`);
+        at(THINK_MS, () => {
+          const report = DEMO.messages[DEMO_TOTAL - 1];
+          setTyping(false);
+          setRevealed(DEMO_TOTAL);
+          setAnnounce(`${report.author} posted: ${report.text ?? ""}`);
+          // Let the follow-scroll land, then stop steering.
+          at(SETTLE_MS, () => setPlay(false));
+        });
+      };
+
+      at(PRE_TYPE_MS, () => {
+        setComposer("");
+        const t0 = performance.now();
+        const step = (now: number) => {
+          if (!alive()) return;
+          const t = Math.min((now - t0) / TYPE_MS, 1);
+          const eased = 1 - (1 - t) * (1 - t); // fast in, settles into the send
+          setComposer(SCRIPT.slice(0, Math.max(1, Math.round(eased * SCRIPT.length))));
+          if (t < 1) {
+            rafRef.current = requestAnimationFrame(step);
+            return;
+          }
+          at(SEND_MS, send);
+        };
+        rafRef.current = requestAnimationFrame(step);
+        // If rAF is throttled the command still fills in and posts on time.
+        at(TYPE_MS + 300, () => {
+          if (sent.current) return;
+          setComposer(SCRIPT);
+          at(SEND_MS, send);
+        });
+      });
+    },
+    [cancel, complete, setPlay],
+  );
+
+  // The story waits until this monitor is actually on camera.
   useEffect(() => {
     if (!live) return;
-    const firstRun = !demoPlayed;
+    const firstRun = !demoPlayed && activeRef.current === DEMO.id;
     demoPlayed = true;
-    // A beat after the monitor comes into view, so the story does not start
-    // mid cross-fade.
-    const id = window.setTimeout(() => play(firstRun), 220);
+    const id = window.setTimeout(() => play(firstRun), 200);
     return () => clearTimeout(id);
   }, [live, play]);
 
-  useEffect(() => clearTimers, []);
+  useEffect(() => cancel, [cancel]);
 
   const active = rexChannels.find((c) => c.id === activeId) ?? DEMO;
   const isDemo = active.id === DEMO.id;
   const messages = isDemo ? active.messages.slice(0, revealed) : active.messages;
-  // The live keystrokes only belong to the channel that is telling the story.
+  // Composer keystrokes and the read-only footer belong to the story channel.
   const typedText = isDemo ? composer : null;
 
-  // Channels open at the top, and the newest message is only scrolled to when
-  // it would otherwise be out of sight — so the whole question → answer →
-  // report story stays on screen instead of snapping to the report card.
-  const shownChannel = useRef(activeId);
+  /** Switching channels banks the scroll position and stops any playback. */
+  const selectChannel = useCallback(
+    (id: string) => {
+      if (id === activeId) return;
+      const s = streamRef.current;
+      if (s) scrollMem.current[activeId] = s.scrollTop;
+      if (playingRef.current) complete();
+      setActiveId(id);
+    },
+    [activeId, complete],
+  );
+
+  // Each channel comes back to where it was left; new ones open at the top.
   useEffect(() => {
     const s = streamRef.current;
+    if (!s || shownChannel.current === activeId) return;
+    shownChannel.current = activeId;
+    s.scrollTop = scrollMem.current[activeId] ?? 0;
+  }, [activeId]);
+
+  // While the demo runs, keep the newest thing on screen. Scrolling the newest
+  // message to the top of the stream is what puts the report's title, status,
+  // metrics and first recommended action in view at once. Once playback is
+  // over this stops entirely, so a visitor's own scrolling is never fought.
+  useEffect(() => {
+    if (!playing) return;
+    const s = streamRef.current;
     if (!s) return;
-    if (shownChannel.current !== activeId) {
-      shownChannel.current = activeId;
-      s.scrollTop = 0;
-      return;
-    }
-    const last = s.querySelector<HTMLElement>(".rex-msg[data-last]");
-    if (!last || s.scrollHeight <= s.clientHeight) return;
-    const top = last.offsetTop;
-    const visible = top >= s.scrollTop && top <= s.scrollTop + s.clientHeight - 48;
-    if (visible) return;
+    const last = s.querySelector<HTMLElement>("[data-last]");
+    const max = s.scrollHeight - s.clientHeight;
+    if (!last || max <= 0) return;
     s.scrollTo({
-      top: Math.max(top - 10, 0),
+      top: Math.min(Math.max(last.offsetTop - 10, 0), max),
       behavior: reducedMotion() ? "auto" : "smooth",
     });
-  }, [revealed, typing, activeId]);
+  }, [playing, revealed, typing]);
 
   const onTabKey = (e: ReactKeyboardEvent, id: string) => {
     const i = CHANNEL_ORDER.indexOf(id);
@@ -328,7 +393,7 @@ function RexAppImpl() {
     else return;
     e.preventDefault();
     const id2 = CHANNEL_ORDER[next];
-    setActiveId(id2);
+    selectChannel(id2);
     tabRefs.current[id2]?.focus();
   };
 
@@ -347,7 +412,7 @@ function RexAppImpl() {
         aria-controls={`rex-panel-${c.id}`}
         tabIndex={selected ? 0 : -1}
         className={`rex-chan${selected ? " active" : ""}${c.primary ? " primary" : ""}`}
-        onClick={() => setActiveId(c.id)}
+        onClick={() => selectChannel(c.id)}
         onKeyDown={(e) => onTabKey(e, c.id)}
       >
         <span className="rex-hash" aria-hidden="true">
@@ -423,6 +488,12 @@ function RexAppImpl() {
           )}
         </div>
 
+        {/* One restrained live region for the whole app: it carries the newest
+            message only, never the conversation again. */}
+        <p className="rex-sr" role="status" aria-live="polite">
+          {announce}
+        </p>
+
         <section
           className="rex-stream"
           id={`rex-panel-${active.id}`}
@@ -439,13 +510,13 @@ function RexAppImpl() {
             <Message key={m.id} m={m} last={!typing && i === messages.length - 1} />
           ))}
           {typing && (
-            <div className="rex-msg rex-typing" data-last="" role="status">
-              <div className="rex-avatar" style={{ background: "#4d6bd8" }} aria-hidden="true">
+            <div className="rex-msg rex-typing" data-last="" aria-hidden="true">
+              <div className="rex-avatar" style={{ background: "#4d6bd8" }}>
                 RX
               </div>
               <div className="rex-msg-main">
                 <div className="rex-typing-row">
-                  <span className="rex-dots" aria-hidden="true">
+                  <span className="rex-dots">
                     <i />
                     <i />
                     <i />
@@ -457,30 +528,35 @@ function RexAppImpl() {
           )}
         </section>
 
-        <div className="rex-composer">
-          {/* Never an editable control — the demo "types" into static text, so
-              clicking it mid-sequence cannot hijack the composer. The
-              keystroke animation is presentational and hidden from assistive
-              tech; the posted message in the stream carries the content. */}
-          <div className={`rex-composer-box${typedText !== null ? " typing" : ""}`}>
-            {typedText === null ? (
-              <span className="rex-composer-placeholder">
-                Message {active.kind === "channel" ? `#${active.name}` : active.name}
-              </span>
-            ) : (
-              <span className="rex-composer-typed" aria-hidden="true">
-                {typedText}
-                <span className="rex-caret" />
-              </span>
-            )}
-            <span className={`rex-send${typedText ? " ready" : ""}`} aria-hidden="true">
-              ➤
-            </span>
-          </div>
-          <p className="rex-composer-note">
-            Read-only demo · Rex posts reports and drafts follow-ups, recruiters approve them
+        {typedText === null ? (
+          // Read-only demo: once the command is sent the composer gives its
+          // vertical space back to the report cards.
+          <p className="rex-footnote">
+            Read-only demo · Rex drafts and reports; recruiters review and approve.
           </p>
-        </div>
+        ) : (
+          <div className="rex-composer">
+            {/* Never an editable control — the demo "types" into static text, so
+                clicking it mid-sequence cannot hijack the composer. The
+                keystroke animation is presentational and hidden from assistive
+                tech; the posted message in the stream carries the content. */}
+            <div className={`rex-composer-box${typedText ? " typing" : ""}`}>
+              {typedText === "" ? (
+                <span className="rex-composer-placeholder">
+                  Message {active.kind === "channel" ? `#${active.name}` : active.name}
+                </span>
+              ) : (
+                <span className="rex-composer-typed" aria-hidden="true">
+                  {typedText}
+                  <span className="rex-caret" />
+                </span>
+              )}
+              <span className={`rex-send${typedText ? " ready" : ""}`} aria-hidden="true">
+                ➤
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -69,6 +69,26 @@ export function Desktop({ screen }: { screen: ScreenId }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [state.menu, state.about]);
 
+  // Desktop icons and dock items register themselves so a closing window can
+  // hand focus back to whatever opened it.
+  const iconRefs = useRef<Partial<Record<AppId, HTMLElement | null>>>({});
+  const dockRefs = useRef<Partial<Record<AppId, HTMLElement | null>>>({});
+
+  const registerIcon = useCallback((id: AppId, el: HTMLElement | null) => {
+    iconRefs.current[id] = el;
+  }, []);
+  const registerDock = useCallback((id: AppId, el: HTMLElement | null) => {
+    dockRefs.current[id] = el;
+  }, []);
+
+  const focusOpener = useCallback((id: AppId) => {
+    // After React has removed the window from the tree.
+    requestAnimationFrame(() => {
+      const el = iconRefs.current[id] ?? dockRefs.current[id];
+      el?.focus({ preventScroll: true });
+    });
+  }, []);
+
   const openApp = useCallback((id: AppId) => {
     const def = APPS[id];
     if (def.href) {
@@ -97,7 +117,13 @@ export function Desktop({ screen }: { screen: ScreenId }) {
           </div>
         </div>
 
-        <DesktopIcons apps={pinned} selected={state.selectedIcon} dispatch={dispatch} openApp={openApp} />
+        <DesktopIcons
+          apps={pinned}
+          selected={state.selectedIcon}
+          dispatch={dispatch}
+          openApp={openApp}
+          registerIcon={registerIcon}
+        />
 
         <ScreenLiveContext value={live}>
           {state.wins.map((w) => (
@@ -108,6 +134,8 @@ export function Desktop({ screen }: { screen: ScreenId }) {
               dispatch={dispatch}
               openApp={openApp}
               scaleRef={scaleRef}
+              focusEpoch={state.focusEpoch}
+              onClosed={focusOpener}
             />
           ))}
         </ScreenLiveContext>
@@ -121,7 +149,13 @@ export function Desktop({ screen }: { screen: ScreenId }) {
           openApp={openApp}
         />
 
-        <Dock pinned={pinned} wins={state.wins} focusedId={state.focused} openApp={openApp} />
+        <Dock
+          pinned={pinned}
+          wins={state.wins}
+          focusedId={state.focused}
+          openApp={openApp}
+          registerDock={registerDock}
+        />
 
         {state.about && (
           <div className="os-about-scrim" onClick={() => dispatch({ type: "about", open: false })}>

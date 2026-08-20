@@ -6,9 +6,10 @@ interface IconProps {
   def: AppDef;
   selected: boolean;
   onActivate: () => void;
+  register: (id: AppId, el: HTMLElement | null) => void;
 }
 
-function Icon({ def, selected, onActivate }: IconProps) {
+function Icon({ def, selected, onActivate, register }: IconProps) {
   // Anchors navigate on their own; the hook only cancels the click when the
   // press turned into a drag.
   const handlers = useActivate(def.href ? () => undefined : onActivate, Boolean(def.href));
@@ -26,6 +27,7 @@ function Icon({ def, selected, onActivate }: IconProps) {
   if (def.href) {
     return (
       <a
+        ref={(el) => register(def.id, el)}
         className={cls}
         href={def.href}
         target="_blank"
@@ -40,7 +42,13 @@ function Icon({ def, selected, onActivate }: IconProps) {
   }
 
   return (
-    <button className={cls} type="button" aria-label={`Open ${def.name}`} {...handlers}>
+    <button
+      ref={(el) => register(def.id, el)}
+      className={cls}
+      type="button"
+      aria-label={`Open ${def.name}`}
+      {...handlers}
+    >
       {inner}
     </button>
   );
@@ -51,9 +59,10 @@ interface DesktopIconsProps {
   selected: AppId | null;
   dispatch: (a: OsAction) => void;
   openApp: (id: AppId) => void;
+  registerIcon: (id: AppId, el: HTMLElement | null) => void;
 }
 
-export function DesktopIcons({ apps, selected, dispatch, openApp }: DesktopIconsProps) {
+export function DesktopIcons({ apps, selected, dispatch, openApp, registerIcon }: DesktopIconsProps) {
   return (
     <div className="os-icons">
       {apps.map((id) => (
@@ -61,6 +70,7 @@ export function DesktopIcons({ apps, selected, dispatch, openApp }: DesktopIcons
           key={id}
           def={APPS[id]}
           selected={selected === id}
+          register={registerIcon}
           onActivate={() => {
             dispatch({ type: "selectIcon", appId: id });
             openApp(id);

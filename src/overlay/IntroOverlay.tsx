@@ -1,6 +1,6 @@
 import { overlayState } from "../overlayState";
 import { WORK_DOCK_OFFSET } from "../scene/CameraRig";
-import { useDrivenOpacity } from "./Overlays";
+import { useDrivenOpacity } from "./useDrivenOpacity";
 
 function easeInOutCubic(x: number) {
   return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;

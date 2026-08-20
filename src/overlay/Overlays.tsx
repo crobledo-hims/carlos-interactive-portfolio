@@ -1,35 +1,17 @@
-import { useEffect, useRef } from "react";
 import { overlayState } from "../overlayState";
 import { Desktop } from "../os/Desktop";
+import { useDrivenOpacity } from "./useDrivenOpacity";
 
 function forwardWheel(e: React.WheelEvent) {
   overlayState.scrollEl?.scrollBy({ top: e.deltaY });
 }
 
-export function useDrivenOpacity(read: () => number) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    let raf = 0;
-    const tick = () => {
-      const el = ref.current;
-      if (el) {
-        const a = read();
-        el.style.opacity = String(a);
-        el.style.pointerEvents = a > 0.5 ? "auto" : "none";
-        el.inert = a <= 0.5; // keep the hidden desktop out of the Tab order
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [read]);
-  return ref;
-}
-
+// Both desktops mount off camera, so they start out inert and hidden; the
+// visibility driver flips that the moment the camera docks on them.
 export function LeftMonitorOverlay() {
   const ref = useDrivenOpacity(() => overlayState.left);
   return (
-    <div className="monitor-overlay" ref={ref} onWheel={forwardWheel}>
+    <div className="monitor-overlay" ref={ref} onWheel={forwardWheel} inert aria-hidden="true">
       <Desktop screen="left" />
     </div>
   );
@@ -38,7 +20,7 @@ export function LeftMonitorOverlay() {
 export function RightMonitorOverlay() {
   const ref = useDrivenOpacity(() => overlayState.right);
   return (
-    <div className="monitor-overlay" ref={ref} onWheel={forwardWheel}>
+    <div className="monitor-overlay" ref={ref} onWheel={forwardWheel} inert aria-hidden="true">
       <Desktop screen="right" />
     </div>
   );

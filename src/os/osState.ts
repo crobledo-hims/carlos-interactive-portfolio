@@ -38,13 +38,20 @@ function topmost(wins: WinState[], exclude?: number): number | null {
   return best ? best.id : null;
 }
 
-function raise(state: OsState, id: number): OsState {
+/**
+ * Bring a window forward. `takeFocus` is true for deliberate actions — opening
+ * an app, restoring it from the dock, zooming it — which should also move
+ * keyboard focus into the window. Click-to-front does not: the browser has
+ * already focused whatever was clicked.
+ */
+function raise(state: OsState, id: number, takeFocus = false): OsState {
   const z = state.topZ + 1;
   return {
     ...state,
     topZ: z,
     focused: id,
     menu: null,
+    focusEpoch: takeFocus ? state.focusEpoch + 1 : state.focusEpoch,
     wins: state.wins.map((w) => (w.id === id ? { ...w, z, minimized: false } : w)),
   };
 }
@@ -77,6 +84,7 @@ export function initialOsState(screen: ScreenId): OsState {
     menu: null,
     about: false,
     compact: false,
+    focusEpoch: 0,
   };
 }
 
@@ -86,7 +94,7 @@ export function osReducer(state: OsState, action: OsAction): OsState {
       // A single click on a dock or desktop icon opens the app; if it is
       // already open the same click focuses it and raises it to the front.
       const existing = state.wins.find((w) => w.appId === action.appId && !w.closing);
-      if (existing) return raise(state, existing.id);
+      if (existing) return raise(state, existing.id, true);
       const def = APPS[action.appId];
       const z = state.topZ + 1;
       const placed = cascade(def.rect, state.wins.length);
@@ -107,6 +115,7 @@ export function osReducer(state: OsState, action: OsAction): OsState {
         topZ: z,
         focused: win.id,
         menu: null,
+        focusEpoch: state.focusEpoch + 1,
       };
     }
 
@@ -129,7 +138,7 @@ export function osReducer(state: OsState, action: OsAction): OsState {
     }
 
     case "restore":
-      return raise(state, action.id);
+      return raise(state, action.id, true);
 
     case "zoom": {
       const next = patch(state, action.id, (w) =>
@@ -137,7 +146,7 @@ export function osReducer(state: OsState, action: OsAction): OsState {
           ? { ...w, zoomed: false, rect: w.restore ?? w.rect, restore: null }
           : { ...w, zoomed: true, restore: w.rect, rect: zoomedRect() },
       );
-      return raise(next, action.id);
+      return raise(next, action.id, true);
     }
 
     case "setRect":

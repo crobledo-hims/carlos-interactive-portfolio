@@ -952,19 +952,24 @@ body.os-dragging {
   position: relative;
   flex: 1;
   min-height: 0;
-  padding: 6px 18px 12px;
+  padding: 6px 18px 18px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
+  scrollbar-color: rgba(190, 196, 210, 0.34) transparent;
 }
 
 .rex-stream::-webkit-scrollbar {
-  width: 9px;
+  width: 10px;
 }
 .rex-stream::-webkit-scrollbar-thumb {
-  background: rgba(140, 140, 160, 0.4);
+  background: rgba(190, 196, 210, 0.34);
   border-radius: 9px;
-  border: 2px solid transparent;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+.rex-stream:hover::-webkit-scrollbar-thumb {
+  background: rgba(202, 208, 222, 0.5);
   background-clip: content-box;
 }
 
@@ -990,7 +995,7 @@ body.os-dragging {
 .rex-msg {
   display: flex;
   gap: 11px;
-  padding: 8px 4px;
+  padding: 7px 4px;
   border-radius: 7px;
   animation: rexMsgIn 0.26s ease-out;
 }
@@ -1065,8 +1070,8 @@ body.os-dragging {
 
 .rex-card {
   max-width: 660px;
-  margin-top: 9px;
-  padding: 12px 15px 13px;
+  margin-top: 8px;
+  padding: 11px 14px 12px;
   border-left: 4px solid;
   border-radius: 0 9px 9px 0;
   background: rgba(255, 255, 255, 0.045);
@@ -1090,15 +1095,15 @@ body.os-dragging {
 .rex-card-body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
-  gap: 10px 22px;
-  margin-top: 9px;
+  gap: 9px 20px;
+  margin-top: 8px;
 }
 
 .rex-card-col {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
 }
 
 .rex-status {
@@ -1270,8 +1275,8 @@ body.os-dragging {
   align-items: center;
   justify-content: space-between;
   gap: 8px 18px;
-  margin-top: 11px;
-  padding-top: 9px;
+  margin-top: 9px;
+  padding-top: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -1373,8 +1378,22 @@ body.os-dragging {
 
 /* -------------------------------------------------------------- composer */
 
+/* Full composer only while the scripted command is being typed. */
 .rex-composer {
+  flex: none;
   padding: 8px 18px 12px;
+}
+
+/* ...and a slim read-only footer the rest of the time, so report cards get
+   the vertical space back. */
+.rex-footnote {
+  flex: none;
+  padding: 7px 18px 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #7c828c;
 }
 
 .rex-composer-box {
@@ -1445,11 +1464,6 @@ body.os-dragging {
   color: #4ec27e;
 }
 
-.rex-composer-note {
-  margin-top: 7px;
-  font-size: 11.5px;
-  color: #767c86;
-}
 
 /* ==========================================================================
    Pulse — pipeline health dashboard

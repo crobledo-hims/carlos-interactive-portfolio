@@ -127,7 +127,7 @@ export const rexChannels: RexChannel[] = [
     primary: true,
     composerAfter: 2,
     typingAfter: 3,
-    typingLabel: "Rex is generating a report…",
+    typingLabel: "Rex is generating a pipeline report…",
     messages: [
       {
         ...AVERY,

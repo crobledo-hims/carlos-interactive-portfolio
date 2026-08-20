@@ -63,6 +63,12 @@ export interface OsState {
   about: boolean;
   /** Overlay is too small for floating windows — open them maximized. */
   compact: boolean;
+  /**
+   * Bumped whenever a window is deliberately opened or brought forward, so the
+   * window can move keyboard focus into itself exactly once per such action.
+   * Starts at 0: the boot window must never steal focus at page load.
+   */
+  focusEpoch: number;
 }
 
 export type OsAction =

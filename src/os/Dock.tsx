@@ -8,9 +8,10 @@ interface DockItemProps {
   focused: boolean;
   label?: string;
   onActivate: () => void;
+  register?: (id: AppId, el: HTMLElement | null) => void;
 }
 
-function DockItem({ def, running, focused, label, onActivate }: DockItemProps) {
+function DockItem({ def, running, focused, label, onActivate, register }: DockItemProps) {
   const handlers = useActivate(def.href ? () => undefined : onActivate, Boolean(def.href));
   const name = label ?? def.name;
 
@@ -27,6 +28,7 @@ function DockItem({ def, running, focused, label, onActivate }: DockItemProps) {
   if (def.href) {
     return (
       <a
+        ref={(el) => register?.(def.id, el)}
         className="os-dock-item"
         href={def.href}
         target="_blank"
@@ -42,6 +44,7 @@ function DockItem({ def, running, focused, label, onActivate }: DockItemProps) {
 
   return (
     <button
+      ref={(el) => register?.(def.id, el)}
       className={`os-dock-item${focused ? " focused" : ""}`}
       type="button"
       aria-label={running ? `${name} — open, bring to front` : `Open ${name}`}
@@ -57,9 +60,10 @@ interface DockProps {
   wins: WinState[];
   focusedId: number | null;
   openApp: (id: AppId) => void;
+  registerDock: (id: AppId, el: HTMLElement | null) => void;
 }
 
-export function Dock({ pinned, wins, focusedId, openApp }: DockProps) {
+export function Dock({ pinned, wins, focusedId, openApp, registerDock }: DockProps) {
   const live = wins.filter((w) => !w.closing);
   // Running apps that aren't pinned appear after a separator, like macOS.
   const extras = live
@@ -74,6 +78,7 @@ export function Dock({ pinned, wins, focusedId, openApp }: DockProps) {
         def={APPS[id]}
         running={Boolean(win)}
         focused={Boolean(win && win.id === focusedId && !win.minimized)}
+        register={registerDock}
         onActivate={() => openApp(id)}
       />
     );

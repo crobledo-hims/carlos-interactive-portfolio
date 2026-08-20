@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useLayoutEffect, useRef } from "react";
 import type { PointerEvent as ReactPointerEvent, RefObject } from "react";
 import { APPS } from "./apps/registry";
 import { MENUBAR_H, SCREEN_H, SCREEN_W } from "./constants";
@@ -42,12 +42,40 @@ interface WindowProps {
   openApp: (id: AppId) => void;
   /** Live scale of the logical screen, so pointer deltas convert correctly. */
   scaleRef: RefObject<number>;
+  /** Bumped when a window is deliberately opened or brought forward. */
+  focusEpoch: number;
+  /** Hands focus back to the icon that opened the app when it closes. */
+  onClosed: (appId: AppId) => void;
 }
 
-function WindowImpl({ win, focused, dispatch, openApp, scaleRef }: WindowProps) {
+function WindowImpl({ win, focused, dispatch, openApp, scaleRef, focusEpoch, onClosed }: WindowProps) {
   const def = APPS[win.appId];
   const rootRef = useRef<HTMLDivElement>(null);
   const App = def.Component;
+
+  // Only the frontmost window is reachable. Background, minimized and closing
+  // windows stay visually present but leave the tab order and the
+  // accessibility tree entirely.
+  const hidden = !focused || win.minimized || win.closing;
+
+  // aria-hidden must never wrap the focused element: drop focus in the same
+  // commit that hides the window.
+  useLayoutEffect(() => {
+    if (!hidden) return;
+    const el = rootRef.current;
+    const active = document.activeElement;
+    if (el && active instanceof HTMLElement && el.contains(active)) active.blur();
+  }, [hidden]);
+
+  // Opening an app — or bringing it forward from the dock or the Window menu —
+  // moves focus to the window itself, which is labelled with the app name.
+  const lastEpoch = useRef(0);
+  useEffect(() => {
+    if (!focused || win.minimized || win.closing || focusEpoch === 0) return;
+    if (lastEpoch.current === focusEpoch) return;
+    lastEpoch.current = focusEpoch;
+    rootRef.current?.focus({ preventScroll: true });
+  }, [focused, focusEpoch, win.minimized, win.closing]);
 
   // The close animation normally drives removal via onAnimationEnd, but under
   // prefers-reduced-motion there is no animation to end — so back it with a
@@ -107,6 +135,9 @@ function WindowImpl({ win, focused, dispatch, openApp, scaleRef }: WindowProps) 
       className={cls}
       style={{ left: win.rect.x, top: win.rect.y, width: win.rect.w, height: win.rect.h, zIndex: win.z }}
       aria-label={def.name}
+      tabIndex={-1}
+      inert={hidden}
+      aria-hidden={hidden || undefined}
       onPointerDown={() => {
         if (!focused) dispatch({ type: "focus", id: win.id });
       }}
@@ -124,7 +155,10 @@ function WindowImpl({ win, focused, dispatch, openApp, scaleRef }: WindowProps) 
             className="os-light close"
             title="Close"
             aria-label={`Close ${def.name}`}
-            onClick={() => dispatch({ type: "close", id: win.id })}
+            onClick={() => {
+              dispatch({ type: "close", id: win.id });
+              onClosed(win.appId);
+            }}
           >
             <svg viewBox="0 0 10 10" aria-hidden="true">
               <path d="M3 3l4 4M7 3l-4 4" />
