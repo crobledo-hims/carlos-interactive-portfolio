@@ -13,20 +13,25 @@ const RIGHT_MON: View = { pos: [0.45, 1.14, 0.55], target: [0.45, 1.13, -0.18] }
 const OUTRO: View = { pos: [1.6, 1.9, 3.0], target: [0, 1.05, 0] };
 
 // Piecewise camera track over scroll offset 0..1. Repeated views hold the camera.
+// The Work desktop docks early (t=0.24 of a 4-page track) so one deliberate
+// wheel gesture — or the intro's "Enter workspace" button — reaches it.
 const KEYS: { t: number; v: View }[] = [
   { t: 0.0, v: OVERVIEW },
-  { t: 0.2, v: SEATED },
-  { t: 0.3, v: SEATED },
-  { t: 0.44, v: LEFT_MON },
-  { t: 0.58, v: LEFT_MON },
-  { t: 0.68, v: RIGHT_MON },
-  { t: 0.82, v: RIGHT_MON },
+  { t: 0.12, v: SEATED },
+  { t: 0.24, v: LEFT_MON },
+  { t: 0.42, v: LEFT_MON },
+  { t: 0.54, v: RIGHT_MON },
+  { t: 0.72, v: RIGHT_MON },
   { t: 1.0, v: OUTRO },
 ];
 
 // Overlay fully visible inside [inLo, inHi], fading over `fade` at each edge.
-const LEFT_WINDOW = { inLo: 0.47, inHi: 0.55, fade: 0.03 };
-const RIGHT_WINDOW = { inLo: 0.71, inHi: 0.79, fade: 0.03 };
+const LEFT_WINDOW = { inLo: 0.27, inHi: 0.4, fade: 0.035 };
+const RIGHT_WINDOW = { inLo: 0.57, inHi: 0.7, fade: 0.035 };
+
+// Scroll offset the "Enter workspace" button animates to (center of the
+// left-monitor hold).
+export const WORK_DOCK_OFFSET = (LEFT_WINDOW.inLo + LEFT_WINDOW.inHi) / 2;
 
 function smoothstep(x: number) {
   return x * x * (3 - 2 * x);
@@ -62,7 +67,8 @@ export function CameraRig() {
 
     overlayState.left = windowAlpha(t, LEFT_WINDOW);
     overlayState.right = windowAlpha(t, RIGHT_WINDOW);
-    overlayState.hint = THREE.MathUtils.clamp(1 - t * 12, 0, 1);
+    // Intro hero fades out well before the camera docks on the left monitor.
+    overlayState.intro = THREE.MathUtils.clamp(1 - t / 0.16, 0, 1);
   });
 
   return null;

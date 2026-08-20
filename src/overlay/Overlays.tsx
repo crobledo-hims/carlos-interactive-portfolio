@@ -6,7 +6,7 @@ function forwardWheel(e: React.WheelEvent) {
   overlayState.scrollEl?.scrollBy({ top: e.deltaY });
 }
 
-function useDrivenOpacity(read: () => number) {
+export function useDrivenOpacity(read: () => number) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let raf = 0;
@@ -40,15 +40,6 @@ export function RightMonitorOverlay() {
   return (
     <div className="monitor-overlay" ref={ref} onWheel={forwardWheel}>
       <Desktop screen="right" />
-    </div>
-  );
-}
-
-export function ScrollHint() {
-  const ref = useDrivenOpacity(() => overlayState.hint);
-  return (
-    <div className="scroll-hint" ref={ref as React.RefObject<HTMLDivElement>}>
-      Scroll to enter
     </div>
   );
 }

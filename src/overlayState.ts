@@ -3,7 +3,7 @@
 export const overlayState = {
   left: 0, // 0..1 opacity of the left-monitor overlay
   right: 0, // 0..1 opacity of the right-monitor overlay
-  hint: 1, // 0..1 opacity of the "scroll" hint
+  intro: 1, // 0..1 opacity of the intro hero layer
   // drei ScrollControls' scroll container; overlays forward wheel events here
   // so the page keeps scrolling while an overlay is interactive.
   scrollEl: null as HTMLElement | null,
