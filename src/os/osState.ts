@@ -2,21 +2,24 @@ import { APPS } from "./apps/registry";
 import { BASE_Z, DOCK_RESERVE, MENUBAR_H, SCREEN_H, SCREEN_W } from "./constants";
 import type { OsAction, OsState, Rect, ScreenId, WinState } from "./types";
 
+/** Smallest slice of a window that must stay on screen so it can be dragged back. */
+const KEEP_VISIBLE = 200;
+
 /** Keep a window inside the screen, below the menu bar and above the dock. */
 export function clampRect(r: Rect): Rect {
   const w = Math.min(r.w, SCREEN_W - 16);
   const h = Math.min(r.h, SCREEN_H - MENUBAR_H - 16);
-  const x = Math.min(Math.max(r.x, -w + 160), SCREEN_W - 160);
+  const x = Math.min(Math.max(r.x, -w + KEEP_VISIBLE), SCREEN_W - KEEP_VISIBLE);
   const y = Math.min(Math.max(r.y, MENUBAR_H + 4), SCREEN_H - 48);
   return { x, y, w, h };
 }
 
 function cascade(rect: Rect, n: number): Rect {
-  const off = (n % 5) * 22;
+  const off = (n % 5) * 20;
   return clampRect({ ...rect, x: rect.x + off, y: rect.y + off });
 }
 
-function zoomedRect(): Rect {
+export function zoomedRect(): Rect {
   return {
     x: 10,
     y: MENUBAR_H + 8,
@@ -73,24 +76,28 @@ export function initialOsState(screen: ScreenId): OsState {
     selectedIcon: null,
     menu: null,
     about: false,
+    compact: false,
   };
 }
 
 export function osReducer(state: OsState, action: OsAction): OsState {
   switch (action.type) {
     case "open": {
+      // A single click on a dock or desktop icon opens the app; if it is
+      // already open the same click focuses it and raises it to the front.
       const existing = state.wins.find((w) => w.appId === action.appId && !w.closing);
       if (existing) return raise(state, existing.id);
       const def = APPS[action.appId];
       const z = state.topZ + 1;
+      const placed = cascade(def.rect, state.wins.length);
       const win: WinState = {
         id: state.nextId,
         appId: action.appId,
-        rect: cascade(def.rect, state.wins.length),
+        rect: state.compact ? zoomedRect() : placed,
         z,
         minimized: false,
-        zoomed: false,
-        restore: null,
+        zoomed: state.compact,
+        restore: state.compact ? placed : null,
         closing: false,
       };
       return {
@@ -112,7 +119,9 @@ export function osReducer(state: OsState, action: OsAction): OsState {
     }
 
     case "remove":
-      return { ...state, wins: state.wins.filter((w) => w.id !== action.id) };
+      return state.wins.some((w) => w.id === action.id)
+        ? { ...state, wins: state.wins.filter((w) => w.id !== action.id) }
+        : state;
 
     case "minimize": {
       const wins = state.wins.map((w) => (w.id === action.id ? { ...w, minimized: true } : w));
@@ -138,17 +147,6 @@ export function osReducer(state: OsState, action: OsAction): OsState {
         zoomed: false,
       }));
 
-    case "dockClick": {
-      const win = state.wins.find((w) => w.appId === action.appId && !w.closing);
-      if (!win) return osReducer(state, { type: "open", appId: action.appId });
-      if (win.minimized) return raise(state, win.id);
-      if (state.focused === win.id) {
-        const wins = state.wins.map((w) => (w.id === win.id ? { ...w, minimized: true } : w));
-        return { ...state, wins, focused: topmost(wins, win.id), menu: null };
-      }
-      return raise(state, win.id);
-    }
-
     case "selectIcon":
       return { ...state, selectedIcon: action.appId, menu: null };
 
@@ -157,6 +155,16 @@ export function osReducer(state: OsState, action: OsAction): OsState {
 
     case "about":
       return { ...state, about: action.open, menu: null };
+
+    case "compact": {
+      if (state.compact === action.value) return state;
+      const next = { ...state, compact: action.value };
+      // Entering compact maximizes whatever the visitor is looking at.
+      if (!action.value || state.focused === null) return next;
+      return patch(next, state.focused, (w) =>
+        w.zoomed ? w : { ...w, zoomed: true, restore: w.rect, rect: zoomedRect() },
+      );
+    }
 
     default:
       return state;

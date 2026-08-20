@@ -1,4 +1,4 @@
-import { memo, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import type { PointerEvent as ReactPointerEvent, RefObject } from "react";
 import { APPS } from "./apps/registry";
 import { MENUBAR_H, SCREEN_H, SCREEN_W } from "./constants";
@@ -7,10 +7,13 @@ import { keepWheelIfScrollable } from "./wheel";
 
 const HANDLES = ["n", "s", "e", "w", "ne", "nw", "se", "sw"] as const;
 
+/** Matches clampRect: a window can never be dragged out of reach. */
+const KEEP_VISIBLE = 200;
+
 function moved(orig: Rect, dx: number, dy: number): Rect {
   return {
     ...orig,
-    x: Math.min(Math.max(orig.x + dx, -orig.w + 160), SCREEN_W - 160),
+    x: Math.min(Math.max(orig.x + dx, -orig.w + KEEP_VISIBLE), SCREEN_W - KEEP_VISIBLE),
     y: Math.min(Math.max(orig.y + dy, MENUBAR_H + 4), SCREEN_H - 48),
   };
 }
@@ -45,6 +48,15 @@ function WindowImpl({ win, focused, dispatch, openApp, scaleRef }: WindowProps) 
   const def = APPS[win.appId];
   const rootRef = useRef<HTMLDivElement>(null);
   const App = def.Component;
+
+  // The close animation normally drives removal via onAnimationEnd, but under
+  // prefers-reduced-motion there is no animation to end — so back it with a
+  // timer. `remove` is idempotent.
+  useEffect(() => {
+    if (!win.closing) return;
+    const t = setTimeout(() => dispatch({ type: "remove", id: win.id }), 220);
+    return () => clearTimeout(t);
+  }, [win.closing, win.id, dispatch]);
 
   const beginDrag = (e: ReactPointerEvent, dir: "move" | (typeof HANDLES)[number]) => {
     if (e.button !== 0) return;

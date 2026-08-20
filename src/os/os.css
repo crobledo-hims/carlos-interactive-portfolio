@@ -18,11 +18,12 @@
   --os-panel-2: #1b1b22;
   --os-accent: #5a7bf0;
 
+  /* Must match SCREEN_W / SCREEN_H in constants.ts. */
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 1280px;
-  height: 800px;
+  width: 1160px;
+  height: 700px;
   transform: translate(-50%, -50%) scale(var(--os-scale, 1));
   border-radius: 14px;
   overflow: hidden;
@@ -30,7 +31,7 @@
   background: #101014;
   color: var(--os-text);
   text-align: left;
-  font: 400 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font: 400 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.07);
   -webkit-font-smoothing: antialiased;
 }
@@ -39,6 +40,31 @@
   font: inherit;
   color: inherit;
   cursor: pointer;
+}
+
+/* Everything clickable in the OS opens on a single tap and shows a visible
+   keyboard focus ring. */
+.os-screen button,
+.os-screen a,
+.os-screen [role="tab"] {
+  touch-action: manipulation;
+}
+
+.os-screen :focus-visible {
+  outline: 2px solid #9ab6ff;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.rex-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 body.os-dragging {
@@ -70,13 +96,13 @@ body.os-dragging {
 .os-watermark {
   position: absolute;
   left: 26px;
-  bottom: 104px;
+  bottom: 100px;
   pointer-events: none;
 }
 
 .os-watermark-label {
   display: block;
-  font-size: 44px;
+  font-size: 42px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: rgba(255, 255, 255, 0.07);
@@ -84,23 +110,24 @@ body.os-dragging {
 
 .os-watermark-hint {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.18);
 }
 
 /* -------------------------------------------------------------- menu bar */
 
 .os-menubar {
+  /* Height must match MENUBAR_H in constants.ts. */
   position: absolute;
   inset: 0 0 auto 0;
-  height: 26px;
+  height: 28px;
   z-index: 9500;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 8px 0 6px;
-  font-size: 12.5px;
+  font-size: 13px;
   background: rgba(26, 26, 32, 0.6);
   backdrop-filter: blur(24px) saturate(170%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
@@ -119,13 +146,13 @@ body.os-dragging {
 .os-menu-title {
   display: flex;
   align-items: center;
-  height: 20px;
+  height: 22px;
   padding: 0 9px;
   border: 0;
   border-radius: 5px;
   background: none;
   color: rgba(255, 255, 255, 0.86);
-  font-size: 12.5px;
+  font-size: 13px;
 }
 
 .os-menu-title:hover {
@@ -152,10 +179,10 @@ body.os-dragging {
 
 .os-menu-drop {
   position: absolute;
-  top: 23px;
+  top: 25px;
   left: 0;
   z-index: 9600;
-  min-width: 232px;
+  min-width: 244px;
   padding: 5px;
   border-radius: 9px;
   background: rgba(44, 44, 52, 0.94);
@@ -177,11 +204,11 @@ body.os-dragging {
   align-items: center;
   gap: 6px;
   width: 100%;
-  padding: 4px 8px;
+  padding: 5px 8px;
   border: 0;
   border-radius: 5px;
   background: none;
-  font-size: 12.5px;
+  font-size: 13.5px;
   text-align: left;
 }
 
@@ -207,7 +234,7 @@ body.os-dragging {
 
 .os-menu-short {
   color: rgba(255, 255, 255, 0.45);
-  font-size: 12px;
+  font-size: 12.5px;
 }
 
 .os-menu-item:hover:not(.disabled) .os-menu-short {
@@ -234,7 +261,7 @@ body.os-dragging {
 }
 
 .os-clock {
-  font-size: 12.5px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
 }
@@ -243,12 +270,12 @@ body.os-dragging {
   display: flex;
   align-items: center;
   gap: 5px;
-  height: 19px;
-  padding: 0 9px;
-  border-radius: 10px;
+  height: 21px;
+  padding: 0 10px;
+  border-radius: 11px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: rgba(255, 255, 255, 0.08);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.03em;
   color: rgba(255, 255, 255, 0.9);
 }
@@ -261,7 +288,7 @@ body.os-dragging {
 
 .os-icons {
   position: absolute;
-  top: 38px;
+  top: 40px;
   right: 14px;
   z-index: 1;
   display: flex;
@@ -270,7 +297,7 @@ body.os-dragging {
 }
 
 .os-icon {
-  width: 92px;
+  width: 96px;
   padding: 7px 4px 6px;
   display: flex;
   flex-direction: column;
@@ -281,10 +308,11 @@ body.os-dragging {
   background: none;
   text-decoration: none;
   color: var(--os-text);
+  transition: background 0.12s ease;
 }
 
 .os-icon:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.09);
 }
 
 .os-icon.selected {
@@ -293,16 +321,26 @@ body.os-dragging {
 }
 
 .os-icon-tile {
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   border-radius: 13px;
   display: grid;
   place-items: center;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.os-icon:hover .os-icon-tile {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.os-icon:active .os-icon-tile {
+  transform: scale(0.93);
 }
 
 .os-icon-label {
-  font-size: 11.5px;
+  font-size: 12.5px;
   text-align: center;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
 }
@@ -328,7 +366,7 @@ body.os-dragging {
 }
 
 .os-win.min {
-  transform: translateY(720px) scale(0.06);
+  transform: translateY(640px) scale(0.06);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -356,7 +394,7 @@ body.os-dragging {
 
 .os-titlebar {
   position: relative;
-  flex: 0 0 38px;
+  flex: 0 0 40px;
   display: flex;
   align-items: center;
   padding: 0 12px;
@@ -427,7 +465,7 @@ body.os-dragging {
 }
 
 .os-title-name {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 650;
   color: rgba(255, 255, 255, 0.92);
 }
@@ -437,7 +475,7 @@ body.os-dragging {
 }
 
 .os-title-sub {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--os-faint);
 }
 
@@ -582,6 +620,14 @@ body.os-dragging {
   transform: scale(1.18) translateY(-2px);
 }
 
+.os-dock-item:active {
+  transform: scale(1.22) translateY(-1px);
+}
+
+.os-dock-item:focus-visible {
+  transform: scale(1.3) translateY(-4px);
+}
+
 .os-tile {
   width: 46px;
   height: 46px;
@@ -589,11 +635,6 @@ body.os-dragging {
   display: grid;
   place-items: center;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.28);
-}
-
-.os-tile-doc {
-  background: linear-gradient(155deg, #f2f3f7, #c8ccd8);
-  font-size: 24px;
 }
 
 .os-run-dot {
@@ -711,17 +752,19 @@ body.os-dragging {
 }
 
 /* ==========================================================================
-   Rex — Slack-shaped recruiting operations app
+   Rex — a recruiting conversation inside Slack, not a dashboard
    ========================================================================== */
 
 .rex {
   display: flex;
   background: #1f2126;
-  color: #d8dae0;
+  color: #dcdee4;
 }
 
+/* --------------------------------------------------------------- sidebar */
+
 .rex-rail {
-  flex: 0 0 208px;
+  flex: 0 0 226px;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -731,63 +774,80 @@ body.os-dragging {
 .rex-workspace {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 11px 12px;
+  gap: 10px;
+  padding: 12px 13px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.13);
 }
 
 .rex-ws-tile {
-  flex: 0 0 30px;
-  height: 30px;
+  flex: 0 0 32px;
+  height: 32px;
   border-radius: 8px;
   display: grid;
   place-items: center;
   background: #fff;
   color: #3a2545;
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 800;
 }
 
 .rex-ws-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #fff;
 }
 
 .rex-ws-sub {
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.62);
 }
 
 .rex-channels {
   flex: 1;
-  padding: 4px 6px 12px;
+  padding: 4px 8px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
 .rex-group {
-  padding: 12px 8px 4px;
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
+  padding: 13px 8px 5px;
+  font-size: 11px;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.48);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .rex-chan {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   width: 100%;
-  padding: 5px 8px;
+  padding: 6px 9px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 7px;
   background: none;
-  color: rgba(255, 255, 255, 0.76);
-  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 13.5px;
   text-align: left;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+/* The three story channels carry the demo, so they read a step louder. */
+.rex-chan.primary {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  padding: 7px 9px;
 }
 
 .rex-chan:hover {
-  background: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.rex-chan:active {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .rex-chan.active {
@@ -795,8 +855,13 @@ body.os-dragging {
   color: #fff;
 }
 
+.rex-chan[aria-selected="true"] {
+  box-shadow: inset 2px 0 0 #fff;
+}
+
 .rex-hash {
-  opacity: 0.6;
+  opacity: 0.62;
+  font-size: 12.5px;
 }
 
 .rex-chan-name {
@@ -806,35 +871,30 @@ body.os-dragging {
   white-space: nowrap;
 }
 
-.rex-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #4ec27e;
-}
-
 .rex-unread {
-  padding: 0 6px;
-  border-radius: 9px;
+  padding: 1px 7px;
+  border-radius: 10px;
   background: #d6335f;
   color: #fff;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
+}
+
+.rex-chan.active .rex-unread {
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .rex-badge {
-  padding: 0 4px;
+  padding: 1px 4px;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.16);
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.78);
 }
 
-.rex-badge.sm {
-  font-size: 8.5px;
-}
+/* ------------------------------------------------------------ main column */
 
 .rex-main {
   flex: 1;
@@ -844,34 +904,76 @@ body.os-dragging {
 }
 
 .rex-topbar {
-  padding: 9px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
   background: #22252a;
 }
 
+.rex-topbar-text {
+  min-width: 0;
+}
+
 .rex-topbar-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #fff;
 }
 
 .rex-topbar-topic {
-  font-size: 11.5px;
-  color: #8e929c;
+  font-size: 12.5px;
+  color: #9298a3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rex-replay {
+  margin-left: auto;
+  flex: none;
+  padding: 4px 12px;
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: #cfd4de;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.rex-replay:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
 }
 
 .rex-stream {
+  position: relative;
   flex: 1;
-  padding: 6px 18px 10px;
+  min-height: 0;
+  padding: 6px 18px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.rex-stream::-webkit-scrollbar {
+  width: 9px;
+}
+.rex-stream::-webkit-scrollbar-thumb {
+  background: rgba(140, 140, 160, 0.4);
+  border-radius: 9px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 .rex-divider {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 10px 0 4px;
-  font-size: 11px;
-  color: #8e929c;
+  margin: 10px 0 6px;
+  font-size: 11.5px;
+  color: #9298a3;
 }
 
 .rex-divider::before,
@@ -882,24 +984,34 @@ body.os-dragging {
   background: rgba(255, 255, 255, 0.09);
 }
 
+/* ------------------------------------------------------------- messages */
+
 .rex-msg {
   display: flex;
-  gap: 10px;
-  padding: 7px 4px;
-  border-radius: 6px;
+  gap: 11px;
+  padding: 8px 4px;
+  border-radius: 7px;
+  animation: rexMsgIn 0.26s ease-out;
 }
 
 .rex-msg:hover {
   background: rgba(255, 255, 255, 0.028);
 }
 
+@keyframes rexMsgIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
 .rex-avatar {
-  flex: 0 0 34px;
-  height: 34px;
+  flex: 0 0 36px;
+  height: 36px;
   border-radius: 8px;
   display: grid;
   place-items: center;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   color: #fff;
 }
@@ -912,24 +1024,35 @@ body.os-dragging {
 .rex-msg-head {
   display: flex;
   align-items: center;
-  gap: 7px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .rex-author {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #fff;
 }
 
+.rex-role {
+  padding: 1px 7px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 11px;
+  color: #aeb4bf;
+}
+
 .rex-time {
-  font-size: 10.5px;
-  color: #7d818b;
+  font-size: 12px;
+  color: #868c96;
 }
 
 .rex-text {
-  font-size: 13px;
-  line-height: 1.5;
-  margin-top: 1px;
+  margin-top: 2px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #dcdee4;
 }
 
 .rex-text strong {
@@ -937,71 +1060,255 @@ body.os-dragging {
   color: #fff;
 }
 
-.rex-attach {
-  max-width: 580px;
-  margin-top: 7px;
-  padding: 9px 13px 10px;
+/* ----------------------------------------------------------- report card */
+
+.rex-card {
+  max-width: 660px;
+  margin-top: 9px;
+  padding: 12px 15px 13px;
   border-left: 4px solid;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 9px 9px 0;
   background: rgba(255, 255, 255, 0.045);
+  animation: rexCardIn 0.32s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 
-.rex-attach-title {
-  font-size: 12.5px;
+@keyframes rexCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+}
+
+.rex-card-title {
+  font-size: 14.5px;
   font-weight: 700;
+  line-height: 1.35;
   color: #fff;
+}
+
+.rex-card-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
+  gap: 10px 22px;
+  margin-top: 9px;
+}
+
+.rex-card-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rex-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 11px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 650;
+  border: 1px solid;
+}
+
+.rex-status-icon {
+  font-size: 12px;
+}
+
+.rex-status-key {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  font-weight: 700;
+}
+
+.rex-status.yellow {
+  background: rgba(213, 154, 58, 0.16);
+  border-color: rgba(213, 154, 58, 0.42);
+  color: #f0c274;
+}
+
+.rex-status.green {
+  background: rgba(63, 156, 109, 0.16);
+  border-color: rgba(63, 156, 109, 0.42);
+  color: #7fd8a6;
+}
+
+.rex-status.red {
+  background: rgba(214, 87, 80, 0.16);
+  border-color: rgba(214, 87, 80, 0.42);
+  color: #f09a94;
+}
+
+.rex-status.neutral {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #cdd2da;
 }
 
 .rex-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 7px 22px;
-  margin-top: 8px;
+  gap: 9px 18px;
+}
+
+.rex-field.wide {
+  grid-column: 1 / -1;
 }
 
 .rex-field-label {
-  font-size: 10.5px;
-  color: #8e929c;
+  font-size: 12px;
+  color: #9298a3;
 }
 
 .rex-field-value {
-  font-size: 12.5px;
-  color: #e7e9ee;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #eceef3;
 }
 
-.rex-context {
-  margin-top: 9px;
-  font-size: 10.5px;
-  color: #7d818b;
+.rex-stages-head,
+.rex-section h4 {
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #9298a3;
+  margin-bottom: 7px;
+}
+
+.rex-stages ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.rex-stage {
+  display: grid;
+  grid-template-columns: 1fr 82px 26px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #c6cad3;
+}
+
+.rex-stage-bar {
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+
+.rex-stage-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #7d97e8, #4d6bd8);
+}
+
+.rex-stage-count {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.rex-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rex-progress-track {
+  display: flex;
+  gap: 5px;
+}
+
+.rex-progress-track > span {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.rex-progress-track > span.on {
+  background: #4fbd88;
+}
+
+.rex-progress-note {
+  font-size: 13.5px;
+  color: #d4d8e0;
+}
+
+.rex-section ul,
+.rex-section ol {
+  padding-left: 17px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rex-section li {
+  font-size: 14px;
+  line-height: 1.45;
+  color: #c9cdd6;
+}
+
+.rex-section + .rex-section {
+  margin-top: 10px;
+}
+
+/* Footer note and the read-only action chips share one row when there is
+   room, which keeps the report card a screen shorter. */
+.rex-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 18px;
+  margin-top: 11px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rex-card-footer {
+  flex: 1 1 240px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #9298a3;
 }
 
 .rex-actions {
   display: flex;
-  gap: 7px;
-  margin-top: 9px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .rex-action {
-  padding: 4px 11px;
-  border-radius: 5px;
+  padding: 5px 12px;
+  border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: rgba(255, 255, 255, 0.05);
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 600;
+  color: #dcdee4;
 }
 
 .rex-reactions {
   display: flex;
   gap: 6px;
-  margin-top: 7px;
+  margin-top: 8px;
 }
 
 .rex-reaction {
-  padding: 1px 8px;
+  padding: 2px 9px;
   border-radius: 11px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.05);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .rex-reaction b {
@@ -1009,11 +1316,61 @@ body.os-dragging {
 }
 
 .rex-thread {
-  margin-top: 6px;
-  font-size: 11.5px;
+  margin-top: 7px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #7fa6e8;
 }
+
+/* ------------------------------------------------------ typing indicator */
+
+.rex-typing-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+}
+
+.rex-typing-label {
+  font-size: 14px;
+  color: #9298a3;
+  font-style: italic;
+}
+
+.rex-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.rex-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7d8794;
+  animation: rexBlink 1.05s infinite ease-in-out;
+}
+
+.rex-dots i:nth-child(2) {
+  animation-delay: 0.14s;
+}
+.rex-dots i:nth-child(3) {
+  animation-delay: 0.28s;
+}
+
+@keyframes rexBlink {
+  0%,
+  70%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+/* -------------------------------------------------------------- composer */
 
 .rex-composer {
   padding: 8px 18px 12px;
@@ -1023,15 +1380,15 @@ body.os-dragging {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 12px;
+  padding: 10px 13px;
   border-radius: 9px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.03);
 }
 
 .rex-composer-placeholder {
-  font-size: 12.5px;
-  color: #7d818b;
+  font-size: 13.5px;
+  color: #868c96;
 }
 
 .rex-send {
@@ -1039,9 +1396,9 @@ body.os-dragging {
 }
 
 .rex-composer-note {
-  margin-top: 6px;
-  font-size: 10.5px;
-  color: #6d717a;
+  margin-top: 7px;
+  font-size: 11.5px;
+  color: #767c86;
 }
 
 /* ==========================================================================
@@ -1065,13 +1422,13 @@ body.os-dragging {
 }
 
 .pulse-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: #fff;
 }
 
 .pulse-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: #8b8f9a;
 }
 
@@ -1084,7 +1441,7 @@ body.os-dragging {
   padding: 3px 11px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  font-size: 11px;
+  font-size: 12px;
   color: #a8acb6;
 }
 
@@ -1113,21 +1470,21 @@ body.os-dragging {
 }
 
 .pulse-stat-label {
-  font-size: 10.5px;
+  font-size: 11.5px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #8b8f9a;
 }
 
 .pulse-stat-value {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
   line-height: 1.2;
   color: #fff;
 }
 
 .pulse-stat-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: #8b8f9a;
 }
 
@@ -1146,14 +1503,14 @@ body.os-dragging {
 }
 
 .pulse-panel-head h3 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
 }
 
 .pulse-legend {
   display: flex;
   gap: 14px;
-  font-size: 11px;
+  font-size: 12px;
   color: #9aa0ac;
 }
 
@@ -1190,7 +1547,7 @@ body.os-dragging {
 
 .pulse-axis {
   fill: #7f8492;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .pulse-plan {
@@ -1229,14 +1586,14 @@ body.os-dragging {
 
 .pulse-panel-note {
   margin-top: 2px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
   color: #8b8f9a;
 }
 
 .pulse-section {
   margin: 20px 0 10px;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #8b8f9a;
@@ -1287,13 +1644,13 @@ body.os-dragging {
 }
 
 .pulse-card-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
   color: #fff;
 }
 
 .pulse-card-team {
-  font-size: 11px;
+  font-size: 12px;
   color: #8b8f9a;
 }
 
@@ -1301,7 +1658,7 @@ body.os-dragging {
   flex: none;
   padding: 2px 9px;
   border-radius: 10px;
-  font-size: 10.5px;
+  font-size: 11.5px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -1327,18 +1684,18 @@ body.os-dragging {
 }
 
 .pulse-metric-value {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 650;
   color: #eceef3;
 }
 
 .pulse-metric-label {
-  font-size: 10px;
+  font-size: 11px;
   color: #8b8f9a;
 }
 
 .pulse-metric-hint {
-  font-size: 9.5px;
+  font-size: 10.5px;
   color: #6b7080;
 }
 
@@ -1366,7 +1723,7 @@ body.os-dragging {
 }
 
 .pulse-card-meta {
-  font-size: 10.5px;
+  font-size: 11.5px;
   color: #8b8f9a;
 }
 
@@ -1374,7 +1731,7 @@ body.os-dragging {
   margin-top: 9px;
   padding-top: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.45;
   color: #797e8c;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -1407,34 +1764,34 @@ body.os-dragging {
 }
 
 .pulse-risk-role {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 650;
   color: #fff;
 }
 
 .pulse-risk-rule {
   margin-left: auto;
-  font-size: 10.5px;
+  font-size: 11.5px;
   color: #797e8c;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .pulse-risk-detail {
   margin-top: 7px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.55;
   color: #b9bdc7;
 }
 
 .pulse-risk-action {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 13px;
   color: #dfe1e7;
 }
 
 .pulse-risk-action span {
   margin-right: 6px;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #8b8f9a;
@@ -1472,7 +1829,7 @@ body.os-dragging {
   padding: 6px 10px;
   border-radius: 8px 8px 0 0;
   background: #cdd1d9;
-  font-size: 11.5px;
+  font-size: 12.5px;
   color: #4a4f58;
 }
 
@@ -1506,7 +1863,7 @@ body.os-dragging {
 .gauge-newtab {
   padding: 0 8px 4px;
   color: #5c616a;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .gauge-toolbar {
@@ -1519,7 +1876,7 @@ body.os-dragging {
 
 .gauge-nav {
   color: #4a4f58;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1;
 }
 
@@ -1537,7 +1894,7 @@ body.os-dragging {
   border-radius: 13px;
   background: #e6e8ec;
   color: #4a4f58;
-  font-size: 11.5px;
+  font-size: 12.5px;
 }
 
 .gauge-omnibox svg {
@@ -1552,7 +1909,7 @@ body.os-dragging {
   border-radius: 13px;
   border: 1px solid transparent;
   background: none;
-  font-size: 11.5px;
+  font-size: 12.5px;
   color: #4a4f58;
 }
 
@@ -1570,7 +1927,7 @@ body.os-dragging {
   place-items: center;
   background: linear-gradient(155deg, #e0933c, #a94e26);
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
 }
 
@@ -1578,7 +1935,7 @@ body.os-dragging {
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .gauge-page {
@@ -1610,19 +1967,19 @@ body.os-dragging {
   place-items: center;
   background: #2d5f9e;
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
 }
 
 .gauge-site-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #2d3138;
 }
 
 .gauge-site-project {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 12px;
   color: #6d7078;
 }
 
@@ -1645,24 +2002,24 @@ body.os-dragging {
   place-items: center;
   background: linear-gradient(150deg, #7d93c8, #47598c);
   color: #fff;
-  font-size: 25px;
+  font-size: 27px;
   font-weight: 600;
 }
 
 .gauge-name {
-  font-size: 20px;
+  font-size: 21.5px;
   font-weight: 650;
   color: #1c1f25;
 }
 
 .gauge-headline {
-  font-size: 13.5px;
+  font-size: 14.5px;
   color: #33373f;
 }
 
 .gauge-meta,
 .gauge-open {
-  font-size: 11.5px;
+  font-size: 12.5px;
   color: #6d7078;
 }
 
@@ -1681,7 +2038,7 @@ body.os-dragging {
   padding: 4px 14px;
   border-radius: 14px;
   border: 1px solid #9aa0ab;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: #3c414a;
 }
@@ -1701,13 +2058,13 @@ body.os-dragging {
 }
 
 .gauge-sec h4 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
   margin-bottom: 8px;
 }
 
 .gauge-sec p {
-  font-size: 12.5px;
+  font-size: 13.5px;
   line-height: 1.55;
   color: #3c414a;
 }
@@ -1733,18 +2090,18 @@ body.os-dragging {
   place-items: center;
   background: #e7e9ee;
   color: #5c616a;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .gauge-exp-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
 }
 
 .gauge-exp-company,
 .gauge-exp-dates {
-  font-size: 11.5px;
+  font-size: 12.5px;
   color: #6d7078;
 }
 
@@ -1763,13 +2120,13 @@ body.os-dragging {
   border-radius: 12px;
   background: #eef0f4;
   border: 1px solid #dfe2e8;
-  font-size: 11.5px;
+  font-size: 12.5px;
   color: #3c414a;
 }
 
 .gauge-fiction {
   margin-top: 14px;
-  font-size: 10.5px;
+  font-size: 11.5px;
   text-align: center;
   color: #8d9098;
 }
@@ -1793,12 +2150,12 @@ body.os-dragging {
 }
 
 .gauge-panel-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 .gauge-panel-sub {
-  font-size: 10.5px;
+  font-size: 11.5px;
   color: #6d7078;
 }
 
@@ -1806,7 +2163,7 @@ body.os-dragging {
   margin-left: auto;
   border: 0;
   background: none;
-  font-size: 17px;
+  font-size: 18.5px;
   color: #8d9098;
 }
 
@@ -1823,7 +2180,7 @@ body.os-dragging {
 }
 
 .gauge-role-title {
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 650;
 }
 
@@ -1832,7 +2189,7 @@ body.os-dragging {
   align-items: center;
   gap: 5px;
   margin-top: 3px;
-  font-size: 10.5px;
+  font-size: 11.5px;
   color: #6d7078;
 }
 
@@ -1864,18 +2221,18 @@ body.os-dragging {
 
 .gauge-arc-num {
   fill: #1c1f25;
-  font-size: 25px;
+  font-size: 27px;
   font-weight: 700;
 }
 
 .gauge-band {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: #2f9e63;
 }
 
 .gauge-action {
-  font-size: 12px;
+  font-size: 13px;
   color: #3c414a;
 }
 
@@ -1883,7 +2240,7 @@ body.os-dragging {
   display: flex;
   justify-content: space-between;
   margin: 16px 0 7px;
-  font-size: 10.5px;
+  font-size: 11.5px;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: #8d9098;
@@ -1912,7 +2269,7 @@ body.os-dragging {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: #fff;
 }
@@ -1928,14 +2285,14 @@ body.os-dragging {
 }
 
 .gauge-crit-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.35;
 }
 
 .gauge-crit-weight {
   margin-top: 2px;
-  font-size: 9.5px;
+  font-size: 10.5px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: #8d9098;
@@ -1943,7 +2300,7 @@ body.os-dragging {
 
 .gauge-crit-evidence {
   margin-top: 4px;
-  font-size: 11.5px;
+  font-size: 12.5px;
   line-height: 1.45;
   color: #565b64;
 }
@@ -1954,14 +2311,14 @@ body.os-dragging {
 
 .gauge-summary h5 {
   margin-bottom: 5px;
-  font-size: 10.5px;
+  font-size: 11.5px;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: #8d9098;
 }
 
 .gauge-summary p {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.55;
   color: #3c414a;
 }
@@ -1971,7 +2328,7 @@ body.os-dragging {
 }
 
 .gauge-summary li {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
   color: #3c414a;
   margin-bottom: 4px;
@@ -1987,7 +2344,7 @@ body.os-dragging {
   border-radius: 8px;
   background: #eef5f1;
   border: 1px solid #d3e6dc;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
   color: #2c5c46;
 }
@@ -2016,7 +2373,7 @@ body.os-dragging {
   padding: 8px 14px;
   background: #2a2c33;
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .resume-file {
@@ -2027,7 +2384,7 @@ body.os-dragging {
 }
 
 .resume-file-icon {
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .resume-zoom {
@@ -2047,7 +2404,7 @@ body.os-dragging {
   border-radius: 5px;
   background: none;
   color: #d4d6dc;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
 }
 
@@ -2063,7 +2420,7 @@ body.os-dragging {
 .resume-zoom span {
   min-width: 42px;
   text-align: center;
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-variant-numeric: tabular-nums;
   color: #a9adb6;
 }
@@ -2071,7 +2428,7 @@ body.os-dragging {
 .resume-open {
   color: #8fb4ff;
   text-decoration: none;
-  font-size: 11.5px;
+  font-size: 12.5px;
 }
 
 .resume-split {
@@ -2090,7 +2447,7 @@ body.os-dragging {
 
 .resume-outline-head {
   padding: 0 8px 8px;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #7c8089;
@@ -2104,7 +2461,7 @@ body.os-dragging {
   border-radius: 6px;
   background: none;
   color: #b6bac3;
-  font-size: 12px;
+  font-size: 13px;
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2126,30 +2483,30 @@ body.os-dragging {
 .resume-paper {
   max-width: 720px;
   margin: 0 auto;
-  padding: calc(40px * var(--rz, 1)) calc(44px * var(--rz, 1)) calc(52px * var(--rz, 1));
+  padding: calc(42.5px * var(--rz, 1)) calc(46.5px * var(--rz, 1)) calc(55px * var(--rz, 1));
   border-radius: 3px;
   background: #fafafa;
   color: #222;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
-  font-size: calc(14.5px * var(--rz, 1));
+  font-size: calc(15.5px * var(--rz, 1));
   line-height: 1.65;
 }
 
 .resume-head h1 {
-  font-size: calc(30px * var(--rz, 1));
+  font-size: calc(32px * var(--rz, 1));
   line-height: 1.2;
   margin-bottom: 3px;
   color: #16181c;
 }
 
 .resume-subtitle {
-  font-size: calc(16px * var(--rz, 1));
+  font-size: calc(17px * var(--rz, 1));
   color: #555;
   margin-bottom: 7px;
 }
 
 .resume-contact {
-  font-size: calc(13.5px * var(--rz, 1));
+  font-size: calc(14.5px * var(--rz, 1));
 }
 
 .resume-contact a {
@@ -2163,21 +2520,21 @@ body.os-dragging {
 }
 
 .resume-paper h2 {
-  margin: calc(34px * var(--rz, 1)) 0 calc(12px * var(--rz, 1));
+  margin: calc(36px * var(--rz, 1)) 0 calc(12.5px * var(--rz, 1));
   padding-bottom: 5px;
   border-bottom: 1px solid #e5e5e5;
-  font-size: calc(13px * var(--rz, 1));
+  font-size: calc(14px * var(--rz, 1));
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #999;
 }
 
 .resume-para {
-  font-size: calc(14px * var(--rz, 1));
+  font-size: calc(15px * var(--rz, 1));
 }
 
 .resume-role {
-  margin-bottom: calc(24px * var(--rz, 1));
+  margin-bottom: calc(25.5px * var(--rz, 1));
 }
 
 .resume-role-head {
@@ -2189,29 +2546,29 @@ body.os-dragging {
 }
 
 .resume-role-head h3 {
-  font-size: calc(16px * var(--rz, 1));
+  font-size: calc(17px * var(--rz, 1));
   color: #16181c;
 }
 
 .resume-dates {
-  font-size: calc(12.5px * var(--rz, 1));
+  font-size: calc(13px * var(--rz, 1));
   color: #888;
   white-space: nowrap;
 }
 
 .resume-role-title {
-  margin-bottom: calc(7px * var(--rz, 1));
-  font-size: calc(13.5px * var(--rz, 1));
+  margin-bottom: calc(7.5px * var(--rz, 1));
+  font-size: calc(14.5px * var(--rz, 1));
   color: #555;
 }
 
 .resume-paper ul {
-  padding-left: calc(19px * var(--rz, 1));
+  padding-left: calc(20px * var(--rz, 1));
 }
 
 .resume-paper li {
-  margin-bottom: calc(6px * var(--rz, 1));
-  font-size: calc(14px * var(--rz, 1));
+  margin-bottom: calc(6.5px * var(--rz, 1));
+  font-size: calc(15px * var(--rz, 1));
 }
 
 .resume-paper li strong {
@@ -2239,12 +2596,12 @@ body.os-dragging {
 }
 
 .mail-toolbar-title {
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 650;
 }
 
 .mail-toolbar-hint {
-  font-size: 11px;
+  font-size: 12px;
   color: #83868f;
 }
 
@@ -2262,7 +2619,7 @@ body.os-dragging {
 
 .mail-label {
   width: 52px;
-  font-size: 12px;
+  font-size: 13px;
   color: #83868f;
 }
 
@@ -2271,7 +2628,7 @@ body.os-dragging {
   border-radius: 11px;
   background: #e6effc;
   color: #24548f;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .mail-input {
@@ -2279,7 +2636,7 @@ body.os-dragging {
   border: 0;
   background: none;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   color: #1e2026;
   outline: none;
 }
@@ -2293,7 +2650,7 @@ body.os-dragging {
   resize: none;
   outline: none;
   font: inherit;
-  font-size: 13.5px;
+  font-size: 14.5px;
   line-height: 1.6;
   color: #1e2026;
 }
@@ -2310,7 +2667,7 @@ body.os-dragging {
 
 .mail-links a {
   color: #24548f;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .mail-send {
@@ -2318,7 +2675,7 @@ body.os-dragging {
   border-radius: 8px;
   background: #2d6fd6;
   color: #fff;
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 650;
   text-decoration: none;
 }
@@ -2344,7 +2701,7 @@ body.os-dragging {
   overflow-y: auto;
   overscroll-behavior: contain;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12.5px;
+  font-size: 13.5px;
   line-height: 1.55;
   color: #cfd4cd;
   scrollbar-width: thin;
@@ -2400,4 +2757,40 @@ body.os-dragging {
   opacity: 0;
   font: inherit;
   outline: none;
+}
+
+/* ==========================================================================
+   Reduced motion — the OS still works, it just stops moving.
+   Window removal is backed by a timer in Window.tsx, so killing the close
+   animation here cannot strand a closing window on screen.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .os-win,
+  .os-win.closing,
+  .os-menu-drop,
+  .os-about,
+  .rex-msg,
+  .rex-card {
+    animation: none;
+  }
+
+  .os-win,
+  .os-icon,
+  .os-icon-tile,
+  .os-dock-item,
+  .os-dock-label,
+  .rex-chan,
+  .pulse-card {
+    transition: none;
+  }
+
+  .rex-dots i {
+    animation: none;
+    opacity: 0.55;
+  }
+
+  .term-cursor {
+    animation: none;
+  }
 }

@@ -1,14 +1,18 @@
 import { APPS } from "./apps/registry";
+import { useActivate } from "./useActivate";
 import type { AppDef, AppId, OsAction } from "./types";
 
 interface IconProps {
   def: AppDef;
   selected: boolean;
-  onSelect: () => void;
-  onOpen: () => void;
+  onActivate: () => void;
 }
 
-function Icon({ def, selected, onSelect, onOpen }: IconProps) {
+function Icon({ def, selected, onActivate }: IconProps) {
+  // Anchors navigate on their own; the hook only cancels the click when the
+  // press turned into a drag.
+  const handlers = useActivate(def.href ? () => undefined : onActivate, Boolean(def.href));
+
   const inner = (
     <>
       <span className="os-icon-tile" style={{ background: def.tile }}>
@@ -26,14 +30,9 @@ function Icon({ def, selected, onSelect, onOpen }: IconProps) {
         href={def.href}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={(e) => {
-          // Keyboard activation (detail 0) follows the link; a mouse click
-          // only selects, and the second click of a double-click opens it.
-          if (e.detail === 0) return;
-          e.preventDefault();
-          onSelect();
-        }}
-        onDoubleClick={() => window.open(def.href, "_blank", "noopener,noreferrer")}
+        draggable={false}
+        aria-label={`${def.name} — opens in a new tab`}
+        {...handlers}
       >
         {inner}
       </a>
@@ -41,7 +40,7 @@ function Icon({ def, selected, onSelect, onOpen }: IconProps) {
   }
 
   return (
-    <button className={cls} onClick={onSelect} onDoubleClick={onOpen}>
+    <button className={cls} type="button" aria-label={`Open ${def.name}`} {...handlers}>
       {inner}
     </button>
   );
@@ -62,8 +61,10 @@ export function DesktopIcons({ apps, selected, dispatch, openApp }: DesktopIcons
           key={id}
           def={APPS[id]}
           selected={selected === id}
-          onSelect={() => dispatch({ type: "selectIcon", appId: id })}
-          onOpen={() => openApp(id)}
+          onActivate={() => {
+            dispatch({ type: "selectIcon", appId: id });
+            openApp(id);
+          }}
         />
       ))}
     </div>

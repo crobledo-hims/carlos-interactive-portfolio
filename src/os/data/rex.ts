@@ -1,19 +1,60 @@
 // Editable sample content for the Rex app window.
-// Everything here is illustrative: candidate names, reqs and numbers are
-// fictional placeholders meant to be swapped for real (redacted) screenshots
-// or copy later. No real candidate data belongs in this file.
+//
+// Everything here is illustrative: people, candidates, reqs and numbers are
+// fictional placeholders meant to be swapped for real (redacted) copy later.
+// No real candidate data belongs in this file.
+//
+// The three story channels are meant to be read as one connected week:
+//   #role-status      a VP asks for a status update, Rex generates the report
+//   #offer-stage      the one outstanding offer in that report is accepted
+//   #stale-candidates the follow-up SLA breaches Rex flags every morning
+
+export type RexTone = "green" | "yellow" | "red" | "neutral";
 
 export interface RexField {
   label: string;
   value: string;
+  /** Span the full width of the field grid. */
+  wide?: boolean;
 }
 
-export interface RexAttachment {
-  /** Left accent bar colour, Slack-attachment style. */
+/** One stage of the pipeline funnel, rendered as a labelled bar. */
+export interface RexStage {
+  label: string;
+  count: number;
+}
+
+export interface RexCardSection {
+  heading: string;
+  items: string[];
+  /** Render as an ordered list (recommended actions). */
+  ordered?: boolean;
+}
+
+/** Status never depends on colour alone: it always carries a glyph and words. */
+export interface RexStatus {
+  tone: RexTone;
+  icon: string;
+  label: string;
+}
+
+export interface RexProgress {
+  label: string;
+  value: number;
+  max: number;
+  note: string;
+}
+
+export interface RexCard {
   accent: string;
   title: string;
-  fields: RexField[];
-  context?: string;
+  status?: RexStatus;
+  fields?: RexField[];
+  stages?: RexStage[];
+  progress?: RexProgress;
+  sections?: RexCardSection[];
+  footer?: string;
+  /** Read-only interface states — they never mutate anything. */
   actions?: string[];
 }
 
@@ -25,12 +66,14 @@ export interface RexReaction {
 export interface RexMessage {
   id: string;
   author: string;
+  /** Job title shown next to the name, Slack-profile style. */
+  role?: string;
   initials: string;
   color: string;
   bot: boolean;
   time: string;
   text?: string;
-  attachment?: RexAttachment;
+  card?: RexCard;
   reactions?: RexReaction[];
   thread?: string;
 }
@@ -41,6 +84,11 @@ export interface RexChannel {
   name: string;
   topic: string;
   unread: number;
+  /** One of the three headline story channels. */
+  primary?: boolean;
+  /** Number of messages shown before the "Rex is working" pause. */
+  typingAfter?: number;
+  typingLabel?: string;
   messages: RexMessage[];
 }
 
@@ -50,80 +98,84 @@ export const rexWorkspace = {
   tagline: "Recruiting operations, automated",
 };
 
-const REX = { author: "Rex", initials: "RX", color: "#4d6bd8", bot: true };
-const CARLOS = { author: "Carlos Robledo", initials: "CR", color: "#3f7f6d", bot: false };
+const REX = { initials: "RX", color: "#4d6bd8", bot: true, author: "Rex" };
+const CARLOS = { initials: "CR", color: "#3f7f6d", bot: false, author: "Carlos Robledo" };
+const AVERY = {
+  initials: "AC",
+  color: "#a15540",
+  bot: false,
+  author: "Avery Chen",
+  role: "VP, Engineering",
+};
+
+const ACCENT_BLUE = "#4d6bd8";
+const ACCENT_AMBER = "#d59a3a";
+const ACCENT_GREEN = "#3f9c6d";
 
 export const rexChannels: RexChannel[] = [
   {
-    id: "pipeline-alerts",
+    id: "role-status",
     kind: "channel",
-    name: "pipeline-alerts",
-    topic: "Automated pipeline movement + health alerts from Ashby",
-    unread: 3,
+    name: "role-status",
+    topic: "Live status for open searches — ask Rex for a report any time",
+    unread: 1,
+    primary: true,
+    typingAfter: 2,
+    typingLabel: "Rex is generating a report…",
     messages: [
       {
-        ...REX,
-        id: "pa-1",
-        time: "9:02 AM",
-        text: "Morning sweep complete — 6 open reqs, 214 active candidates.",
-        attachment: {
-          accent: "#4d6bd8",
-          title: "Daily pipeline digest",
-          fields: [
-            { label: "New applicants", value: "34" },
-            { label: "Recruiter screens", value: "12" },
-            { label: "Onsites scheduled", value: "7" },
-            { label: "Offers outstanding", value: "3" },
-          ],
-          context: "Source: Ashby · synced 9:01 AM · posts weekdays at 9:00 AM CT",
-          actions: ["Open in Airtable", "Snooze 24h"],
-        },
-        reactions: [
-          { emoji: "👀", count: 4 },
-          { emoji: "🚀", count: 2 },
-        ],
-      },
-      {
-        ...REX,
-        id: "pa-2",
-        time: "10:41 AM",
-        text: "Health check tripped on *Staff Backend Engineer (Payments)*.",
-        attachment: {
-          accent: "#d1544f",
-          title: "Onsite volume below plan",
-          fields: [
-            { label: "Req", value: "IC5-PAY-04" },
-            { label: "Rule", value: "PH-04" },
-            { label: "Onsites this week", value: "1 (target 4)" },
-            { label: "Remaining hires", value: "2" },
-          ],
-          context: "Rule PH-04 · onsite volume < 2x remaining hires for 7 days",
-          actions: ["Acknowledge", "Open req"],
-        },
+        ...AVERY,
+        id: "rs-1",
+        time: "9:12 AM",
+        text: "Hey Carlos — can you give me a quick status update on the Staff Backend Engineer (Payments) search? Are we on track for two hires this quarter, and where do you need help?",
       },
       {
         ...CARLOS,
-        id: "pa-3",
-        time: "10:44 AM",
-        text:
-          "Acknowledged. Pulling two more from the Q2 silver-medalist list — should backfill the loop by Thursday.",
-        thread: "2 replies",
+        id: "rs-2",
+        time: "9:14 AM",
+        text: "Absolutely. I'm going to use Rex to pull the live pipeline and generate a status report.",
       },
       {
         ...REX,
-        id: "pa-4",
-        time: "2:15 PM",
-        text: "Stage change: *Maya Okafor* → Onsite · Staff Backend Engineer (Payments).",
-        attachment: {
-          accent: "#3f7f6d",
-          title: "Maya Okafor moved to Onsite",
+        id: "rs-3",
+        time: "9:15 AM",
+        text: "Pipeline report ready — Staff Backend Engineer (Payments)",
+        card: {
+          accent: ACCENT_AMBER,
+          title: "Pipeline report — Staff Backend Engineer (Payments)",
+          status: { tone: "yellow", icon: "▲", label: "Yellow — At risk" },
           fields: [
-            { label: "Source", value: "Outbound" },
-            { label: "Days in pipeline", value: "18" },
-            { label: "Loop date", value: "Aug 21" },
-            { label: "Recruiter", value: "Carlos" },
+            { label: "Hiring goal", value: "2 hires by September 30" },
+            { label: "Current forecast", value: "1.7 hires" },
+            { label: "Active candidates", value: "38" },
           ],
-          context: "Panel auto-drafted in Airtable · awaiting interviewer confirmation",
+          stages: [
+            { label: "Recruiter screen", count: 9 },
+            { label: "Hiring manager screen", count: 5 },
+            { label: "Onsite", count: 2 },
+            { label: "Offer", count: 1 },
+          ],
+          sections: [
+            {
+              heading: "Primary risks",
+              items: [
+                "Onsite inventory is two candidates below plan.",
+                "Four candidates have been awaiting hiring-manager review for more than three days.",
+                "One outstanding offer is the largest near-term forecast dependency.",
+              ],
+            },
+            {
+              heading: "Recommended actions",
+              ordered: true,
+              items: [
+                "Confirm onsite loops for Maya Okafor and Daniel Kim by Friday.",
+                "Review the four aging hiring-manager packets today.",
+                "Re-engage eight qualified silver-medalist candidates.",
+              ],
+            },
+          ],
+          footer: "Source: Ashby · Synced at 9:14 AM · Report generated by Rex",
+          actions: ["Open full report", "Share update"],
         },
       },
     ],
@@ -132,59 +184,89 @@ export const rexChannels: RexChannel[] = [
     id: "offer-stage",
     kind: "channel",
     name: "offer-stage",
-    topic: "Offer extended → decision → accept, with decision-clock reminders",
+    topic: "Offer extended → decision → accept, with forecast updates",
     unread: 1,
+    primary: true,
     messages: [
       {
         ...REX,
         id: "os-1",
-        time: "8:31 AM",
-        text: "Offer extended — *Dev Raman* · Sr. iOS Engineer.",
-        attachment: {
-          accent: "#c98a2e",
-          title: "Offer out · decision clock running",
+        time: "3:42 PM",
+        text: "Offer accepted 🎉",
+        card: {
+          accent: ACCENT_GREEN,
+          title: "Offer accepted — Staff Backend Engineer (Payments)",
+          status: { tone: "green", icon: "✓", label: "Green — Accepted" },
           fields: [
-            { label: "Level", value: "L5" },
-            { label: "Comp band", value: "Approved" },
-            { label: "Decision due", value: "Aug 22" },
-            { label: "Recruiter", value: "Carlos" },
-          ],
-          context: "Reminder fires 24h before the decision date",
-          actions: ["Ping hiring manager", "Log candidate call"],
-        },
-      },
-      {
-        ...REX,
-        id: "os-2",
-        time: "11:07 AM",
-        text: "Offer accepted 🎉 — *Priya Nandakumar* · Applied AI Engineer.",
-        attachment: {
-          accent: "#3f7f6d",
-          title: "Accept logged",
-          fields: [
-            { label: "Start date", value: "Sep 8" },
-            { label: "Cycle time", value: "31 days" },
+            { label: "Candidate", value: "Priya Shah" },
+            { label: "Role", value: "Staff Backend Engineer (Payments)" },
+            { label: "Level", value: "IC5" },
             { label: "Source", value: "Outbound" },
-            { label: "Offer→accept", value: "3 days" },
+            { label: "Recruiter", value: "Carlos Robledo" },
+            { label: "Start date", value: "September 14" },
+            { label: "Time in process", value: "24 days" },
           ],
-          context: "Airtable row updated · headcount plan decremented",
+          progress: {
+            label: "Hiring goal",
+            value: 1,
+            max: 2,
+            note: "Hiring goal is now 1 of 2 accepted.",
+          },
+          sections: [
+            {
+              heading: "Follow-up",
+              items: [
+                "Rex has updated the hiring forecast and removed this offer from the outstanding-offer risk.",
+              ],
+            },
+          ],
+          actions: ["Open candidate", "View updated forecast"],
         },
         reactions: [
-          { emoji: "🎉", count: 11 },
+          { emoji: "🎉", count: 12 },
           { emoji: "🙌", count: 5 },
         ],
       },
-      {
-        ...CARLOS,
-        id: "os-3",
-        time: "11:12 AM",
-        text: "That closes the second Applied AI seat. One to go on that pod.",
-      },
+    ],
+  },
+  {
+    id: "stale-candidates",
+    kind: "channel",
+    name: "stale-candidates",
+    topic: "Follow-up SLA breaches — Rex drafts, Carlos approves",
+    unread: 6,
+    primary: true,
+    messages: [
       {
         ...REX,
-        id: "os-4",
-        time: "4:00 PM",
-        text: "Reminder: 2 offers have been outstanding more than 48 hours.",
+        id: "sc-1",
+        time: "8:45 AM",
+        text: "Good morning, Carlos — 6 candidates are past their follow-up SLA and need action today.",
+        card: {
+          accent: ACCENT_AMBER,
+          title: "Follow-up SLA breaches — 6 candidates",
+          status: { tone: "yellow", icon: "▲", label: "Yellow — Action needed today" },
+          fields: [
+            { label: "Recruiter screen", value: "2 candidates · 4+ days" },
+            { label: "Hiring-manager review", value: "3 candidates · 3+ days" },
+            { label: "Onsite follow-up", value: "1 candidate · 2+ days" },
+            {
+              label: "Oldest item",
+              value: "Elena Torres — Hiring-manager review — 6 days without action",
+              wide: true,
+            },
+          ],
+          sections: [
+            {
+              heading: "Recommended next step",
+              items: [
+                "Review the three highest-priority candidates this morning. Rex has drafted follow-up messages for your approval.",
+              ],
+            },
+          ],
+          footer: "Rex drafts follow-ups; Carlos reviews and approves before anything is sent.",
+          actions: ["Review candidates", "View drafts"],
+        },
       },
     ],
   },
@@ -199,10 +281,10 @@ export const rexChannels: RexChannel[] = [
         ...REX,
         id: "wr-1",
         time: "Mon 8:00 AM",
-        text: "Weekly hiring report — week of Aug 18.",
-        attachment: {
-          accent: "#4d6bd8",
-          title: "Week 34 summary",
+        text: "Weekly hiring report — week of September 8.",
+        card: {
+          accent: ACCENT_BLUE,
+          title: "Week 37 summary",
           fields: [
             { label: "Offers out", value: "3" },
             { label: "Accepts", value: "2" },
@@ -211,7 +293,7 @@ export const rexChannels: RexChannel[] = [
             { label: "Screens", value: "27" },
             { label: "Pass-through", value: "38%" },
           ],
-          context: "Auto-generated from Ashby + Airtable · no manual assembly required",
+          footer: "Auto-generated from Ashby + Airtable · no manual assembly required",
           actions: ["View full report", "Share with leadership"],
         },
       },
@@ -219,52 +301,8 @@ export const rexChannels: RexChannel[] = [
         ...REX,
         id: "wr-2",
         time: "Mon 8:00 AM",
-        text:
-          "Estimated recruiter time returned this week: *6.4 hours* across 5 recruiters (reporting + follow-up automation).",
+        text: "Estimated recruiter time returned this week: *6.4 hours* across 5 recruiters (reporting + follow-up automation).",
         reactions: [{ emoji: "🙌", count: 6 }],
-      },
-    ],
-  },
-  {
-    id: "stale-candidates",
-    kind: "channel",
-    name: "stale-candidates",
-    topic: "Idle-candidate nudges — drafts queued, never auto-sent",
-    unread: 2,
-    messages: [
-      {
-        ...REX,
-        id: "sc-1",
-        time: "7:45 AM",
-        text: "4 candidates have been idle longer than 5 days.",
-        attachment: {
-          accent: "#c98a2e",
-          title: "Idle > 5 days",
-          fields: [
-            { label: "Jules Arden", value: "7 days · Recruiter screen" },
-            { label: "Tomas Beck", value: "6 days · Debrief" },
-            { label: "Ingrid Sorensen", value: "6 days · Onsite scheduling" },
-            { label: "Noor Haddad", value: "5 days · Take-home" },
-          ],
-          context: "Threshold configurable per stage",
-        },
-      },
-      {
-        ...REX,
-        id: "sc-2",
-        time: "7:45 AM",
-        text: "Follow-up drafts are ready for review — *4 queued, 0 sent*.",
-        attachment: {
-          accent: "#4d6bd8",
-          title: "Human-in-the-loop",
-          fields: [
-            { label: "Drafted", value: "4" },
-            { label: "Awaiting approval", value: "4" },
-            { label: "Auto-sent", value: "0" },
-          ],
-          context: "Rex never sends candidate-facing messages without recruiter approval",
-          actions: ["Review drafts", "Approve all"],
-        },
       },
     ],
   },
@@ -279,14 +317,15 @@ export const rexChannels: RexChannel[] = [
         ...REX,
         id: "io-1",
         time: "1:20 PM",
-        text: "Panel gap — Systems Design interviewer unassigned for the Aug 21 loop.",
-        attachment: {
-          accent: "#d1544f",
-          title: "Loop at risk",
+        text: "Panel gap — Systems Design interviewer unassigned for the September 12 loop.",
+        card: {
+          accent: ACCENT_AMBER,
+          title: "Loop at risk — Maya Okafor",
+          status: { tone: "yellow", icon: "▲", label: "Yellow — Needs an interviewer" },
           fields: [
             { label: "Candidate", value: "Maya Okafor" },
             { label: "Missing", value: "Systems Design" },
-            { label: "Loop", value: "Aug 21, 10:00 AM CT" },
+            { label: "Loop", value: "September 12, 10:00 AM CT" },
           ],
           actions: ["Suggest interviewers"],
         },
@@ -295,7 +334,7 @@ export const rexChannels: RexChannel[] = [
         ...REX,
         id: "io-2",
         time: "3:02 PM",
-        text: "Debrief scheduled — *Tomas Beck* · Engineering Manager, Platform · Aug 20, 4:30 PM CT.",
+        text: "Debrief scheduled — *Daniel Kim* · Staff Backend Engineer (Payments) · September 11, 4:30 PM CT.",
       },
     ],
   },
@@ -310,8 +349,7 @@ export const rexChannels: RexChannel[] = [
         ...REX,
         id: "dm-1",
         time: "6:55 AM",
-        text:
-          "Heads up — your Monday report will run 30 minutes early next week while Ashby backfills a schema change. Nothing for you to do.",
+        text: "Heads up — your Monday report will run 30 minutes early next week while Ashby backfills a schema change. Nothing for you to do.",
       },
       {
         ...CARLOS,
@@ -328,3 +366,5 @@ export const rexChannels: RexChannel[] = [
     ],
   },
 ];
+
+export const rexDefaultChannel = "role-status";

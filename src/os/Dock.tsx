@@ -1,56 +1,81 @@
 import { APPS } from "./apps/registry";
-import type { AppId, OsAction, WinState } from "./types";
+import { useActivate } from "./useActivate";
+import type { AppDef, AppId, WinState } from "./types";
+
+interface DockItemProps {
+  def: AppDef;
+  running: boolean;
+  focused: boolean;
+  label?: string;
+  onActivate: () => void;
+}
+
+function DockItem({ def, running, focused, label, onActivate }: DockItemProps) {
+  const handlers = useActivate(def.href ? () => undefined : onActivate, Boolean(def.href));
+  const name = label ?? def.name;
+
+  const inner = (
+    <>
+      <span className="os-dock-label">{name}</span>
+      <span className="os-tile" style={{ background: def.tile }}>
+        {def.glyph}
+      </span>
+      <span className={`os-run-dot${running ? " on" : ""}`} />
+    </>
+  );
+
+  if (def.href) {
+    return (
+      <a
+        className="os-dock-item"
+        href={def.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        draggable={false}
+        aria-label={`${name} — opens in a new tab`}
+        {...handlers}
+      >
+        {inner}
+      </a>
+    );
+  }
+
+  return (
+    <button
+      className={`os-dock-item${focused ? " focused" : ""}`}
+      type="button"
+      aria-label={running ? `${name} — open, bring to front` : `Open ${name}`}
+      {...handlers}
+    >
+      {inner}
+    </button>
+  );
+}
 
 interface DockProps {
   pinned: AppId[];
   wins: WinState[];
   focusedId: number | null;
-  dispatch: (a: OsAction) => void;
   openApp: (id: AppId) => void;
 }
 
-export function Dock({ pinned, wins, focusedId, dispatch, openApp }: DockProps) {
+export function Dock({ pinned, wins, focusedId, openApp }: DockProps) {
   const live = wins.filter((w) => !w.closing);
   // Running apps that aren't pinned appear after a separator, like macOS.
-  const extras = live.map((w) => w.appId).filter((id, i, arr) => !pinned.includes(id) && arr.indexOf(id) === i);
+  const extras = live
+    .map((w) => w.appId)
+    .filter((id, i, arr) => !pinned.includes(id) && arr.indexOf(id) === i);
 
   const renderItem = (id: AppId) => {
-    const def = APPS[id];
     const win = live.find((w) => w.appId === id);
-    const running = Boolean(win);
-    const inner = (
-      <>
-        <span className="os-dock-label">{def.name}</span>
-        <span className="os-tile" style={{ background: def.tile }}>
-          {def.glyph}
-        </span>
-        <span className={`os-run-dot${running ? " on" : ""}`} />
-      </>
-    );
-
-    if (def.href) {
-      return (
-        <a
-          key={id}
-          className="os-dock-item"
-          href={def.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`${def.name} (opens in a new tab)`}
-        >
-          {inner}
-        </a>
-      );
-    }
     return (
-      <button
+      <DockItem
         key={id}
-        className={`os-dock-item${win && win.id === focusedId && !win.minimized ? " focused" : ""}`}
-        aria-label={def.name}
-        onClick={() => dispatch({ type: "dockClick", appId: id })}
-      >
-        {inner}
-      </button>
+        def={APPS[id]}
+        running={Boolean(win)}
+        focused={Boolean(win && win.id === focusedId && !win.minimized)}
+        onActivate={() => openApp(id)}
+      />
     );
   };
 
@@ -60,18 +85,16 @@ export function Dock({ pinned, wins, focusedId, dispatch, openApp }: DockProps) 
         {pinned.map(renderItem)}
         {extras.length > 0 && <span className="os-dock-sep" />}
         {extras.map(renderItem)}
-        {!pinned.includes("resume") && (
+        {!pinned.includes("resume") && !extras.includes("resume") && (
           <>
             <span className="os-dock-sep" />
-            <button
-              className="os-dock-item"
-              aria-label="Open the resume viewer"
-              onClick={() => openApp("resume")}
-            >
-              <span className="os-dock-label">Resume</span>
-              <span className="os-tile os-tile-doc">📄</span>
-              <span className="os-run-dot" />
-            </button>
+            <DockItem
+              def={APPS.resume}
+              running={live.some((w) => w.appId === "resume")}
+              focused={false}
+              label="Resume"
+              onActivate={() => openApp("resume")}
+            />
           </>
         )}
       </div>

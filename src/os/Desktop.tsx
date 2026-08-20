@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { overlayState } from "../overlayState";
 import { APPS, SCREEN_APPS, SCREEN_LABEL } from "./apps/registry";
-import { SCREEN_H, SCREEN_W } from "./constants";
+import { COMPACT_H, COMPACT_W, FIT_H, FIT_W, SCREEN_H, SCREEN_W } from "./constants";
 import { DesktopIcons } from "./DesktopIcons";
 import { Dock } from "./Dock";
 import { MenuBar } from "./MenuBar";
 import { Monogram } from "./icons";
 import { initialOsState, osReducer } from "./osState";
 import { scrollOnward } from "./pageScroll";
+import { ScreenLiveContext } from "./screenLive";
 import { Window } from "./Window";
 import type { AppId, ScreenId } from "./types";
 import "./os.css";
@@ -20,22 +22,41 @@ export function Desktop({ screen }: { screen: ScreenId }) {
   const [state, dispatch] = useReducer(osReducer, screen, initialOsState);
   const viewportRef = useRef<HTMLDivElement>(null);
   const scaleRef = useRef(1);
+  const compactRef = useRef(false);
+  const [live, setLive] = useState(false);
 
-  // The desktop is a fixed 1280x800 "display" scaled to fit the overlay, so
-  // every window coordinate is deterministic regardless of viewport size.
+  // The desktop is a fixed logical display scaled to fit the overlay, so every
+  // window coordinate is deterministic regardless of viewport size — and one
+  // logical pixel grows with the viewport instead of staying at 1 CSS px.
   useEffect(() => {
     const el = viewportRef.current;
     if (!el) return;
     const apply = () => {
-      const s = Math.min((el.clientWidth * 0.96) / SCREEN_W, (el.clientHeight * 0.9) / SCREEN_H);
+      const s = Math.min((el.clientWidth * FIT_W) / SCREEN_W, (el.clientHeight * FIT_H) / SCREEN_H);
       scaleRef.current = s;
       el.style.setProperty("--os-scale", String(s));
+      const compact = el.clientWidth < COMPACT_W || el.clientHeight < COMPACT_H;
+      if (compact !== compactRef.current) {
+        compactRef.current = compact;
+        dispatch({ type: "compact", value: compact });
+      }
     };
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+
+  // Latch "this monitor has been on camera". Polled cheaply (and only until it
+  // flips) rather than on every animation frame; scripted app intros wait for
+  // it so they play when the visitor arrives.
+  useEffect(() => {
+    if (live) return;
+    const id = setInterval(() => {
+      if (overlayState[screen] > 0.9) setLive(true);
+    }, 250);
+    return () => clearInterval(id);
+  }, [live, screen]);
 
   useEffect(() => {
     if (!state.menu && !state.about) return;
@@ -72,22 +93,24 @@ export function Desktop({ screen }: { screen: ScreenId }) {
         >
           <div className="os-watermark">
             <span className="os-watermark-label">{SCREEN_LABEL[screen]}</span>
-            <span className="os-watermark-hint">double-click an icon · drag windows · scroll to continue</span>
+            <span className="os-watermark-hint">click an icon · drag windows · scroll to continue</span>
           </div>
         </div>
 
         <DesktopIcons apps={pinned} selected={state.selectedIcon} dispatch={dispatch} openApp={openApp} />
 
-        {state.wins.map((w) => (
-          <Window
-            key={w.id}
-            win={w}
-            focused={w.id === state.focused}
-            dispatch={dispatch}
-            openApp={openApp}
-            scaleRef={scaleRef}
-          />
-        ))}
+        <ScreenLiveContext value={live}>
+          {state.wins.map((w) => (
+            <Window
+              key={w.id}
+              win={w}
+              focused={w.id === state.focused}
+              dispatch={dispatch}
+              openApp={openApp}
+              scaleRef={scaleRef}
+            />
+          ))}
+        </ScreenLiveContext>
 
         <MenuBar
           focusedApp={focusedApp}
@@ -98,13 +121,7 @@ export function Desktop({ screen }: { screen: ScreenId }) {
           openApp={openApp}
         />
 
-        <Dock
-          pinned={pinned}
-          wins={state.wins}
-          focusedId={state.focused}
-          dispatch={dispatch}
-          openApp={openApp}
-        />
+        <Dock pinned={pinned} wins={state.wins} focusedId={state.focused} openApp={openApp} />
 
         {state.about && (
           <div className="os-about-scrim" onClick={() => dispatch({ type: "about", open: false })}>

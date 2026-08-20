@@ -61,6 +61,8 @@ export interface OsState {
   /** id of the open menu-bar menu, if any. */
   menu: string | null;
   about: boolean;
+  /** Overlay is too small for floating windows — open them maximized. */
+  compact: boolean;
 }
 
 export type OsAction =
@@ -72,7 +74,7 @@ export type OsAction =
   | { type: "restore"; id: number }
   | { type: "zoom"; id: number }
   | { type: "setRect"; id: number; rect: Rect }
-  | { type: "dockClick"; appId: AppId }
   | { type: "selectIcon"; appId: AppId | null }
   | { type: "menu"; menu: string | null }
-  | { type: "about"; open: boolean };
+  | { type: "about"; open: boolean }
+  | { type: "compact"; value: boolean };
