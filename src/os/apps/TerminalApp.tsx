@@ -1,6 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
 import type { AppId, AppProps } from "../types";
-import { keepWheelIfScrollable } from "../wheel";
 
 type LineKind = "in" | "out" | "dim" | "err" | "ok";
 
@@ -159,7 +158,7 @@ function TerminalAppImpl({ openApp }: AppProps) {
         inputRef.current?.focus();
       }}
     >
-      <div className="term-body" ref={bodyRef} onWheel={keepWheelIfScrollable}>
+      <div className="term-body" ref={bodyRef}>
         {lines.map((l) => (
           <div className={`term-line ${l.kind}`} key={l.id}>
             {l.kind === "in" ? (

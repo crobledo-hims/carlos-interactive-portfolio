@@ -2,7 +2,18 @@ import { overlayState } from "../overlayState";
 import { Desktop } from "../os/Desktop";
 import { useDrivenOpacity } from "./useDrivenOpacity";
 
+/**
+ * Scrolling the desktop — wallpaper, icons, dock, menu bar — keeps driving the
+ * scene, so the visitor can always move on to the next monitor.
+ *
+ * App windows are wheel boundaries and already stop their own events (see
+ * src/os/wheel.ts). The boundary check here is defence in depth: if anything
+ * inside a window ever swallows the synthetic event's stopPropagation, a
+ * gesture that started in an app still must not move the camera.
+ */
 function forwardWheel(e: React.WheelEvent) {
+  const target = e.target;
+  if (target instanceof Element && target.closest("[data-monitor-scroll-boundary]")) return;
   overlayState.scrollEl?.scrollBy({ top: e.deltaY });
 }
 

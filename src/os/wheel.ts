@@ -3,19 +3,24 @@ import type { WheelEvent } from "react";
 /**
  * Wheel contract for the whole OS.
  *
- * A scrollable region keeps the wheel for itself *only while it can still
- * move in that direction*. Once it hits an edge — or if it was never
- * scrollable — the event bubbles up to the monitor overlay, which forwards it
- * to drei's scroll container so the page keeps moving. The visitor can never
- * be trapped inside a window.
+ * An application window is a hard wheel boundary. Every wheel event that
+ * starts anywhere inside one — titlebar, padding, a scroller that has hit its
+ * edge, a region that never scrolls at all — is consumed by the window and
+ * never reaches the monitor overlay, so it can never move the 3D scene.
+ * Trackpad momentum and single high-delta gestures are contained by the same
+ * rule, because containment does not depend on how far the inner scroller can
+ * still travel.
+ *
+ * A visitor leaves a monitor by scrolling the desktop *outside* an application
+ * window, by "Back to the desk", or by other explicit navigation.
+ *
+ * Applied once, on the root of the shared Window component (src/os/Window.tsx),
+ * so every present and future app inherits it. Individual scrollers need no
+ * wheel handler of their own.
  */
-export function keepWheelIfScrollable(e: WheelEvent<HTMLElement>) {
-  const el = e.currentTarget;
-  if (e.deltaY === 0) return;
-  const max = el.scrollHeight - el.clientHeight;
-  if (max <= 1) return;
-  const atTop = el.scrollTop <= 0;
-  const atBottom = el.scrollTop >= max - 1;
-  if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) return;
+export function containWheelWithinWindow(e: WheelEvent<HTMLElement>) {
+  // stopPropagation only. preventDefault would cancel the browser's native
+  // scrolling of whichever container sits under the pointer, which is exactly
+  // the behaviour apps still need.
   e.stopPropagation();
 }

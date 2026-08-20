@@ -1,6 +1,5 @@
 import { memo, useState } from "react";
 import { resumeMeta } from "../data/resume";
-import { keepWheelIfScrollable } from "../wheel";
 
 const DEFAULT_SUBJECT = "Hello from your portfolio";
 
@@ -39,7 +38,6 @@ function MailAppImpl() {
         className="mail-body"
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        onWheel={keepWheelIfScrollable}
         placeholder={"Hi Carlos,\n\n"}
       />
 

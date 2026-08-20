@@ -3,7 +3,7 @@ import type { PointerEvent as ReactPointerEvent, RefObject } from "react";
 import { APPS } from "./apps/registry";
 import { MENUBAR_H, SCREEN_H, SCREEN_W } from "./constants";
 import type { AppId, OsAction, Rect, WinState } from "./types";
-import { keepWheelIfScrollable } from "./wheel";
+import { containWheelWithinWindow } from "./wheel";
 
 const HANDLES = ["n", "s", "e", "w", "ne", "nw", "se", "sw"] as const;
 
@@ -138,6 +138,13 @@ function WindowImpl({ win, focused, dispatch, openApp, scaleRef, focusEpoch, onC
       tabIndex={-1}
       inert={hidden}
       aria-hidden={hidden || undefined}
+      // The window frame is the wheel boundary (see ./wheel.ts): it wraps the
+      // titlebar, every app region scrollable or not, and any absolutely
+      // positioned layer an app raises inside itself — Relay's screen mode
+      // included. The data attribute lets the monitor overlay double-check the
+      // same boundary without knowing about OS internals.
+      data-monitor-scroll-boundary="true"
+      onWheel={containWheelWithinWindow}
       onPointerDown={() => {
         if (!focused) dispatch({ type: "focus", id: win.id });
       }}
@@ -191,7 +198,7 @@ function WindowImpl({ win, focused, dispatch, openApp, scaleRef, focusEpoch, onC
         </div>
       </header>
 
-      <div className="os-win-body" onWheel={keepWheelIfScrollable}>
+      <div className="os-win-body">
         {App ? <App openApp={openApp} /> : null}
       </div>
 

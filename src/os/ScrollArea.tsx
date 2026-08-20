@@ -1,5 +1,4 @@
 import type { ReactNode, RefObject } from "react";
-import { keepWheelIfScrollable } from "./wheel";
 
 interface ScrollAreaProps {
   className?: string;
@@ -7,14 +6,16 @@ interface ScrollAreaProps {
   innerRef?: RefObject<HTMLDivElement | null>;
 }
 
-/** A scroll container that plays by the wheel contract in ./wheel.ts. */
+/**
+ * A scroll container inside an app window.
+ *
+ * No wheel handler of its own: the window frame already contains every wheel
+ * event (see ./wheel.ts), so reaching the top or bottom here does nothing to
+ * the scene. Do not re-add edge forwarding.
+ */
 export function ScrollArea({ className, children, innerRef }: ScrollAreaProps) {
   return (
-    <div
-      ref={innerRef}
-      className={className ? `os-scroll ${className}` : "os-scroll"}
-      onWheel={keepWheelIfScrollable}
-    >
+    <div ref={innerRef} className={className ? `os-scroll ${className}` : "os-scroll"}>
       {children}
     </div>
   );

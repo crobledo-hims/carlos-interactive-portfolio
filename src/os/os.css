@@ -493,6 +493,10 @@ body.os-dragging {
   min-width: 0;
 }
 
+/* Every scroller inside a window carries overscroll-behavior: contain. It is
+   secondary protection only — the window frame is the real wheel boundary
+   (src/os/wheel.ts); CSS cannot stop a React onWheel from reaching the
+   overlay. */
 .os-scroll {
   position: relative;
   overflow-y: auto;
@@ -2987,6 +2991,7 @@ body.os-dragging {
 .mail-body {
   flex: 1;
   min-height: 0;
+  overscroll-behavior-y: contain;
   padding: 14px 16px;
   border: 0;
   background: none;

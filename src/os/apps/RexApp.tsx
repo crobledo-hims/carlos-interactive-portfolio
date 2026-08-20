@@ -3,7 +3,6 @@ import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { rexChannels, rexDefaultChannel, rexWorkspace } from "../data/rex";
 import type { RexCard, RexChannel, RexMessage } from "../data/rex";
 import { useScreenLive } from "../screenLive";
-import { keepWheelIfScrollable } from "../wheel";
 
 /** The scripted intro plays once per page session, not once per window. */
 let demoPlayed = false;
@@ -451,7 +450,6 @@ function RexAppImpl() {
           role="tablist"
           aria-orientation="vertical"
           aria-label="Rex channels"
-          onWheel={keepWheelIfScrollable}
         >
           <p className="rex-group" aria-hidden="true">
             Channels
@@ -501,7 +499,6 @@ function RexAppImpl() {
           aria-labelledby={`rex-tab-${active.id}`}
           tabIndex={0}
           ref={streamRef}
-          onWheel={keepWheelIfScrollable}
         >
           <div className="rex-divider">
             <span>Today</span>
