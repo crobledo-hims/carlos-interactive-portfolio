@@ -11,7 +11,7 @@ export default function App() {
         shadows
         camera={{ fov: 42, position: [0, 1.7, 3.4], near: 0.05, far: 50 }}
       >
-        <color attach="background" args={["#16161a"]} />
+        <color attach="background" args={["#cfc9bf"]} />
         <ScrollControls pages={6} damping={0.28}>
           <DeskScene />
           <CameraRig />
