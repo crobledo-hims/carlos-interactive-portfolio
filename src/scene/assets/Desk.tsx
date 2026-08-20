@@ -97,48 +97,6 @@ function Leg({ x }: { x: number }) {
   );
 }
 
-/** Wall-mounted power rail: clean white extrusion, outlet faces, no cables. */
-function PowerRail() {
-  const M = materials();
-  const outlets = [-0.72, -0.36, 0, 0.36, 0.72];
-  return (
-    <group position={[0, 1.03, -1.183]}>
-      <RoundedBox
-        args={[1.9, 0.088, 0.034]}
-        radius={0.008}
-        smoothness={3}
-        castShadow
-        material={M.trimWhite}
-      />
-      {/* recessed channel */}
-      <mesh position={[0, 0, 0.0155]} material={M.deskSteelSide}>
-        <boxGeometry args={[1.84, 0.056, 0.004]} />
-      </mesh>
-      {outlets.map((x) => (
-        <group key={x} position={[x, 0, 0.0185]}>
-          <mesh material={M.trimWhite}>
-            <boxGeometry args={[0.098, 0.05, 0.005]} />
-          </mesh>
-          {/* socket slots — just enough to read as an outlet face */}
-          {[-0.019, 0.019].map((sx) => (
-            <mesh key={sx} position={[sx, 0.004, 0.003]} material={M.deviceBlackSoft}>
-              <boxGeometry args={[0.005, 0.017, 0.002]} />
-            </mesh>
-          ))}
-          <mesh position={[0, -0.014, 0.003]} material={M.deviceBlackSoft}>
-            <cylinderGeometry args={[0.0035, 0.0035, 0.002, 8]} />
-          </mesh>
-        </group>
-      ))}
-      {/* end caps */}
-      {[-0.955, 0.955].map((x) => (
-        <mesh key={x} position={[x, 0, 0.002]} material={M.deskSteelSide}>
-          <boxGeometry args={[0.014, 0.092, 0.038]} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
 
 /** MAGPAD: leatherette mat over the left ~60% of the top. */
 function DeskMat() {
@@ -174,7 +132,6 @@ export function Desk() {
       <Leg x={-0.7} />
       <Leg x={0.7} />
       <ControlStrip />
-      <PowerRail />
       <DeskMat />
     </group>
   );

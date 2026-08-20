@@ -7,15 +7,15 @@ import { parametricGeometry } from "../geometry";
 
 /**
  * HARD CONTRACT — the camera docks onto these exact transforms:
- *   group position [+-0.45, 1.13, -0.18], rotation.y = +-0.18 (left +, right -)
+ *   group position [+-0.302, 1.13, -0.18], rotation.y = 0 (flat side-by-side)
  *   screen plane 0.59 x 0.34 at local z = 0.017
  * Bezels, housing, arms and dressing are built around those numbers.
  */
 
-const MON_X = 0.45;
+const MON_X = 0.302; // plates touch at x=0: side-by-side, no gap
 const MON_Y = 1.13;
 const MON_Z = -0.18;
-const TILT = 0.18;
+const TILT = 0; // flat side-by-side per Carlos — no inward V
 
 const SCREEN_W = 0.59;
 const SCREEN_H = 0.34;
@@ -30,7 +30,7 @@ const CHIN_Y = PLATE_CY - PLATE_H / 2 + 0.011;
 const VESA_Z = -0.062;
 
 // arm hardware clamps just behind the desk's rear edge
-const ARM_BASE_X = 0.56;
+const ARM_BASE_X = 0.4;
 const ARM_BASE_Z = -0.443;
 
 /** Logitech Brio: rounded bar, centred glass lens, clip tucked behind. */

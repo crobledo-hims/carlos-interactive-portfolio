@@ -8,8 +8,8 @@ type View = { pos: [number, number, number]; target: [number, number, number] };
 
 const OVERVIEW: View = { pos: [0, 1.7, 3.4], target: [0, 1.1, 0] };
 const SEATED: View = { pos: [0, 1.35, 1.25], target: [0, 1.13, 0] };
-const LEFT_MON: View = { pos: [-0.45, 1.14, 0.55], target: [-0.45, 1.13, -0.18] };
-const RIGHT_MON: View = { pos: [0.45, 1.14, 0.55], target: [0.45, 1.13, -0.18] };
+const LEFT_MON: View = { pos: [-0.302, 1.14, 0.55], target: [-0.302, 1.13, -0.18] };
+const RIGHT_MON: View = { pos: [0.302, 1.14, 0.55], target: [0.302, 1.13, -0.18] };
 const OUTRO: View = { pos: [1.6, 1.9, 3.0], target: [0, 1.05, 0] };
 
 // Piecewise camera track over scroll offset 0..1. Repeated views hold the camera.
