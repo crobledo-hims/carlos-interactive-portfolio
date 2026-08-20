@@ -3,9 +3,22 @@ const FLOOR = "#7d4e30";
 const DESK_WHITE = "#f2f2ef";
 const DEVICE_DARK = "#1c1c1e";
 const SCREEN = "#0f1420";
+const CHAIR_FRAME = "#3a3a3f";
+const CHAIR_MESH = "#2b2b30";
 
-// Arm-mounted monitor floating above the desk, per Carlos's real setup.
-function Monitor({ x, tilt, webcam }: { x: number; tilt: number; webcam?: boolean }) {
+// Arm-mounted LG monitor floating above the desk, per Carlos's real setup.
+// `memo` adds the "DO IT FOR HER" cutout taped under the bezel (texture pass later).
+function Monitor({
+  x,
+  tilt,
+  webcam,
+  memo,
+}: {
+  x: number;
+  tilt: number;
+  webcam?: boolean;
+  memo?: boolean;
+}) {
   return (
     <group position={[x, 1.13, -0.18]} rotation={[0, tilt, 0]}>
       {/* arm pole down to the rail */}
@@ -27,6 +40,12 @@ function Monitor({ x, tilt, webcam }: { x: number; tilt: number; webcam?: boolea
         <mesh position={[0, 0.2, 0]}>
           <boxGeometry args={[0.08, 0.03, 0.04]} />
           <meshStandardMaterial color="#111113" />
+        </mesh>
+      )}
+      {memo && (
+        <mesh position={[0.08, -0.235, 0.01]} rotation={[0, 0, -0.04]}>
+          <planeGeometry args={[0.1, 0.065]} />
+          <meshStandardMaterial color="#8fc4e8" />
         </mesh>
       )}
     </group>
@@ -55,6 +74,63 @@ function ShutterWindow() {
           <boxGeometry args={[0.09, 0.015, 1.22]} />
           <meshStandardMaterial color="#f5f5f2" />
         </mesh>
+      ))}
+    </group>
+  );
+}
+
+// Herman Miller Aeron, graphite — primitive approximation.
+function AeronChair() {
+  const armAngles = [0, 72, 144, 216, 288].map((d) => (d * Math.PI) / 180);
+  return (
+    <group position={[0, 0, 0.85]}>
+      {/* star base + casters */}
+      {armAngles.map((a) => (
+        <group key={a} rotation={[0, a, 0]}>
+          <mesh position={[0.16, 0.05, 0]}>
+            <boxGeometry args={[0.3, 0.035, 0.05]} />
+            <meshStandardMaterial color={CHAIR_FRAME} />
+          </mesh>
+          <mesh position={[0.29, 0.03, 0]}>
+            <sphereGeometry args={[0.028, 12, 12]} />
+            <meshStandardMaterial color="#232326" />
+          </mesh>
+        </group>
+      ))}
+      {/* gas lift */}
+      <mesh position={[0, 0.28, 0]}>
+        <cylinderGeometry args={[0.022, 0.022, 0.34, 12]} />
+        <meshStandardMaterial color="#8f8f94" metalness={0.6} roughness={0.35} />
+      </mesh>
+      {/* seat */}
+      <mesh position={[0, 0.47, 0]} castShadow>
+        <boxGeometry args={[0.47, 0.055, 0.43]} />
+        <meshStandardMaterial color={CHAIR_MESH} />
+      </mesh>
+      {/* back, tilted slightly */}
+      <group position={[0, 0.88, 0.19]} rotation={[0.12, 0, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.46, 0.58, 0.045]} />
+          <meshStandardMaterial color={CHAIR_MESH} />
+        </mesh>
+        {/* lumbar pad */}
+        <mesh position={[0, -0.1, 0.035]}>
+          <boxGeometry args={[0.3, 0.14, 0.025]} />
+          <meshStandardMaterial color="#232326" />
+        </mesh>
+      </group>
+      {/* armrests */}
+      {[-0.245, 0.245].map((x) => (
+        <group key={x} position={[x, 0, 0.06]}>
+          <mesh position={[0, 0.585, 0]}>
+            <boxGeometry args={[0.035, 0.18, 0.035]} />
+            <meshStandardMaterial color={CHAIR_FRAME} />
+          </mesh>
+          <mesh position={[0, 0.69, -0.02]}>
+            <boxGeometry args={[0.06, 0.028, 0.24]} />
+            <meshStandardMaterial color="#232326" />
+          </mesh>
+        </group>
       ))}
     </group>
   );
@@ -89,15 +165,26 @@ export function DeskScene() {
 
       <ShutterWindow />
 
-      {/* white standing desk */}
+      {/* white Secretlab MAGNUS standing desk */}
       <mesh position={[0, 0.74, -0.05]} castShadow receiveShadow>
         <boxGeometry args={[1.7, 0.035, 0.75]} />
         <meshStandardMaterial color={DESK_WHITE} />
       </mesh>
-      {/* power rail along the back edge */}
-      <mesh position={[0, 0.79, -0.38]}>
-        <boxGeometry args={[1.7, 0.09, 0.05]} />
-        <meshStandardMaterial color="#e9e9e6" />
+      {/* height-control strip, front-right edge */}
+      <group position={[0.45, 0.74, 0.33]}>
+        <mesh>
+          <boxGeometry args={[0.5, 0.028, 0.012]} />
+          <meshStandardMaterial color="#111113" />
+        </mesh>
+        <mesh position={[-0.14, 0, 0.007]}>
+          <planeGeometry args={[0.05, 0.014]} />
+          <meshStandardMaterial color="#dfe4ea" emissive="#dfe4ea" emissiveIntensity={0.8} />
+        </mesh>
+      </group>
+      {/* wall-mounted power rail behind the desk */}
+      <mesh position={[0, 0.86, -0.42]}>
+        <boxGeometry args={[1.5, 0.11, 0.04]} />
+        <meshStandardMaterial color="#eeeeeb" />
       </mesh>
       {/* T-legs with feet */}
       {[-0.7, 0.7].map((x) => (
@@ -113,54 +200,90 @@ export function DeskScene() {
         </group>
       ))}
 
-      <Monitor x={-0.45} tilt={0.18} webcam />
+      <Monitor x={-0.45} tilt={0.18} webcam memo />
       <Monitor x={0.45} tilt={-0.18} />
 
-      {/* closed MacBook */}
-      <mesh position={[-0.55, 0.768, 0.12]} rotation={[0, 0.28, 0]} castShadow>
+      {/* white MAGPAD desk mat */}
+      <mesh position={[-0.1, 0.762, 0.1]}>
+        <boxGeometry args={[0.9, 0.005, 0.38]} />
+        <meshStandardMaterial color="#f8f8f6" />
+      </mesh>
+
+      {/* closed MacBook with hims sticker (texture pass) */}
+      <mesh position={[-0.52, 0.772, 0.06]} rotation={[0, 0.22, 0]} castShadow>
         <boxGeometry args={[0.31, 0.015, 0.22]} />
         <meshStandardMaterial color="#cfd2d6" metalness={0.4} roughness={0.4} />
       </mesh>
 
-      {/* white keyboard + wrist rest + mouse */}
-      <mesh position={[0, 0.766, 0.16]}>
-        <boxGeometry args={[0.44, 0.012, 0.15]} />
-        <meshStandardMaterial color="#eceff1" />
-      </mesh>
-      <mesh position={[0, 0.766, 0.26]}>
-        <boxGeometry args={[0.44, 0.014, 0.06]} />
-        <meshStandardMaterial color={DEVICE_DARK} />
-      </mesh>
-      <mesh position={[0.32, 0.77, 0.19]}>
-        <boxGeometry args={[0.06, 0.024, 0.1]} />
-        <meshStandardMaterial color="#2b2b2e" />
+      {/* WAVLINK dock, back-left */}
+      <mesh position={[-0.45, 0.785, -0.3]} castShadow>
+        <boxGeometry args={[0.26, 0.045, 0.09]} />
+        <meshStandardMaterial color="#161618" />
       </mesh>
 
-      {/* "WILL SOURCE FOR $$" letterboard (texture pass later) */}
-      <group position={[0.02, 0.92, -0.3]} rotation={[-0.08, 0, 0]}>
-        <mesh castShadow>
-          <boxGeometry args={[0.28, 0.28, 0.02]} />
-          <meshStandardMaterial color="#f5f5f0" />
+      {/* MX Mechanical Mini + Razer wrist rest + MX Master */}
+      <mesh position={[0, 0.769, 0.12]}>
+        <boxGeometry args={[0.3, 0.014, 0.11]} />
+        <meshStandardMaterial color="#eceff1" />
+      </mesh>
+      <mesh position={[0, 0.768, 0.22]}>
+        <boxGeometry args={[0.36, 0.014, 0.06]} />
+        <meshStandardMaterial color={DEVICE_DARK} />
+      </mesh>
+      <mesh position={[0.28, 0.772, 0.16]}>
+        <boxGeometry args={[0.06, 0.026, 0.1]} />
+        <meshStandardMaterial color="#4a4a4f" />
+      </mesh>
+
+      {/* Android figurine */}
+      <group position={[-0.2, 0.758, -0.28]}>
+        <mesh position={[0, 0.026, 0]}>
+          <cylinderGeometry args={[0.02, 0.02, 0.05, 16]} />
+          <meshStandardMaterial color="#fbfbf9" />
         </mesh>
-        <mesh position={[0, 0, 0.011]}>
-          <planeGeometry args={[0.24, 0.24]} />
-          <meshStandardMaterial color="#e4e2da" />
+        <mesh position={[0, 0.06, 0]}>
+          <sphereGeometry args={[0.02, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial color="#fbfbf9" />
         </mesh>
       </group>
 
-      {/* photo frames + paper stack */}
-      <mesh position={[0.42, 0.85, -0.3]} rotation={[-0.06, -0.15, 0]} castShadow>
-        <boxGeometry args={[0.17, 0.13, 0.015]} />
-        <meshStandardMaterial color="#242426" />
+      {/* graded No. 1 Dad card on its wooden easel */}
+      <group position={[-0.06, 0.758, -0.29]} rotation={[-0.12, 0, 0]}>
+        <mesh position={[0, 0.055, 0]} castShadow>
+          <boxGeometry args={[0.06, 0.085, 0.008]} />
+          <meshStandardMaterial color="#e9e6da" />
+        </mesh>
+        <mesh position={[0, 0.02, 0.012]} rotation={[0.35, 0, 0]}>
+          <boxGeometry args={[0.055, 0.008, 0.03]} />
+          <meshStandardMaterial color="#c9a575" />
+        </mesh>
+      </group>
+
+      {/* "WILL SOURCE FOR $$" letterboard */}
+      <group position={[0.12, 0.85, -0.3]} rotation={[-0.08, 0, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[0.22, 0.2, 0.02]} />
+          <meshStandardMaterial color="#f5f5f0" />
+        </mesh>
+        <mesh position={[0, 0, 0.011]}>
+          <planeGeometry args={[0.18, 0.16]} />
+          <meshStandardMaterial color="#9aa0a3" />
+        </mesh>
+      </group>
+
+      {/* family photo, wood frame */}
+      <mesh position={[0.42, 0.83, -0.28]} rotation={[-0.06, -0.12, 0]} castShadow>
+        <boxGeometry args={[0.18, 0.14, 0.015]} />
+        <meshStandardMaterial color="#5a3d2b" />
       </mesh>
-      <mesh position={[-0.32, 0.83, -0.3]} rotation={[-0.06, 0.12, 0]} castShadow>
-        <boxGeometry args={[0.12, 0.15, 0.015]} />
-        <meshStandardMaterial color="#242426" />
+
+      {/* ceramic Facebook tile, flat on the desk */}
+      <mesh position={[0.35, 0.762, 0.14]} rotation={[0, -0.1, 0]}>
+        <boxGeometry args={[0.1, 0.006, 0.1]} />
+        <meshStandardMaterial color="#1877f2" roughness={0.25} />
       </mesh>
-      <mesh position={[0.68, 0.775, -0.15]} rotation={[0, -0.08, 0]}>
-        <boxGeometry args={[0.24, 0.035, 0.18]} />
-        <meshStandardMaterial color="#e8e6df" />
-      </mesh>
+
+      <AeronChair />
 
       {/* dog bed + backpack corner */}
       <group position={[-1.75, 0, 0.75]}>
