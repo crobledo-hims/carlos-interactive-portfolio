@@ -1539,3 +1539,213 @@ export function nylonBump(): THREE.CanvasTexture {
     { data: true },
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* ambient pass: plant, desk objects, steam, wall TV                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Leaf skin. Deliberately a *tileable* green field rather than a blade-shaped
+ * cutout — the blade silhouette comes from geometry, which lets stems and
+ * blades share one material (and one draw call per cluster).
+ */
+export function leafSkin(): THREE.CanvasTexture {
+  return makeTexture("leaf-skin", 256, 256, (ctx, W, H) => {
+    const rnd = prng(3377);
+    ctx.fillStyle = "#5f7a51";
+    ctx.fillRect(0, 0, W, H);
+
+    // broad mottling: no two leaves should read as the same flat green
+    for (let i = 0; i < 30; i++) {
+      const g = ctx.createRadialGradient(
+        rnd() * W,
+        rnd() * H,
+        4,
+        rnd() * W,
+        rnd() * H,
+        30 + rnd() * 90,
+      );
+      const warm = rnd() > 0.5;
+      g.addColorStop(0, warm ? "rgba(134,158,106,0.30)" : "rgba(58,78,48,0.28)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // fine vein streaks running roughly along the blade axis
+    for (let i = 0; i < 150; i++) {
+      const x = rnd() * W;
+      ctx.strokeStyle =
+        rnd() > 0.5 ? "rgba(146,170,118,0.16)" : "rgba(48,66,40,0.18)";
+      ctx.lineWidth = 0.7 + rnd() * 1.6;
+      ctx.beginPath();
+      ctx.moveTo(x, -10);
+      ctx.bezierCurveTo(
+        x + (rnd() - 0.5) * 20,
+        H * 0.35,
+        x + (rnd() - 0.5) * 20,
+        H * 0.7,
+        x + (rnd() - 0.5) * 14,
+        H + 10,
+      );
+      ctx.stroke();
+    }
+
+    // waxy speckle
+    for (let i = 0; i < 900; i++) {
+      ctx.fillStyle = rnd() > 0.5 ? "rgba(255,255,240,0.05)" : "rgba(20,32,16,0.06)";
+      ctx.fillRect(rnd() * W, rnd() * H, 1.6, 1.6);
+    }
+  });
+}
+
+/** Linen-ish notebook cover cloth. */
+export function notebookCloth(): THREE.CanvasTexture {
+  return makeTexture("notebook-cloth", 256, 256, (ctx, W, H) => {
+    const rnd = prng(8102);
+    ctx.fillStyle = "#4a5560";
+    ctx.fillRect(0, 0, W, H);
+    const c = 4;
+    for (let y = 0; y < H; y += c) {
+      for (let x = 0; x < W; x += c) {
+        const over = ((x / c + y / c) | 0) % 2 === 0;
+        ctx.fillStyle = over ? "rgba(255,255,255,0.055)" : "rgba(0,0,0,0.07)";
+        if (over) ctx.fillRect(x, y + 1, c, c - 1);
+        else ctx.fillRect(x + 1, y, c - 1, c);
+      }
+    }
+    for (let i = 0; i < 700; i++) {
+      ctx.fillStyle = rnd() > 0.5 ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)";
+      ctx.fillRect(rnd() * W, rnd() * H, 2, 1);
+    }
+  });
+}
+
+/** Page-block edge: fine cream striations, read on the notebook's four sides. */
+export function pageEdges(): THREE.CanvasTexture {
+  return makeTexture("page-edges", 128, 128, (ctx, W, H) => {
+    const rnd = prng(4820);
+    ctx.fillStyle = "#f2ede0";
+    ctx.fillRect(0, 0, W, H);
+    for (let y = 0; y < H; y += 2) {
+      ctx.fillStyle = `rgba(176,166,146,${0.16 + rnd() * 0.22})`;
+      ctx.fillRect(0, y, W, 1);
+    }
+    const shade = ctx.createLinearGradient(0, 0, 0, H);
+    shade.addColorStop(0, "rgba(120,110,92,0.22)");
+    shade.addColorStop(0.5, "rgba(120,110,92,0)");
+    shade.addColorStop(1, "rgba(120,110,92,0.18)");
+    ctx.fillStyle = shade;
+    ctx.fillRect(0, 0, W, H);
+  });
+}
+
+/**
+ * A single steam wisp: soft alpha, transparent at every edge so the ribbon
+ * never shows a hard boundary. Used as `map` on an unlit basic material.
+ */
+export function steamWisp(): THREE.CanvasTexture {
+  return makeTexture(
+    "steam-wisp",
+    128,
+    256,
+    (ctx, W, H) => {
+      const rnd = prng(1904);
+      ctx.clearRect(0, 0, W, H);
+
+      // vertical envelope: nothing at the spout, fullest a third up, gone at the top
+      for (let y = 0; y < H; y++) {
+        const v = y / H;
+        const along = Math.pow(Math.sin(Math.PI * Math.pow(v, 0.72)), 1.1);
+        for (let x = 0; x < W; x += 1) {
+          const u = x / W;
+          const across = Math.pow(Math.sin(Math.PI * u), 1.25);
+          const a = along * across;
+          if (a <= 0.004) continue;
+          ctx.fillStyle = `rgba(255,252,246,${a})`;
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+
+      // torn edges + internal structure so it is not a smooth airbrush blob.
+      // Concentric stops and a bounded fill rect keep each bite local — a
+      // gradient whose two circles have different centres smears a cone
+      // across the whole canvas and eats the wisp alive.
+      ctx.globalCompositeOperation = "destination-out";
+      for (let i = 0; i < 26; i++) {
+        const cx = rnd() * W;
+        const cy = rnd() * H;
+        const r = 8 + rnd() * 20;
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        g.addColorStop(0, `rgba(0,0,0,${0.18 + rnd() * 0.22})`);
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+      }
+      ctx.globalCompositeOperation = "source-over";
+    },
+    { clamp: true },
+  );
+}
+
+/* ---- wall TV clock face (mutable: redrawn only on minute change) ---- */
+
+export const CLOCK_W = 1024;
+export const CLOCK_H = 576;
+
+/** Bare canvas for textures whose content changes after creation. */
+export function createMutableCanvas(w: number, h: number): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  return canvas;
+}
+
+/**
+ * Paints the TV face: near-black panel, one large warm-white time readout.
+ * Called once at build and then only when the displayed minute changes.
+ */
+export function paintClockFace(canvas: HTMLCanvasElement, time: string): void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const W = canvas.width;
+  const H = canvas.height;
+
+  ctx.clearRect(0, 0, W, H);
+
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, "#15181e");
+  bg.addColorStop(0.55, "#101319");
+  bg.addColorStop(1, "#0c0e13");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // barely-there panel sheen so the screen is not a dead rectangle
+  const sheen = ctx.createLinearGradient(0, 0, W, H);
+  sheen.addColorStop(0, "rgba(90,110,140,0.045)");
+  sheen.addColorStop(0.5, "rgba(20,26,34,0)");
+  sheen.addColorStop(1, "rgba(80,96,124,0.035)");
+  ctx.fillStyle = sheen;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.letterSpacing = "6px";
+
+  // shrink to fit long locale strings ("12:34 AM") without ever clipping
+  let size = 162;
+  ctx.font = `300 ${size}px ${SANS}`;
+  const maxWidth = W * 0.78;
+  const measured = ctx.measureText(time).width;
+  if (measured > maxWidth) {
+    size = Math.floor(size * (maxWidth / measured));
+    ctx.font = `300 ${size}px ${SANS}`;
+  }
+
+  ctx.shadowColor = "rgba(255,232,196,0.34)";
+  ctx.shadowBlur = 22;
+  ctx.fillStyle = "#cdc1ab";
+  ctx.fillText(time, W / 2, H / 2 + 4);
+  ctx.shadowBlur = 0;
+  ctx.letterSpacing = "0px";
+}
