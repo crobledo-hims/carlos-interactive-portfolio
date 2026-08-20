@@ -172,7 +172,7 @@ export function TalkTrack({ phase, variant, screen, onGenerate, onVariant, onScr
         <div>
           <h2 className="relay-h2">Talk Track</h2>
           <p className="relay-sub">
-            A recruiter-screen script in Carlos's own voice, written to be read aloud on the call.
+            A recruiter-screen script written in Carlos's voice, to be read aloud on the call.
           </p>
         </div>
         <Synthetic />
@@ -204,11 +204,11 @@ export function TalkTrack({ phase, variant, screen, onGenerate, onVariant, onScr
                 onClick={onGenerate}
                 disabled={phase === "working"}
               >
-                {phase === "working" ? "Drafting…" : "Add the answers and draft"}
+                {phase === "working" ? "Drafting…" : "Use sample answers and draft"}
               </button>
               <p className="relay-clarify-foot">
-                Carlos takes these back to the hiring manager. The answers land in the overrides card, then the
-                script gets written from them.
+                These go back to the hiring manager. The answers land in the overrides card, and the script
+                is written from them.
               </p>
             </section>
           ) : (

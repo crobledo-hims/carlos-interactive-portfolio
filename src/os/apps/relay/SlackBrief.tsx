@@ -27,7 +27,7 @@ export function SlackBrief({ phase, onGenerate, onReset, announce }: Props) {
   const copy = async () => {
     const ok = await copyText(plainText());
     const message = ok
-      ? "Brief copied. Paste it into Slack yourself."
+      ? "Brief copied. Ready to paste into Slack."
       : "Copy was blocked by the browser. Select the text to copy it.";
     show(message);
     announce(message);
@@ -39,7 +39,8 @@ export function SlackBrief({ phase, onGenerate, onReset, announce }: Props) {
         <div>
           <h2 className="relay-h2">Slack Brief</h2>
           <p className="relay-sub">
-            An executive-ready summary Carlos pastes into Slack by hand. Nothing is posted from here.
+            Creates an executive-ready candidate summary for manual sharing in Slack. Nothing is posted
+            from here.
           </p>
         </div>
         <Synthetic />

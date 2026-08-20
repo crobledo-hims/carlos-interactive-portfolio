@@ -100,7 +100,7 @@ export function OutreachSequence({ level, format, onLevel, onFormat, onReset, an
           </ol>
 
           <p className="relay-foot-note">
-            Sending happens in the recruiting tools, not here. The scheduling link is a placeholder.
+            Sending happens in the recruiting tools, not here. The calendar link is a placeholder.
           </p>
           {toast && <p className="relay-toast">{toast}</p>}
         </div>

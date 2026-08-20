@@ -20,6 +20,19 @@ const TABS: { id: RelayTab; label: string; hint: string }[] = [
 const BRIEF_MS = 520;
 const TALK_MS = 620;
 
+/** Spoken labels for the live region, so it never announces a raw fixture id. */
+const LEVEL_LABEL: Record<OutreachLevel, string> = {
+  senior: "Senior",
+  staff: "Staff",
+  principal: "Principal",
+};
+
+const FORMAT_LABEL: Record<OutreachFormat, string> = {
+  default: "default sequence",
+  linkedin: "LinkedIn version",
+  sobo: "SOBO version",
+};
+
 /**
  * Relay holds every workflow's state so that switching tabs never restarts or
  * loses work: only the active panel is mounted (and therefore only the active
@@ -37,6 +50,7 @@ function RelayAppImpl() {
 
   const timers = useRef<number[]>([]);
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const openTab = useRef<RelayTab>(tab);
 
   useEffect(
     () => () => {
@@ -47,25 +61,44 @@ function RelayAppImpl() {
 
   const say = useCallback((message: string) => setAnnounce(message), []);
 
+  // One live region serves all three workflows, so switching tabs has to clear
+  // it. Otherwise a screen reader keeps reporting the Slack Brief result while
+  // the visitor is looking at Outreach or Talk Track.
+  const selectTab = useCallback((next: RelayTab) => {
+    setTab(next);
+    openTab.current = next;
+    setAnnounce("");
+  }, []);
+
+  /**
+   * Announce only if that workflow is still open. The generate steps finish on
+   * a timer, so without this a result can land in the live region after the
+   * visitor has already moved to another tab.
+   */
+  const sayFor = useCallback((owner: RelayTab, message: string) => {
+    if (openTab.current !== owner) return;
+    setAnnounce(message);
+  }, []);
+
   const runBrief = useCallback(() => {
     if (reducedMotion()) {
       setBrief("done");
-      say("Brief generated. Six bullets and a tech stack line.");
+      sayFor("brief", "Slack Brief generated. Six bullets, a tech stack line, and the file reference.");
       return;
     }
     setBrief("working");
     timers.current.push(
       window.setTimeout(() => {
         setBrief("done");
-        say("Brief generated. Six bullets and a tech stack line.");
+        sayFor("brief", "Slack Brief generated. Six bullets, a tech stack line, and the file reference.");
       }, BRIEF_MS),
     );
-  }, [say]);
+  }, [sayFor]);
 
   const runTalk = useCallback(() => {
     const done = () => {
       setTalk("ready");
-      say(`Talk track drafted. About ${speakingTime(talkFixtures.base.paragraphs)} spoken.`);
+      sayFor("talk", `Talk Track drafted. About ${speakingTime(talkFixtures.base.paragraphs)} spoken.`);
     };
     if (reducedMotion()) {
       done();
@@ -73,7 +106,7 @@ function RelayAppImpl() {
     }
     setTalk("working");
     timers.current.push(window.setTimeout(done, TALK_MS));
-  }, [say]);
+  }, [sayFor]);
 
   const onTabKey = (e: ReactKeyboardEvent, id: RelayTab) => {
     const order = TABS.map((t) => t.id);
@@ -85,7 +118,7 @@ function RelayAppImpl() {
     else if (e.key === "End") next = order.length - 1;
     else return;
     e.preventDefault();
-    setTab(order[next]);
+    selectTab(order[next]);
     tabRefs.current[order[next]]?.focus();
   };
 
@@ -117,7 +150,7 @@ function RelayAppImpl() {
                 aria-controls={`relay-panel-${t.id}`}
                 tabIndex={selected ? 0 : -1}
                 className={`relay-tab${selected ? " active" : ""}`}
-                onClick={() => setTab(t.id)}
+                onClick={() => selectTab(t.id)}
                 onKeyDown={(e) => onTabKey(e, t.id)}
               >
                 <span className="relay-tab-label">{t.label}</span>
@@ -127,7 +160,7 @@ function RelayAppImpl() {
           })}
         </div>
         <p className="relay-rail-foot">
-          Every result below is a local fixture. No model is called and nothing leaves this page.
+          This demo uses prewritten synthetic examples. No information is uploaded or sent.
         </p>
       </nav>
 
@@ -160,16 +193,16 @@ function RelayAppImpl() {
             format={format}
             onLevel={(l) => {
               setLevel(l);
-              say(`Showing the ${l} level sequence.`);
+              say(`Outreach Sequence: showing the ${LEVEL_LABEL[l]} level.`);
             }}
             onFormat={(f) => {
               setFormat(f);
-              say(`Showing the ${f} output.`);
+              say(`Outreach Sequence: showing the ${FORMAT_LABEL[f]}.`);
             }}
             onReset={() => {
               setLevel("staff");
               setFormat("default");
-              say("Outreach demo reset.");
+              say("Outreach Sequence demo reset.");
             }}
             announce={say}
           />
@@ -183,7 +216,7 @@ function RelayAppImpl() {
             onGenerate={runTalk}
             onVariant={(v) => {
               setVariant(v);
-              say(`Showing the ${talkFixtures[v].label} variant.`);
+              say(`Talk Track: showing the ${talkFixtures[v].label} revision.`);
             }}
             onScreen={setScreen}
             onReset={() => {

@@ -56,7 +56,7 @@ interface SegmentedProps<T extends string> {
   onChange: (id: T) => void;
 }
 
-/** A small radio group; every option maps to a real local fixture. */
+/** A small radio group; every option maps to a prewritten example. */
 export function Segmented<T extends string>({ label, value, options, onChange }: SegmentedProps<T>) {
   return (
     <div className="relay-seg" role="radiogroup" aria-label={label}>
