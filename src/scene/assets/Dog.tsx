@@ -24,12 +24,13 @@ import { useGLTF } from "@react-three/drei";
 const DOG_GLB = "/models/dog.glb";
 
 /**
- * The bolster bed in Corner.tsx sits at [-1.62, 0, 0.82] and its cushion
+ * The bolster bed in Corner.tsx sits at [-1.32, 0, 0.3] — beside the
+ * desk's left end, fully inside the opening camera frame — and its cushion
  * crowns at y ≈ 0.09, so the dog's floor contact rides there — the paws
  * sink a couple of millimetres into the suede, which is what selling
  * "sitting on a cushion" rather than "hovering over one" requires.
  */
-const DOG_POS: [number, number, number] = [-1.62, 0.09, 0.8];
+const DOG_POS: [number, number, number] = [-1.32, 0.09, 0.28];
 
 /**
  * The bolster's opening faces world ~(0.2, 0, 0.98) once the bed's own

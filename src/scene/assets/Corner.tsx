@@ -52,7 +52,7 @@ function DogBed() {
   const START = -3.645;
 
   return (
-    <group position={[-1.62, 0, 0.82]} rotation={[0, 0.42, 0]} scale={[1, 1, 0.86]}>
+    <group position={[-1.32, 0, 0.3]} rotation={[0, 0.42, 0]} scale={[1, 1, 0.86]}>
       <mesh geometry={base} castShadow receiveShadow material={M.suede} />
       <mesh geometry={cushion} receiveShadow material={cushionMat} />
       {/* bolster rim, open at the front so it reads as a dog bed */}
