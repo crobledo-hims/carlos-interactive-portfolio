@@ -5,7 +5,8 @@
 // record for the details. It is not an ATS, a dashboard, a candidate evaluator
 // or a forecasting system, and nothing here should imply otherwise.
 //
-// Four workflows are demonstrated, one per sidebar entry:
+// Four workflows are demonstrated, with an interviewer DM revealed after the
+// recruiter starts the feedback follow-up:
 //   #role-status        a pipeline report produced on demand
 //   Feedback reminder   an overdue-feedback alert, and the reminder the
 //                       recruiter can choose to send to the interviewer
@@ -15,7 +16,7 @@
 // Every person, role, candidate, date and number below is invented for this
 // portfolio. Nothing is drawn from a real employer, requisition or person, and
 // nothing is transmitted anywhere: the app renders these fixtures locally and
-// the one interactive workflow simulates its outcome in React state.
+// its interactive workflows simulate their outcomes in React state.
 //
 // Editing rule: Cadence only ever reports what it can observe. Do not add
 // forecasts, scores, role health, risk ratings, recommended strategy, or any
@@ -72,7 +73,7 @@ export type CadenceBlock =
    ========================================================================== */
 
 /** The interactive feedback-reminder workflow. */
-export type FeedbackState = "pending" | "sending" | "sent" | "declined";
+export type FeedbackState = "pending" | "sending" | "sent" | "replying" | "replied" | "declined";
 
 export interface CadenceReaction {
   emoji: string;
@@ -94,16 +95,20 @@ export interface CadenceMessage {
   label?: string;
   blocks: CadenceBlock[];
   reactions?: CadenceReaction[];
-  /** Only rendered while the feedback workflow is in this state. */
-  showWhen?: FeedbackState;
+  /** Only rendered while the feedback workflow is in one of these states. */
+  showWhen?: FeedbackState | FeedbackState[];
+  /** A quiet Slack-style divider inserted immediately before this message. */
+  dividerBefore?: string;
 }
 
 export interface CadenceChannel {
   id: string;
-  kind: "channel" | "workflow";
+  kind: "channel" | "workflow" | "dm";
   name: string;
   topic: string;
   unread: number;
+  /** Initials used in the direct-message rail. */
+  avatar?: string;
   /**
    * Indexes into `messages` that the composer types out live during the
    * scripted opening, in order. Each one's own text is the script. Only the
@@ -139,6 +144,13 @@ const AVERY = {
   bot: false,
   author: "Avery Chen",
   role: "VP, Engineering",
+};
+const JORDAN = {
+  initials: "JL",
+  color: "#3d718f",
+  bot: false,
+  author: "Jordan Lee",
+  role: "Interviewer",
 };
 
 const ROLE = "Staff Backend Engineer — Payments Platform";
@@ -284,18 +296,41 @@ export const cadenceChannels: CadenceChannel[] = [
           { kind: "feedback" },
         ],
       },
+    ],
+  },
+
+  /* ------------------------ the interviewer view opened after recruiter send */
+  {
+    id: "jordan-lee",
+    kind: "dm",
+    name: "Jordan Lee",
+    topic: "Direct message · Interviewer view",
+    unread: 0,
+    avatar: "JL",
+    messages: [
       {
         ...CADENCE,
-        id: "fb-2",
+        id: "fb-dm-1",
         time: "2:01 PM",
-        label: "Direct message sent to interviewer",
-        showWhen: "sent",
+        showWhen: ["sent", "replying", "replied"],
         blocks: [
           {
             kind: "text",
             text: `Hi Jordan, interview feedback is still outstanding for Maya Okafor's Systems Design interview for the ${ROLE} role. Please submit your feedback in Ashby when you can.`,
           },
           { kind: "actions", items: ["Open feedback form in Ashby"] },
+        ],
+      },
+      {
+        ...JORDAN,
+        id: "fb-dm-2",
+        time: "2:02 PM",
+        showWhen: "replied",
+        blocks: [
+          {
+            kind: "text",
+            text: "Sorry for the delay — I'll submit my feedback in Ashby ASAP.",
+          },
         ],
       },
     ],
@@ -349,9 +384,43 @@ export const cadenceChannels: CadenceChannel[] = [
     unread: 1,
     messages: [
       {
-        ...CADENCE,
+        ...CARLOS,
         id: "oa-1",
+        time: "11:06 AM",
+        blocks: [
+          {
+            kind: "text",
+            text: "I spoke with Priya this morning. The conversation went well, and she sounded genuinely excited about the team and the scope of the role.",
+          },
+        ],
+      },
+      {
+        ...AVERY,
+        id: "oa-2",
+        time: "11:09 AM",
+        blocks: [
+          {
+            kind: "text",
+            text: "That's great to hear. Are we aligned on next steps?",
+          },
+        ],
+      },
+      {
+        ...CARLOS,
+        id: "oa-3",
+        time: "11:11 AM",
+        blocks: [
+          {
+            kind: "text",
+            text: "Yes — the offer has been extended. I'll keep you posted as soon as I hear back.",
+          },
+        ],
+      },
+      {
+        ...CADENCE,
+        id: "oa-4",
         time: "3:42 PM",
+        dividerBefore: "A few hours later",
         blocks: [
           { kind: "title", icon: "🎉", text: "Offer accepted" },
           {
@@ -362,6 +431,17 @@ export const cadenceChannels: CadenceChannel[] = [
         reactions: [
           { emoji: "🎉", count: 9 },
           { emoji: "🙌", count: 4 },
+        ],
+      },
+      {
+        ...AVERY,
+        id: "oa-5",
+        time: "3:43 PM",
+        blocks: [
+          {
+            kind: "text",
+            text: "Amazing news! Thanks for keeping this moving, Carlos — I'm excited to welcome Priya to the team.",
+          },
         ],
       },
     ],

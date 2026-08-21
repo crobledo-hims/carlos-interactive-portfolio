@@ -128,3 +128,15 @@ export async function typeOut(
     onText(text.slice(0, i + 1));
   }
 }
+
+/**
+ * How long an incoming Slack typing indicator should remain visible for a
+ * reply of `text` words. Incoming messages arrive whole in Slack, so their
+ * human pace is represented by the indicator rather than characters appearing
+ * inside the posted message.
+ */
+export function typingDurationMs(text: string, wordsPerMinute: number): number {
+  const words = text.trim().match(/\S+/g)?.length ?? 0;
+  if (words === 0 || wordsPerMinute <= 0) return 0;
+  return Math.round((words / wordsPerMinute) * 60_000);
+}

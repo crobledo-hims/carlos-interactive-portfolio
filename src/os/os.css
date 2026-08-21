@@ -895,6 +895,19 @@ body.os-dragging {
   font-size: 12.5px;
 }
 
+.cad-dm-avatar {
+  flex: 0 0 19px;
+  height: 19px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  background: #3d718f;
+  color: #f4f8fb;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
 .cad-chan-name {
   flex: 1;
   overflow: hidden;
@@ -1025,6 +1038,31 @@ body.os-dragging {
 .cad-msg-wrap {
   display: flex;
   flex-direction: column;
+}
+
+.cad-time-jump {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 7px;
+  color: #8f96a4;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.cad-time-jump::before,
+.cad-time-jump::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.cad-time-jump span {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Says who can actually see the message: these workflows are private to the
@@ -1738,6 +1776,26 @@ body.os-dragging {
   color: #9198a8;
 }
 
+.beacon-role-meta {
+  margin-top: 7px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 13px;
+  font-size: 11.5px;
+  color: #a7adbc;
+}
+
+.beacon-role-meta span {
+  position: relative;
+}
+
+.beacon-role-meta span + span::before {
+  content: "·";
+  position: absolute;
+  left: -8px;
+  color: #5f6572;
+}
+
 .beacon-brief-status {
   display: flex;
   flex-direction: column;
@@ -1758,6 +1816,8 @@ body.os-dragging {
 }
 
 .beacon-evidence h4,
+.beacon-pipeline h4,
+.beacon-role-context h4,
 .beacon-next dt {
   font-size: 10.5px;
   font-weight: 700;
@@ -1765,6 +1825,62 @@ body.os-dragging {
   text-transform: uppercase;
   color: #7f8697;
   margin-bottom: 3px;
+}
+
+.beacon-pipeline {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.beacon-pipeline dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.beacon-pipeline dl > div {
+  min-width: 0;
+  padding: 8px 9px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.beacon-pipeline dt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10.5px;
+  color: #8f96a6;
+}
+
+.beacon-pipeline dd {
+  margin-top: 2px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #eef0f6;
+  font-variant-numeric: tabular-nums;
+}
+
+.beacon-role-context {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.beacon-role-context section {
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: rgba(139, 127, 240, 0.055);
+  border: 1px solid rgba(139, 127, 240, 0.13);
+}
+
+.beacon-role-context p {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #cbd0dc;
 }
 
 .beacon-evidence p {
@@ -1885,6 +2001,13 @@ body.os-dragging {
   font-size: 12.5px;
   line-height: 1.45;
   color: #a8aebd;
+}
+
+.beacon-row-meta {
+  grid-column: 1 / -1;
+  font-size: 11.5px;
+  color: #858c9c;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---- how it works, and the one quiet disclaimer ---- */
