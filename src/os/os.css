@@ -57,7 +57,7 @@
 }
 
 .rex-sr,
-.gauge-sr,
+.lens-sr,
 .li-sr {
   position: absolute;
   width: 1px;
@@ -736,6 +736,24 @@ body.os-dragging {
   text-align: right;
 }
 
+/* One line per pinned app: the name, then what it is for. */
+.os-about-apps {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  list-style: none;
+}
+
+.os-about-apps b {
+  font-weight: 600;
+}
+
+.os-about-apps b::after {
+  content: " · ";
+  color: var(--os-faint);
+  font-weight: 400;
+}
+
 .os-about-actions {
   display: flex;
   justify-content: flex-end;
@@ -1092,7 +1110,7 @@ body.os-dragging {
    Rex's output is a Slack message, not a dashboard. The vocabulary below is
    deliberately small: bold headings, "Label: value" lines, candidate groups,
    bullets, a muted context line, and Slack-style buttons. Nothing here draws
-   a chart, a gauge or a metric tile. */
+   a chart, a lens or a metric tile. */
 
 .rex-blocks {
   max-width: 620px;
@@ -1483,7 +1501,7 @@ body.os-dragging {
 
 /* ==========================================================================
 /* ==========================================================================
-   Pulse — an explainable role brief, not a dashboard
+   Beacon — an explainable role brief, not a dashboard
 
    Deliberately unlike an enterprise analytics screen: no KPI tiles, no filter
    rail, no role table, no charts. One dark column, a single focus card, three
@@ -1491,7 +1509,7 @@ body.os-dragging {
    status sits beside every colour and glyph, so nothing depends on hue.
    ========================================================================== */
 
-.pulse {
+.beacon {
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -1500,14 +1518,14 @@ body.os-dragging {
 }
 
 /* Signal colours are soft and used only as support. */
-.pulse {
+.beacon {
   --sig-needs: #e0705f;
   --sig-watch: #d6a247;
   --sig-ok: #56b487;
   --sig-accent: #8b7ff0;
 }
 
-.pulse-head {
+.beacon-head {
   flex: none;
   display: flex;
   align-items: center;
@@ -1517,25 +1535,21 @@ body.os-dragging {
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-.pulse-brand {
+.beacon-brand {
   display: flex;
   align-items: center;
   gap: 11px;
 }
 
-.pulse-wave {
-  width: 44px;
-  height: 14px;
+.beacon-mark {
+  width: 22px;
+  height: 22px;
   flex: none;
-  fill: none;
-  stroke: var(--sig-accent);
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.9;
+  color: var(--sig-accent);
+  opacity: 0.95;
 }
 
-.pulse-name {
+.beacon-name {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -1543,19 +1557,19 @@ body.os-dragging {
   color: #f1f2f7;
 }
 
-.pulse-tagline {
+.beacon-tagline {
   font-size: 12px;
   color: #9198a8;
 }
 
-.pulse-updated {
+.beacon-updated {
   flex: none;
   font-size: 11.5px;
   color: #7f8697;
 }
 
 /* A single line of text, not a metric ribbon. */
-.pulse-summary {
+.beacon-summary {
   flex: none;
   padding: 9px 20px;
   font-size: 12.5px;
@@ -1564,7 +1578,7 @@ body.os-dragging {
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.pulse-sr {
+.beacon-sr {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1575,7 +1589,7 @@ body.os-dragging {
   white-space: nowrap;
 }
 
-.pulse-body {
+.beacon-body {
   padding: 16px 20px 20px;
   display: flex;
   flex-direction: column;
@@ -1584,11 +1598,11 @@ body.os-dragging {
 
 /* This column scrolls, so nothing in it may be compressed to fit: the brief
    clips its own overflow and would otherwise collapse to its first line. */
-.pulse-body > * {
+.beacon-body > * {
   flex: none;
 }
 
-.pulse-eyebrow {
+.beacon-eyebrow {
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.13em;
@@ -1596,13 +1610,13 @@ body.os-dragging {
   color: #7f8697;
 }
 
-.pulse-eyebrow.standalone {
+.beacon-eyebrow.standalone {
   margin-bottom: -8px;
 }
 
 /* ---- signal chip ---- */
 
-.pulse-chip {
+.beacon-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1614,12 +1628,12 @@ body.os-dragging {
   border: 1px solid;
 }
 
-.pulse-chip.sm {
+.beacon-chip.sm {
   padding: 3px 9px 3px 7px;
   font-size: 11px;
 }
 
-.pulse-sig-icon {
+.beacon-sig-icon {
   width: 12px;
   height: 12px;
   flex: none;
@@ -1630,19 +1644,19 @@ body.os-dragging {
   stroke-linejoin: round;
 }
 
-.pulse-chip.needs-review {
+.beacon-chip.needs-review {
   color: var(--sig-needs);
   border-color: rgba(224, 112, 95, 0.42);
   background: rgba(224, 112, 95, 0.12);
 }
 
-.pulse-chip.watch {
+.beacon-chip.watch {
   color: var(--sig-watch);
   border-color: rgba(214, 162, 71, 0.42);
   background: rgba(214, 162, 71, 0.12);
 }
 
-.pulse-chip.on-track {
+.beacon-chip.on-track {
   color: var(--sig-ok);
   border-color: rgba(86, 180, 135, 0.42);
   background: rgba(86, 180, 135, 0.12);
@@ -1650,7 +1664,7 @@ body.os-dragging {
 
 /* ---- the focus brief ---- */
 
-.pulse-brief {
+.beacon-brief {
   position: relative;
   padding: 15px 18px 16px 20px;
   border-radius: 12px;
@@ -1663,8 +1677,8 @@ body.os-dragging {
 }
 
 /* The signal rail: a thin bar, never the only cue. */
-.pulse-brief::before,
-.pulse-row::before {
+.beacon-brief::before,
+.beacon-row::before {
   content: "";
   position: absolute;
   left: 0;
@@ -1674,20 +1688,20 @@ body.os-dragging {
   background: currentColor;
 }
 
-.pulse-brief.needs-review::before,
-.pulse-row.needs-review::before {
+.beacon-brief.needs-review::before,
+.beacon-row.needs-review::before {
   background: var(--sig-needs);
 }
-.pulse-brief.watch::before,
-.pulse-row.watch::before {
+.beacon-brief.watch::before,
+.beacon-row.watch::before {
   background: var(--sig-watch);
 }
-.pulse-brief.on-track::before,
-.pulse-row.on-track::before {
+.beacon-brief.on-track::before,
+.beacon-row.on-track::before {
   background: var(--sig-ok);
 }
 
-.pulse-brief-head {
+.beacon-brief-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -1695,40 +1709,40 @@ body.os-dragging {
   flex-wrap: wrap;
 }
 
-.pulse-brief-title {
+.beacon-brief-title {
   font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: #f3f4f9;
 }
 
-.pulse-brief-team {
+.beacon-brief-team {
   margin-top: 2px;
   font-size: 12.5px;
   color: #9198a8;
 }
 
-.pulse-brief-status {
+.beacon-brief-status {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 5px;
 }
 
-.pulse-trend {
+.beacon-trend {
   font-size: 11.5px;
   color: #8990a1;
 }
 
-.pulse-reason {
+.beacon-reason {
   font-size: 14px;
   line-height: 1.5;
   color: #dfe2ea;
   max-width: 62ch;
 }
 
-.pulse-evidence h4,
-.pulse-next dt {
+.beacon-evidence h4,
+.beacon-next dt {
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.11em;
@@ -1737,13 +1751,13 @@ body.os-dragging {
   margin-bottom: 3px;
 }
 
-.pulse-evidence p {
+.beacon-evidence p {
   font-size: 13px;
   color: #cfd4df;
   font-variant-numeric: tabular-nums;
 }
 
-.pulse-next {
+.beacon-next {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 34px;
@@ -1751,14 +1765,14 @@ body.os-dragging {
   border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-.pulse-next dd {
+.beacon-next dd {
   font-size: 13px;
   color: #dfe2ea;
 }
 
 /* ---- why this signal ---- */
 
-.pulse-why {
+.beacon-why {
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
@@ -1775,17 +1789,17 @@ body.os-dragging {
   transition: background 160ms ease;
 }
 
-.pulse-why:hover {
+.beacon-why:hover {
   background: rgba(255, 255, 255, 0.09);
   color: #eef0f6;
 }
 
-.pulse-why-caret {
+.beacon-why-caret {
   font-size: 10px;
   color: var(--sig-accent);
 }
 
-.pulse-why-panel {
+.beacon-why-panel {
   padding: 12px 14px;
   border-radius: 9px;
   background: rgba(139, 127, 240, 0.08);
@@ -1801,14 +1815,14 @@ body.os-dragging {
 
 /* ---- the three supporting rows ---- */
 
-.pulse-rows {
+.beacon-rows {
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.pulse-row {
+.beacon-row {
   position: relative;
   width: 100%;
   display: grid;
@@ -1826,12 +1840,12 @@ body.os-dragging {
   transition: background 160ms ease, border-color 160ms ease;
 }
 
-.pulse-row:hover {
+.beacon-row:hover {
   background: #21242c;
   border-color: rgba(255, 255, 255, 0.14);
 }
 
-.pulse-row-main {
+.beacon-row-main {
   min-width: 0;
   display: flex;
   align-items: baseline;
@@ -1839,18 +1853,18 @@ body.os-dragging {
   flex-wrap: wrap;
 }
 
-.pulse-row-title {
+.beacon-row-title {
   font-size: 13.5px;
   font-weight: 650;
   color: #eceef4;
 }
 
-.pulse-row-team {
+.beacon-row-team {
   font-size: 12px;
   color: #8990a1;
 }
 
-.pulse-row-reason {
+.beacon-row-reason {
   grid-column: 1 / -1;
   font-size: 12.5px;
   line-height: 1.45;
@@ -1859,7 +1873,7 @@ body.os-dragging {
 
 /* ---- how it works, and the one quiet disclaimer ---- */
 
-.pulse-how {
+.beacon-how {
   padding-top: 15px;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   display: flex;
@@ -1867,68 +1881,68 @@ body.os-dragging {
   gap: 6px;
 }
 
-.pulse-steps {
+.beacon-steps {
   font-size: 11.5px;
   font-weight: 650;
   letter-spacing: 0.04em;
   color: #b6bcc9;
 }
 
-.pulse-arrow {
+.beacon-arrow {
   margin: 0 8px;
   color: var(--sig-accent);
 }
 
-.pulse-how-body {
+.beacon-how-body {
   font-size: 12.5px;
   line-height: 1.55;
   color: #8f96a6;
   max-width: 70ch;
 }
 
-.pulse-foot {
+.beacon-foot {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.pulse-disclaimer {
+.beacon-disclaimer {
   font-size: 11.5px;
   color: #7c8394;
   max-width: 74ch;
 }
 
-.pulse-why:focus-visible,
-.pulse-row:focus-visible {
+.beacon-why:focus-visible,
+.beacon-row:focus-visible {
   outline: 2px solid #8ca8ff;
   outline-offset: 2px;
 }
 
 /* ==========================================================================
-   Gauge — browser window with the extension panel docked to the right
+   Lens — browser window with the extension panel docked to the right
    ========================================================================== */
 
-.gauge {
+.lens {
   display: flex;
   flex-direction: column;
   background: #eceff3;
   color: #21242a;
 }
 
-.gauge-chrome {
+.lens-chrome {
   flex: none;
   background: #d9dce2;
   border-bottom: 1px solid #b9bdc6;
 }
 
-.gauge-tabs {
+.lens-tabs {
   display: flex;
   align-items: flex-end;
   gap: 4px;
   padding: 6px 8px 0;
 }
 
-.gauge-tab {
+.lens-tab {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -1940,22 +1954,22 @@ body.os-dragging {
   color: #4a4f58;
 }
 
-.gauge-tab.active {
+.lens-tab.active {
   background: #f5f6f8;
   color: #21242a;
 }
 
-.gauge-tab-title {
+.lens-tab-title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.gauge-tab-x {
+.lens-tab-x {
   color: #7b8089;
 }
 
-.gauge-favicon {
+.lens-favicon {
   flex: none;
   width: 13px;
   height: 13px;
@@ -1963,17 +1977,17 @@ body.os-dragging {
   background: linear-gradient(150deg, #3d84cf, #14568f);
 }
 
-.gauge-favicon.alt {
+.lens-favicon.alt {
   background: linear-gradient(150deg, #e0933c, #a94e26);
 }
 
-.gauge-newtab {
+.lens-newtab {
   padding: 0 8px 4px;
   color: #5c616a;
   font-size: 16px;
 }
 
-.gauge-toolbar {
+.lens-toolbar {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1981,17 +1995,17 @@ body.os-dragging {
   background: #f5f6f8;
 }
 
-.gauge-nav {
+.lens-nav {
   color: #4a4f58;
   font-size: 16px;
   line-height: 1;
 }
 
-.gauge-nav.dim {
+.lens-nav.dim {
   color: #aeb2ba;
 }
 
-.gauge-omnibox {
+.lens-omnibox {
   flex: 1;
   display: flex;
   align-items: center;
@@ -2004,11 +2018,11 @@ body.os-dragging {
   font-size: 12.5px;
 }
 
-.gauge-omnibox svg {
+.lens-omnibox svg {
   color: #5e8a5e;
 }
 
-.gauge-ext {
+.lens-ext {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -2020,13 +2034,13 @@ body.os-dragging {
   color: #4a4f58;
 }
 
-.gauge-ext.on {
+.lens-ext.on {
   background: #e2e9f8;
   border-color: #b9c9ea;
   color: #2c4a86;
 }
 
-.gauge-ext-tile {
+.lens-ext-tile {
   width: 20px;
   height: 20px;
   border-radius: 6px;
@@ -2038,27 +2052,27 @@ body.os-dragging {
   font-weight: 800;
 }
 
-.gauge-ext-tile.lg {
+.lens-ext-tile.lg {
   width: 30px;
   height: 30px;
   border-radius: 9px;
   font-size: 16px;
 }
 
-.gauge-page {
+.lens-page {
   flex: 1;
   min-height: 0;
   display: flex;
   background: #f1f0ec;
 }
 
-.gauge-profile {
+.lens-profile {
   flex: 1;
   min-width: 0;
   padding: 14px 18px 26px;
 }
 
-.gauge-site-head {
+.lens-site-head {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -2066,7 +2080,7 @@ body.os-dragging {
   border-bottom: 1px solid #dcdbd6;
 }
 
-.gauge-site-mark {
+.lens-site-mark {
   width: 22px;
   height: 22px;
   border-radius: 5px;
@@ -2078,19 +2092,19 @@ body.os-dragging {
   font-weight: 800;
 }
 
-.gauge-site-name {
+.lens-site-name {
   font-size: 15px;
   font-weight: 700;
   color: #2d3138;
 }
 
-.gauge-site-project {
+.lens-site-project {
   margin-left: auto;
   font-size: 12px;
   color: #6d7078;
 }
 
-.gauge-hero {
+.lens-hero {
   display: flex;
   gap: 16px;
   margin-top: 14px;
@@ -2100,7 +2114,7 @@ body.os-dragging {
   border: 1px solid #e2e1dc;
 }
 
-.gauge-avatar {
+.lens-avatar {
   flex: none;
   width: 74px;
   height: 74px;
@@ -2113,35 +2127,35 @@ body.os-dragging {
   font-weight: 600;
 }
 
-.gauge-name {
+.lens-name {
   font-size: 21.5px;
   font-weight: 650;
   color: #1c1f25;
 }
 
-.gauge-headline {
+.lens-headline {
   font-size: 14.5px;
   color: #33373f;
 }
 
-.gauge-meta,
-.gauge-open {
+.lens-meta,
+.lens-open {
   font-size: 12.5px;
   color: #6d7078;
 }
 
-.gauge-open {
+.lens-open {
   margin-top: 4px;
   color: #2d5f9e;
 }
 
-.gauge-hero-actions {
+.lens-hero-actions {
   display: flex;
   gap: 8px;
   margin-top: 11px;
 }
 
-.gauge-btn {
+.lens-btn {
   padding: 4px 14px;
   border-radius: 14px;
   border: 1px solid #9aa0ab;
@@ -2150,13 +2164,13 @@ body.os-dragging {
   color: #3c414a;
 }
 
-.gauge-btn.primary {
+.lens-btn.primary {
   background: #2d5f9e;
   border-color: #2d5f9e;
   color: #fff;
 }
 
-.gauge-sec {
+.lens-sec {
   margin-top: 12px;
   padding: 14px 16px;
   border-radius: 10px;
@@ -2164,31 +2178,31 @@ body.os-dragging {
   border: 1px solid #e2e1dc;
 }
 
-.gauge-sec h4 {
+.lens-sec h4 {
   font-size: 14px;
   font-weight: 650;
   margin-bottom: 8px;
 }
 
-.gauge-sec p {
+.lens-sec p {
   font-size: 13.5px;
   line-height: 1.55;
   color: #3c414a;
 }
 
-.gauge-exp {
+.lens-exp {
   display: flex;
   gap: 12px;
   padding: 10px 0;
   border-top: 1px solid #edece8;
 }
 
-.gauge-exp:first-of-type {
+.lens-exp:first-of-type {
   border-top: 0;
   padding-top: 0;
 }
 
-.gauge-exp-logo {
+.lens-exp-logo {
   flex: none;
   width: 34px;
   height: 34px;
@@ -2201,28 +2215,28 @@ body.os-dragging {
   font-weight: 700;
 }
 
-.gauge-exp-title {
+.lens-exp-title {
   font-size: 14px;
   font-weight: 650;
 }
 
-.gauge-exp-company,
-.gauge-exp-dates {
+.lens-exp-company,
+.lens-exp-dates {
   font-size: 12.5px;
   color: #6d7078;
 }
 
-.gauge-exp-detail {
+.lens-exp-detail {
   margin-top: 4px;
 }
 
-.gauge-skills {
+.lens-skills {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.gauge-skill {
+.lens-skill {
   padding: 3px 11px;
   border-radius: 12px;
   background: #eef0f4;
@@ -2231,14 +2245,14 @@ body.os-dragging {
   color: #3c414a;
 }
 
-.gauge-fiction {
+.lens-fiction {
   margin-top: 14px;
   font-size: 11.5px;
   text-align: center;
   color: #8d9098;
 }
 
-.gauge-panel {
+.lens-panel {
   flex: none;
   width: 336px;
   display: flex;
@@ -2248,7 +2262,7 @@ body.os-dragging {
   box-shadow: -14px 0 30px rgba(30, 34, 44, 0.1);
 }
 
-.gauge-panel-head {
+.lens-panel-head {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2256,17 +2270,17 @@ body.os-dragging {
   border-bottom: 1px solid #e6e5e1;
 }
 
-.gauge-panel-title {
+.lens-panel-title {
   font-size: 15px;
   font-weight: 700;
 }
 
-.gauge-panel-sub {
+.lens-panel-sub {
   font-size: 11.5px;
   color: #6d7078;
 }
 
-.gauge-panel-x {
+.lens-panel-x {
   margin-left: auto;
   border: 0;
   background: none;
@@ -2274,26 +2288,26 @@ body.os-dragging {
   color: #8d9098;
 }
 
-.gauge-panel-body {
+.lens-panel-body {
   flex: 1;
   padding: 12px 14px 18px;
 }
 
 /* Two rows: the role, then the lock badge sitting beside the drawer toggle.
    Nothing between them, so the card closes up tight around what it says. */
-.gauge-role {
+.lens-role {
   padding: 9px 12px 10px;
   border-radius: 8px;
   background: #f4f5f8;
   border: 1px solid #e4e6eb;
 }
 
-.gauge-role-title {
+.lens-role-title {
   font-size: 13.5px;
   font-weight: 650;
 }
 
-.gauge-role-lock {
+.lens-role-lock {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -2301,7 +2315,7 @@ body.os-dragging {
   margin-top: 7px;
 }
 
-.gauge-lock-badge {
+.lens-lock-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -2315,7 +2329,7 @@ body.os-dragging {
 }
 
 /* Shares the badge's row, so it carries no margin of its own. */
-.gauge-criteria-toggle {
+.lens-criteria-toggle {
   padding: 4px 11px;
   border-radius: 13px;
   border: 1px solid #b9bdc6;
@@ -2325,11 +2339,11 @@ body.os-dragging {
   color: #3c414a;
 }
 
-.gauge-criteria-toggle:hover {
+.lens-criteria-toggle:hover {
   background: #eef0f4;
 }
 
-.gauge-drawer {
+.lens-drawer {
   margin-top: 9px;
   padding: 11px 13px;
   border-radius: 9px;
@@ -2337,7 +2351,7 @@ body.os-dragging {
   border: 1px solid #e0e3e9;
 }
 
-.gauge-drawer h4 {
+.lens-drawer h4 {
   margin: 10px 0 5px;
   font-size: 10.5px;
   letter-spacing: 0.08em;
@@ -2345,30 +2359,30 @@ body.os-dragging {
   color: #8d9098;
 }
 
-.gauge-drawer h4:first-child {
+.lens-drawer h4:first-child {
   margin-top: 0;
 }
 
-.gauge-drawer p {
+.lens-drawer p {
   font-size: 12px;
   line-height: 1.5;
   color: #3c414a;
 }
 
-.gauge-drawer ol {
+.lens-drawer ol {
   margin: 0 0 0 16px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.gauge-drawer li {
+.lens-drawer li {
   font-size: 12px;
   line-height: 1.45;
   color: #3c414a;
 }
 
-.gauge-drawer-note {
+.lens-drawer-note {
   margin-top: 10px;
   padding-top: 8px;
   border-top: 1px solid #e0e3e9;
@@ -2376,7 +2390,7 @@ body.os-dragging {
   color: #565b64 !important;
 }
 
-.gauge-role-meta {
+.lens-role-meta {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -2387,7 +2401,7 @@ body.os-dragging {
 
 /* ------------------------------------------------- pre-evaluation state */
 
-.gauge-precheck {
+.lens-precheck {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2395,19 +2409,19 @@ body.os-dragging {
   margin-top: 14px;
 }
 
-.gauge-precheck .gauge-dial {
+.lens-precheck .lens-dial {
   width: 190px;
   opacity: 0.5;
 }
 
-.gauge-precheck-note {
+.lens-precheck-note {
   font-size: 12.5px;
   line-height: 1.5;
   color: #565b64;
   text-align: center;
 }
 
-.gauge-evaluate {
+.lens-evaluate {
   width: 100%;
   padding: 12px 14px;
   border: 0;
@@ -2422,20 +2436,20 @@ body.os-dragging {
   transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
 }
 
-.gauge-evaluate:hover {
+.lens-evaluate:hover {
   filter: brightness(1.07);
   transform: translateY(-1px);
   box-shadow: 0 12px 26px rgba(169, 78, 38, 0.38);
 }
 
-.gauge-evaluate:active {
+.lens-evaluate:active {
   transform: translateY(1px) scale(0.995);
   box-shadow: 0 5px 12px rgba(169, 78, 38, 0.3);
 }
 
 /* The button keeps its own corner radius under the OS focus ring, and stands
    the ring off far enough to read against the warm fill. */
-.gauge-evaluate:focus-visible {
+.lens-evaluate:focus-visible {
   border-radius: 10px;
   outline-offset: 3px;
 }
@@ -2443,10 +2457,10 @@ body.os-dragging {
 /* ---- the attention nudge ----
    Three gentle breaths, then it stops for good. Only transform and box-shadow
    animate, so nothing around the button can shift: the halo is shadow spread,
-   which takes no layout space. GaugeApp removes the class on hover, focus,
+   which takes no layout space. LensApp removes the class on hover, focus,
    click, or animationend — CSS cannot cancel a running animation on its own. */
 
-@keyframes gauge-nudge {
+@keyframes lens-nudge {
   0% {
     transform: scale(1);
     box-shadow: 0 8px 18px rgba(169, 78, 38, 0.28), 0 0 0 0 rgba(224, 147, 60, 0.45);
@@ -2461,80 +2475,80 @@ body.os-dragging {
   }
 }
 
-.gauge-evaluate.nudge {
-  animation: gauge-nudge 1.6s ease-in-out 3;
+.lens-evaluate.nudge {
+  animation: lens-nudge 1.6s ease-in-out 3;
 }
 
 /* ------------------------------------------------------------- the dial */
 
-.gauge-dial {
+.lens-dial {
   display: block;
   width: 100%;
   height: auto;
 }
 
-.gauge-dial-zone {
+.lens-dial-zone {
   fill: none;
   stroke-width: 9;
   stroke-linecap: butt;
   opacity: 0.32;
 }
 
-.gauge-dial-zone.red {
+.lens-dial-zone.red {
   stroke: #c9524b;
 }
-.gauge-dial-zone.yellow {
+.lens-dial-zone.yellow {
   stroke: #d79a2b;
 }
-.gauge-dial-zone.green {
+.lens-dial-zone.green {
   stroke: #2f9e63;
 }
 
-.gauge-dial-progress {
+.lens-dial-progress {
   fill: none;
   stroke: #2b3038;
   stroke-width: 9;
   stroke-linecap: round;
 }
 
-.gauge-dial-tick {
+.lens-dial-tick {
   stroke: #b9bdc6;
   stroke-width: 1.2;
 }
 
-.gauge-dial-tick.major {
+.lens-dial-tick.major {
   stroke: #7d8590;
   stroke-width: 1.8;
 }
 
-.gauge-dial-needle path {
+.lens-dial-needle path {
   fill: #22262d;
 }
 
-.gauge-dial-hub {
+.lens-dial-hub {
   fill: #22262d;
   stroke: #fff;
   stroke-width: 2;
 }
 
 /* Big and centred while it sweeps, compact summary once it has landed. */
-.gauge-dial-stage {
+.lens-dial-stage {
   margin-top: 12px;
 }
 
-.gauge-dial-stage.sweeping {
+.lens-dial-stage.sweeping {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
 }
 
-.gauge-dial-stage.sweeping .gauge-dial {
+.lens-dial-stage.sweeping .lens-dial {
   width: 100%;
   max-width: 230px;
 }
 
-.gauge-dial-stage.done {
+.lens-dial-stage.done {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -2544,39 +2558,39 @@ body.os-dragging {
   border: 1px solid #e4e6eb;
 }
 
-.gauge-dial-stage.done .gauge-dial {
+.lens-dial-stage.done .lens-dial {
   flex: none;
   width: 116px;
 }
 
-.gauge-readout {
+.lens-readout {
   min-width: 0;
   text-align: center;
 }
 
-.gauge-dial-stage.done .gauge-readout {
+.lens-dial-stage.done .lens-readout {
   text-align: left;
 }
 
-.gauge-verdict-head {
+.lens-verdict-head {
   font-size: 21px;
   font-weight: 700;
   line-height: 1.15;
   color: #1c1f25;
 }
 
-.gauge-verdict-head.dim {
+.lens-verdict-head.dim {
   color: #8d9098;
 }
 
-.gauge-verdict-sub {
+.lens-verdict-sub {
   margin-top: 2px;
   font-size: 12.5px;
   color: #565b64;
 }
 
 /* The number is supporting evidence, not the headline. */
-.gauge-score-line {
+.lens-score-line {
   display: flex;
   align-items: baseline;
   gap: 4px;
@@ -2587,47 +2601,47 @@ body.os-dragging {
   font-variant-numeric: tabular-nums;
 }
 
-.gauge-score-line small {
+.lens-score-line small {
   font-size: 11px;
   font-weight: 600;
   color: #8d9098;
 }
 
-.gauge-score-line .gauge-zone {
+.lens-score-line .lens-zone {
   margin-left: 6px;
   font-size: 12px;
 }
 
-.gauge-zone {
+.lens-zone {
   font-size: 13.5px;
   font-weight: 700;
 }
 
-.gauge-zone.red {
+.lens-zone.red {
   color: #b3453e;
 }
-.gauge-zone.yellow {
+.lens-zone.yellow {
   color: #a9761c;
 }
-.gauge-zone.green {
+.lens-zone.green {
   color: #2f9e63;
 }
 
 /* Results cascade in quickly behind the needle. `both` keeps the finished
    state on screen even if the animation is skipped or interrupted. */
-.gauge-reveal {
-  animation: gaugeReveal 0.28s ease-out both;
+.lens-reveal {
+  animation: lensReveal 0.28s ease-out both;
   animation-delay: calc(var(--i, 0) * 45ms);
 }
 
-@keyframes gaugeReveal {
+@keyframes lensReveal {
   from {
     opacity: 0;
     transform: translateY(7px);
   }
 }
 
-.gauge-rerun {
+.lens-rerun {
   padding: 4px 12px;
   border-radius: 14px;
   border: 1px dashed #9aa0ab;
@@ -2637,23 +2651,23 @@ body.os-dragging {
   color: #5c616a;
 }
 
-.gauge-rerun:hover {
+.lens-rerun:hover {
   background: #eef0f4;
   color: #3c414a;
 }
 
-.gauge-block {
+.lens-block {
   margin-top: 14px;
 }
 
-.gauge-block-head {
+.lens-block-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
 
-.gauge-block h4 {
+.lens-block h4 {
   margin-bottom: 6px;
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -2661,17 +2675,17 @@ body.os-dragging {
   color: #8d9098;
 }
 
-.gauge-block p {
+.lens-block p {
   font-size: 13px;
   line-height: 1.55;
   color: #3c414a;
 }
 
-.gauge-block p strong {
+.lens-block p strong {
   color: #1c1f25;
 }
 
-.gauge-mini-toggle {
+.lens-mini-toggle {
   padding: 2px 9px;
   border-radius: 11px;
   border: 1px solid #d5d8de;
@@ -2681,36 +2695,36 @@ body.os-dragging {
   color: #6b707a;
 }
 
-.gauge-mini-toggle:hover {
+.lens-mini-toggle:hover {
   background: #eef0f4;
 }
 
-.gauge-evidence,
-.gauge-gaps {
+.lens-evidence,
+.lens-gaps {
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.gauge-evidence li,
-.gauge-gaps li {
+.lens-evidence li,
+.lens-gaps li {
   padding: 9px 11px;
   border-radius: 8px;
   background: #f7f8fa;
   border: 1px solid #e8eaee;
 }
 
-.gauge-evidence li {
+.lens-evidence li {
   border-left: 3px solid #2f9e63;
 }
 
-.gauge-gaps li {
+.lens-gaps li {
   border-left: 3px solid #c9a23f;
 }
 
-.gauge-ev-conclusion,
-.gauge-gap-item {
+.lens-ev-conclusion,
+.lens-gap-item {
   display: block;
   font-size: 12.5px;
   font-weight: 650;
@@ -2718,7 +2732,7 @@ body.os-dragging {
   color: #1c1f25;
 }
 
-.gauge-ev-quote {
+.lens-ev-quote {
   display: block;
   margin-top: 4px;
   padding-left: 9px;
@@ -2729,7 +2743,7 @@ body.os-dragging {
   color: #565b64;
 }
 
-.gauge-gap-why {
+.lens-gap-why {
   display: block;
   margin-top: 4px;
   font-size: 11.5px;
@@ -2737,7 +2751,7 @@ body.os-dragging {
   color: #565b64;
 }
 
-.gauge-source {
+.lens-source {
   margin-top: 14px;
   padding-top: 9px;
   border-top: 1px solid #e6e5e1;
@@ -2746,7 +2760,7 @@ body.os-dragging {
 }
 
 
-.gauge-hitl {
+.lens-hitl {
   margin-top: 14px;
   padding: 9px 11px;
   border-radius: 8px;
@@ -2757,7 +2771,7 @@ body.os-dragging {
   color: #2c5c46;
 }
 
-.gauge-panel-actions {
+.lens-panel-actions {
   display: flex;
   gap: 8px;
   margin-top: 12px;
@@ -3189,8 +3203,8 @@ body.os-dragging {
   .os-dock-item,
   .os-dock-label,
   .rex-chan,
-  .pulse-row,
-  .pulse-why {
+  .beacon-row,
+  .beacon-why {
     transition: none;
   }
 
@@ -3203,13 +3217,13 @@ body.os-dragging {
     animation: none;
   }
 
-  .gauge-reveal {
+  .lens-reveal {
     animation: none;
   }
 
   /* No breathing, no halo sweep. The button is emphasised by standing still
-     with a firmer ring, and GaugeApp releases it after a short hold. */
-  .gauge-evaluate.nudge {
+     with a firmer ring, and LensApp releases it after a short hold. */
+  .lens-evaluate.nudge {
     animation: none;
     box-shadow: 0 8px 18px rgba(169, 78, 38, 0.3), 0 0 0 3px rgba(224, 147, 60, 0.55);
   }
@@ -3955,7 +3969,7 @@ body.os-dragging {
   color: #21242a;
 }
 
-/* ---- inert browser chrome, matching the Gauge mock ---- */
+/* ---- inert browser chrome, matching the Lens mock ---- */
 
 .li-chrome {
   flex: none;

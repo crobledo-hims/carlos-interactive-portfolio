@@ -3,27 +3,27 @@ import type { CSSProperties } from "react";
 import { ScrollArea } from "../ScrollArea";
 import { LockGlyph } from "../icons";
 import {
-  gaugeAssessment,
-  gaugeCandidate,
-  gaugeCriteriaLock,
-  gaugeCta,
-  gaugeEvidence,
-  gaugeGaps,
-  gaugeResponsibleUse,
-  gaugeRole,
-  gaugeZones,
-} from "../data/gauge";
-import type { GaugeZone } from "../data/gauge";
+  lensAssessment,
+  lensCandidate,
+  lensCriteriaLock,
+  lensCta,
+  lensEvidence,
+  lensGaps,
+  lensResponsibleUse,
+  lensRole,
+  lensZones,
+} from "../data/lens";
+import type { LensZone } from "../data/lens";
 
 /** The evaluation is run once per page session, like the Rex demo. */
-let gaugeEvaluated = false;
+let lensEvaluated = false;
 
 /**
  * The attention nudge on the evaluate button also runs once per page session.
  * Anything that proves the visitor has found the button — a hover, a focus, a
  * click — sets this too, so the nudge never argues with someone already there.
  */
-let gaugeNudged = false;
+let lensNudged = false;
 
 type Phase = "idle" | "sweeping" | "done";
 
@@ -56,8 +56,8 @@ function sweepValue(t: number, target: number) {
   return target * (1 + (OVERSHOOT - 1) * decay);
 }
 
-function zoneFor(score: number): GaugeZone {
-  return gaugeZones.find((z) => score < z.max) ?? gaugeZones[gaugeZones.length - 1];
+function zoneFor(score: number): LensZone {
+  return lensZones.find((z) => score < z.max) ?? lensZones[lensZones.length - 1];
 }
 
 /* --------------------------------------------------------------- the dial */
@@ -93,11 +93,11 @@ function Dial({ score, phase, needleRef, progressRef }: DialProps) {
   const dash = phase === "idle" ? 0 : score;
 
   return (
-    <svg className="gauge-dial" viewBox="0 0 200 112" role="presentation">
-      {gaugeZones.map((z, i) => {
-        const from = i === 0 ? 0 : gaugeZones[i - 1].max;
+    <svg className="lens-dial" viewBox="0 0 200 112" role="presentation">
+      {lensZones.map((z, i) => {
+        const from = i === 0 ? 0 : lensZones[i - 1].max;
         return (
-          <path key={z.label} className={`gauge-dial-zone ${z.tone}`} d={arcPath(from, Math.min(z.max, 100))} />
+          <path key={z.label} className={`lens-dial-zone ${z.tone}`} d={arcPath(from, Math.min(z.max, 100))} />
         );
       })}
 
@@ -107,7 +107,7 @@ function Dial({ score, phase, needleRef, progressRef }: DialProps) {
         return (
           <line
             key={t}
-            className={`gauge-dial-tick${t % 50 === 0 ? " major" : ""}`}
+            className={`lens-dial-tick${t % 50 === 0 ? " major" : ""}`}
             x1={outer.x}
             y1={outer.y}
             x2={inner.x}
@@ -118,7 +118,7 @@ function Dial({ score, phase, needleRef, progressRef }: DialProps) {
 
       <path
         ref={progressRef}
-        className="gauge-dial-progress"
+        className="lens-dial-progress"
         d={arcPath(0, 100)}
         pathLength={100}
         style={{ strokeDasharray: `${dash} 100` }}
@@ -126,7 +126,7 @@ function Dial({ score, phase, needleRef, progressRef }: DialProps) {
 
       <g
         ref={needleRef}
-        className="gauge-dial-needle"
+        className="lens-dial-needle"
         style={{
           transformBox: "view-box",
           transformOrigin: `${CX}px ${CY}px`,
@@ -135,18 +135,18 @@ function Dial({ score, phase, needleRef, progressRef }: DialProps) {
       >
         <path d={`M${CX - 5} ${CY - 4.5} L${CX - 66} ${CY} L${CX - 5} ${CY + 4.5} L${CX + 13} ${CY} Z`} />
       </g>
-      <circle className="gauge-dial-hub" cx={CX} cy={CY} r="6" />
+      <circle className="lens-dial-hub" cx={CX} cy={CY} r="6" />
     </svg>
   );
 }
 
 /* ------------------------------------------------------------------- app */
 
-function GaugeAppImpl() {
+function LensAppImpl() {
   const [panelOpen, setPanelOpen] = useState(true);
   const [criteriaOpen, setCriteriaOpen] = useState(false);
   const [evidenceOpen, setEvidenceOpen] = useState(true);
-  const [phase, setPhase] = useState<Phase>(() => (gaugeEvaluated ? "done" : "idle"));
+  const [phase, setPhase] = useState<Phase>(() => (lensEvaluated ? "done" : "idle"));
   const [cascade, setCascade] = useState(false);
   const [nudge, setNudge] = useState(false);
 
@@ -157,7 +157,7 @@ function GaugeAppImpl() {
   const rafRef = useRef(0);
   const timerRef = useRef(0);
 
-  const score = gaugeAssessment.score;
+  const score = lensAssessment.score;
   const finalZone = zoneFor(score);
 
   const stop = useCallback(() => {
@@ -179,7 +179,7 @@ function GaugeAppImpl() {
       stop();
       setPhase("done");
       setCascade(true);
-      gaugeEvaluated = true;
+      lensEvaluated = true;
     };
 
     const frame = (now: number) => {
@@ -196,7 +196,7 @@ function GaugeAppImpl() {
       if (zoneRef.current) {
         const z = zoneFor(shown);
         zoneRef.current.textContent = z.label;
-        zoneRef.current.className = `gauge-zone ${z.tone}`;
+        zoneRef.current.className = `lens-zone ${z.tone}`;
       }
       if (t < 1) {
         rafRef.current = requestAnimationFrame(frame);
@@ -217,7 +217,7 @@ function GaugeAppImpl() {
    * the button's existing transform transition eases the last 2.5% back.
    */
   const stopNudge = useCallback(() => {
-    gaugeNudged = true;
+    lensNudged = true;
     setNudge(false);
   }, []);
 
@@ -225,14 +225,14 @@ function GaugeAppImpl() {
   // animationend never arrives if the tab is throttled, and reduced motion has
   // no animation to end at all.
   useEffect(() => {
-    if (phase !== "idle" || gaugeNudged) return;
+    if (phase !== "idle" || lensNudged) return;
     let run = 0;
     const arm = window.setTimeout(() => {
-      if (gaugeNudged) return;
+      if (lensNudged) return;
       setNudge(true);
       run = window.setTimeout(
         () => {
-          gaugeNudged = true;
+          lensNudged = true;
           setNudge(false);
         },
         reducedMotion() ? NUDGE_STATIC_MS : NUDGE_RUN_MS + 400,
@@ -249,7 +249,7 @@ function GaugeAppImpl() {
     if (reducedMotion()) {
       setPhase("done");
       setCascade(false);
-      gaugeEvaluated = true;
+      lensEvaluated = true;
       return;
     }
     setCascade(false);
@@ -257,146 +257,146 @@ function GaugeAppImpl() {
   }, [stop]);
 
   const reveal = (i: number): CSSProperties => ({ "--i": i }) as CSSProperties;
-  const revealClass = cascade ? "gauge-reveal" : undefined;
+  const revealClass = cascade ? "lens-reveal" : undefined;
 
   return (
-    <div className="gauge">
+    <div className="lens">
       {/* ------------------------------------------------- browser chrome */}
-      <div className="gauge-chrome">
-        <div className="gauge-tabs">
-          <div className="gauge-tab active">
-            <span className="gauge-favicon" />
-            <span className="gauge-tab-title">LinkedIn Recruiter — Candidate profile</span>
-            <span className="gauge-tab-x">×</span>
+      <div className="lens-chrome">
+        <div className="lens-tabs">
+          <div className="lens-tab active">
+            <span className="lens-favicon" />
+            <span className="lens-tab-title">LinkedIn Recruiter — Candidate profile</span>
+            <span className="lens-tab-x">×</span>
           </div>
-          <div className="gauge-tab">
-            <span className="gauge-favicon alt" />
-            <span className="gauge-tab-title">Project: {gaugeRole.project}</span>
+          <div className="lens-tab">
+            <span className="lens-favicon alt" />
+            <span className="lens-tab-title">Project: {lensRole.project}</span>
           </div>
-          <span className="gauge-newtab">+</span>
+          <span className="lens-newtab">+</span>
         </div>
-        <div className="gauge-toolbar">
-          <span className="gauge-nav">‹</span>
-          <span className="gauge-nav dim">›</span>
-          <span className="gauge-nav">⟳</span>
-          <div className="gauge-omnibox">
+        <div className="lens-toolbar">
+          <span className="lens-nav">‹</span>
+          <span className="lens-nav dim">›</span>
+          <span className="lens-nav">⟳</span>
+          <div className="lens-omnibox">
             <LockGlyph />
             <span>linkedin.com/talent/profile/AEQ4b2…</span>
           </div>
           <button
-            className={`gauge-ext${panelOpen ? " on" : ""}`}
+            className={`lens-ext${panelOpen ? " on" : ""}`}
             type="button"
             aria-pressed={panelOpen}
             onClick={() => setPanelOpen(!panelOpen)}
-            title="Toggle the Gauge extension panel"
+            title="Toggle the Lens extension panel"
           >
-            <span className="gauge-ext-tile">G</span>
-            Gauge
+            <span className="lens-ext-tile">L</span>
+            Lens
           </button>
         </div>
       </div>
 
       {/* --------------------------------------------------- page content */}
-      <div className="gauge-page">
-        <ScrollArea className="gauge-profile">
-          <div className="gauge-site-head">
-            <span className="gauge-site-mark">R</span>
-            <span className="gauge-site-name">Recruiter</span>
-            <span className="gauge-site-project">Project · {gaugeRole.project}</span>
+      <div className="lens-page">
+        <ScrollArea className="lens-profile">
+          <div className="lens-site-head">
+            <span className="lens-site-mark">R</span>
+            <span className="lens-site-name">Recruiter</span>
+            <span className="lens-site-project">Project · {lensRole.project}</span>
           </div>
 
-          <div className="gauge-hero">
-            <div className="gauge-avatar">{gaugeCandidate.initials}</div>
-            <div className="gauge-hero-main">
-              <div className="gauge-name">{gaugeCandidate.name}</div>
-              <div className="gauge-headline">{gaugeCandidate.headline}</div>
-              <div className="gauge-meta">
-                {gaugeCandidate.company} · {gaugeCandidate.location} · {gaugeCandidate.connections}
+          <div className="lens-hero">
+            <div className="lens-avatar">{lensCandidate.initials}</div>
+            <div className="lens-hero-main">
+              <div className="lens-name">{lensCandidate.name}</div>
+              <div className="lens-headline">{lensCandidate.headline}</div>
+              <div className="lens-meta">
+                {lensCandidate.company} · {lensCandidate.location} · {lensCandidate.connections}
               </div>
-              <div className="gauge-open">{gaugeCandidate.openTo}</div>
-              <div className="gauge-hero-actions">
-                <span className="gauge-btn primary">Message</span>
-                <span className="gauge-btn">Save to project</span>
-                <span className="gauge-btn">More</span>
+              <div className="lens-open">{lensCandidate.openTo}</div>
+              <div className="lens-hero-actions">
+                <span className="lens-btn primary">Message</span>
+                <span className="lens-btn">Save to project</span>
+                <span className="lens-btn">More</span>
               </div>
             </div>
           </div>
 
-          <section className="gauge-sec">
+          <section className="lens-sec">
             <h4>About</h4>
-            <p>{gaugeCandidate.about}</p>
+            <p>{lensCandidate.about}</p>
           </section>
 
-          <section className="gauge-sec">
+          <section className="lens-sec">
             <h4>Experience</h4>
-            {gaugeCandidate.experience.map((e) => (
-              <div className="gauge-exp" key={`${e.company}-${e.title}`}>
-                <div className="gauge-exp-logo">{e.company.slice(0, 1)}</div>
+            {lensCandidate.experience.map((e) => (
+              <div className="lens-exp" key={`${e.company}-${e.title}`}>
+                <div className="lens-exp-logo">{e.company.slice(0, 1)}</div>
                 <div>
-                  <div className="gauge-exp-title">{e.title}</div>
-                  <div className="gauge-exp-company">{e.company}</div>
-                  <div className="gauge-exp-dates">{e.dates}</div>
-                  <p className="gauge-exp-detail">{e.detail}</p>
+                  <div className="lens-exp-title">{e.title}</div>
+                  <div className="lens-exp-company">{e.company}</div>
+                  <div className="lens-exp-dates">{e.dates}</div>
+                  <p className="lens-exp-detail">{e.detail}</p>
                 </div>
               </div>
             ))}
           </section>
 
-          <section className="gauge-sec">
+          <section className="lens-sec">
             <h4>Skills</h4>
-            <div className="gauge-skills">
-              {gaugeCandidate.skills.map((s) => (
-                <span className="gauge-skill" key={s}>
+            <div className="lens-skills">
+              {lensCandidate.skills.map((s) => (
+                <span className="lens-skill" key={s}>
                   {s}
                 </span>
               ))}
             </div>
           </section>
 
-          <section className="gauge-sec">
+          <section className="lens-sec">
             <h4>Education</h4>
-            <p>{gaugeCandidate.education}</p>
+            <p>{lensCandidate.education}</p>
           </section>
 
-          <div className="gauge-fiction">Fictional profile — sample data for this portfolio demo.</div>
+          <div className="lens-fiction">Fictional profile — sample data for this portfolio demo.</div>
         </ScrollArea>
 
         {/* ------------------------------------------- the extension panel */}
         {panelOpen && (
-          <div className="gauge-panel">
-            <div className="gauge-panel-head">
-              <span className="gauge-ext-tile lg">G</span>
+          <div className="lens-panel">
+            <div className="lens-panel-head">
+              <span className="lens-ext-tile lg">L</span>
               <div>
-                <div className="gauge-panel-title">Gauge</div>
-                <div className="gauge-panel-sub">
+                <div className="lens-panel-title">Lens</div>
+                <div className="lens-panel-sub">
                   {phase === "done" ? "Evaluated against locked criteria" : "Criteria locked · not yet evaluated"}
                 </div>
               </div>
               <button
-                className="gauge-panel-x"
+                className="lens-panel-x"
                 type="button"
-                aria-label="Hide the Gauge panel"
+                aria-label="Hide the Lens panel"
                 onClick={() => setPanelOpen(false)}
               >
                 ×
               </button>
             </div>
 
-            <ScrollArea className="gauge-panel-body">
+            <ScrollArea className="lens-panel-body">
               {/* Title, then one row carrying the lock badge and the drawer
                   toggle. Two rows is the whole card: the operational metadata
                   that used to sit between them said nothing a visitor needs. */}
-              <div className="gauge-role">
-                <div className="gauge-role-title">{gaugeRole.title}</div>
-                <div className="gauge-role-lock">
-                  <span className="gauge-lock-badge">
+              <div className="lens-role">
+                <div className="lens-role-title">{lensRole.title}</div>
+                <div className="lens-role-lock">
+                  <span className="lens-lock-badge">
                     <LockGlyph /> Criteria locked
                   </span>
                   <button
                     type="button"
-                    className="gauge-criteria-toggle"
+                    className="lens-criteria-toggle"
                     aria-expanded={criteriaOpen}
-                    aria-controls="gauge-criteria-drawer"
+                    aria-controls="lens-criteria-drawer"
                     onClick={() => setCriteriaOpen(!criteriaOpen)}
                   >
                     {criteriaOpen ? "Hide locked criteria" : "View locked criteria"}
@@ -405,31 +405,31 @@ function GaugeAppImpl() {
               </div>
 
               {criteriaOpen && (
-                <div className="gauge-drawer" id="gauge-criteria-drawer">
+                <div className="lens-drawer" id="lens-criteria-drawer">
                   <h4>Role scope</h4>
-                  <p>{gaugeCriteriaLock.scope}</p>
+                  <p>{lensCriteriaLock.scope}</p>
                   <h4>Non-negotiables</h4>
                   <ol>
-                    {gaugeCriteriaLock.nonNegotiables.map((c) => (
+                    {lensCriteriaLock.nonNegotiables.map((c) => (
                       <li key={c}>{c}</li>
                     ))}
                   </ol>
                   <h4>Nice to have</h4>
                   <ol>
-                    {gaugeCriteriaLock.niceToHaves.map((c) => (
+                    {lensCriteriaLock.niceToHaves.map((c) => (
                       <li key={c}>{c}</li>
                     ))}
                   </ol>
-                  <p className="gauge-drawer-note">{gaugeCriteriaLock.note}</p>
+                  <p className="lens-drawer-note">{lensCriteriaLock.note}</p>
                 </div>
               )}
 
               {phase === "idle" ? (
-                <div className="gauge-precheck">
+                <div className="lens-precheck">
                   <Dial score={score} phase={phase} needleRef={needleRef} progressRef={progressRef} />
-                  <p className="gauge-precheck-note">{gaugeCta}</p>
+                  <p className="lens-precheck-note">{lensCta}</p>
                   <button
-                    className={`gauge-evaluate${nudge ? " nudge" : ""}`}
+                    className={`lens-evaluate${nudge ? " nudge" : ""}`}
                     type="button"
                     onClick={() => {
                       stopNudge();
@@ -441,7 +441,7 @@ function GaugeAppImpl() {
                   >
                     Evaluate candidate
                   </button>
-                  <p className="gauge-hitl">{gaugeResponsibleUse}</p>
+                  <p className="lens-hitl">{lensResponsibleUse}</p>
                 </div>
               ) : (
                 <>
@@ -449,86 +449,86 @@ function GaugeAppImpl() {
                       frame, so it is hidden from assistive tech and the result
                       is announced once from the status line below. */}
                   <div
-                    className={`gauge-dial-stage ${phase}`}
+                    className={`lens-dial-stage ${phase}`}
                     aria-hidden={phase === "sweeping" ? true : undefined}
                   >
                     <Dial score={score} phase={phase} needleRef={needleRef} progressRef={progressRef} />
-                    <div className="gauge-readout">
+                    <div className="lens-readout">
                       {phase === "done" ? (
                         <>
-                          <p className="gauge-verdict-head">{gaugeAssessment.recommendation}</p>
-                          <p className="gauge-verdict-sub">
-                            Domain context: {gaugeAssessment.domainContext.level}
+                          <p className="lens-verdict-head">{lensAssessment.recommendation}</p>
+                          <p className="lens-verdict-sub">
+                            Domain context: {lensAssessment.domainContext.level}
                           </p>
-                          <p className="gauge-score-line">
+                          <p className="lens-score-line">
                             <span ref={numRef}>{score}</span>
                             <small>/100</small>
-                            <span ref={zoneRef} className={`gauge-zone ${finalZone.tone}`}>
+                            <span ref={zoneRef} className={`lens-zone ${finalZone.tone}`}>
                               {finalZone.label}
                             </span>
                           </p>
                         </>
                       ) : (
                         <>
-                          <p className="gauge-verdict-head dim">Evaluating</p>
-                          <p className="gauge-score-line">
+                          <p className="lens-verdict-head dim">Evaluating</p>
+                          <p className="lens-score-line">
                             <span ref={numRef}>0</span>
                             <small>/100</small>
-                            <span ref={zoneRef} className={`gauge-zone ${zoneFor(0).tone}`}>
+                            <span ref={zoneRef} className={`lens-zone ${zoneFor(0).tone}`}>
                               {zoneFor(0).label}
                             </span>
                           </p>
-                          <p className="gauge-verdict-sub">Reading the profile against locked criteria</p>
+                          <p className="lens-verdict-sub">Reading the profile against locked criteria</p>
                         </>
                       )}
                     </div>
                   </div>
 
-                  <p className="gauge-sr" role="status">
+                  <p className="lens-sr" role="status">
                     {phase === "sweeping"
-                      ? `Evaluating ${gaugeCandidate.name} against the locked criteria`
-                      : `Recommendation: ${gaugeAssessment.recommendation}. Domain context ${gaugeAssessment.domainContext.level}. Score ${score} of 100.`}
+                      ? `Evaluating ${lensCandidate.name} against the locked criteria`
+                      : `Recommendation: ${lensAssessment.recommendation}. Domain context ${lensAssessment.domainContext.level}. Score ${score} of 100.`}
                   </p>
 
                   {phase === "done" && (
                     <>
                       <div className={revealClass} style={reveal(0)}>
-                        <section className="gauge-block">
+                        <section className="lens-block">
                           <h4>Summary</h4>
-                          <p>{gaugeAssessment.summary}</p>
+                          <p>{lensAssessment.summary}</p>
                         </section>
                       </div>
 
                       <div className={revealClass} style={reveal(1)}>
-                        <section className="gauge-block">
+                        <section className="lens-block">
                           <h4>Domain context</h4>
                           <p>
-                            <strong>{gaugeAssessment.domainContext.level}</strong>{" "}
-                            {gaugeAssessment.domainContext.why}
+                            <strong>{lensAssessment.domainContext.level}</strong>{" "}
+                            {lensAssessment.domainContext.why}
                           </p>
                         </section>
                       </div>
 
                       <div className={revealClass} style={reveal(2)}>
-                        <section className="gauge-block">
-                          <div className="gauge-block-head">
+                        <section className="lens-block">
+                          <div className="lens-block-head">
                             <h4>Evidence used</h4>
                             <button
                               type="button"
-                              className="gauge-mini-toggle"
+                              className="lens-mini-toggle"
                               aria-expanded={evidenceOpen}
-                              aria-controls="gauge-evidence"
+                              aria-controls="lens-evidence"
                               onClick={() => setEvidenceOpen(!evidenceOpen)}
                             >
                               {evidenceOpen ? "Collapse" : "Expand"}
                             </button>
                           </div>
                           {evidenceOpen && (
-                            <ul className="gauge-evidence" id="gauge-evidence">
-                              {gaugeEvidence.map((e) => (
+                            <ul className="lens-evidence" id="lens-evidence">
+                              {lensEvidence.map((e) => (
                                 <li key={e.conclusion}>
-                                  <span className="gauge-ev-conclusion">{e.conclusion}</span>
-                                  <span className="gauge-ev-quote">{e.quote}</span>
+                                  <span className="lens-ev-conclusion">{e.conclusion}</span>
+                                  <span className="lens-ev-quote">{e.quote}</span>
                                 </li>
                               ))}
                             </ul>
@@ -537,13 +537,13 @@ function GaugeAppImpl() {
                       </div>
 
                       <div className={revealClass} style={reveal(3)}>
-                        <section className="gauge-block">
+                        <section className="lens-block">
                           <h4>Missing or unconfirmed evidence</h4>
-                          <ul className="gauge-gaps">
-                            {gaugeGaps.map((g) => (
+                          <ul className="lens-gaps">
+                            {lensGaps.map((g) => (
                               <li key={g.item}>
-                                <span className="gauge-gap-item">{g.item}</span>
-                                <span className="gauge-gap-why">{g.why}</span>
+                                <span className="lens-gap-item">{g.item}</span>
+                                <span className="lens-gap-why">{g.why}</span>
                               </li>
                             ))}
                           </ul>
@@ -551,12 +551,12 @@ function GaugeAppImpl() {
                       </div>
 
                       <div className={revealClass} style={reveal(4)}>
-                        <p className="gauge-source">Source: {gaugeAssessment.source}</p>
-                        <div className="gauge-hitl">{gaugeResponsibleUse}</div>
-                        <div className="gauge-panel-actions">
-                          <span className="gauge-btn primary">Copy summary</span>
-                          <span className="gauge-btn">Log decision</span>
-                          <button className="gauge-rerun" type="button" onClick={evaluate}>
+                        <p className="lens-source">Source: {lensAssessment.source}</p>
+                        <div className="lens-hitl">{lensResponsibleUse}</div>
+                        <div className="lens-panel-actions">
+                          <span className="lens-btn primary">Copy summary</span>
+                          <span className="lens-btn">Log decision</span>
+                          <button className="lens-rerun" type="button" onClick={evaluate}>
                             <span aria-hidden="true">↻</span> Re-run evaluation
                           </button>
                         </div>
@@ -573,4 +573,4 @@ function GaugeAppImpl() {
   );
 }
 
-export const GaugeApp = memo(GaugeAppImpl);
+export const LensApp = memo(LensAppImpl);

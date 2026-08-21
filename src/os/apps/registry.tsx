@@ -1,18 +1,18 @@
 import {
-  GaugeGlyph,
+  BeaconGlyph,
+  LensGlyph,
   LinkedInGlyph,
   MailGlyph,
-  PulseGlyph,
   RelayGlyph,
   ResumeGlyph,
   RexGlyph,
   TerminalGlyph,
 } from "../icons";
 import type { AppDef, AppId, ScreenId } from "../types";
-import { GaugeApp } from "./GaugeApp";
+import { BeaconApp } from "./BeaconApp";
+import { LensApp } from "./LensApp";
 import { LinkedInApp } from "./LinkedInApp";
 import { MailApp } from "./MailApp";
-import { PulseApp } from "./PulseApp";
 import { RelayApp } from "./RelayApp";
 import { ResumeApp } from "./ResumeApp";
 import { RexApp } from "./RexApp";
@@ -35,27 +35,29 @@ export const APPS: Record<AppId, AppDef> = {
     minH: 360,
     Component: RexApp,
   },
-  pulse: {
-    id: "pulse",
-    name: "Pulse",
-    subtitle: "Role signals with supporting evidence",
+  beacon: {
+    id: "beacon",
+    name: "Beacon",
+    subtitle: "Role Intelligence",
+    description: "See where recruiting attention is needed.",
     tile: "linear-gradient(155deg,#1f9d6b,#0e5540)",
-    glyph: <PulseGlyph />,
+    glyph: <BeaconGlyph />,
     rect: { x: 92, y: 44, w: 910, h: 560 },
     minW: 520,
     minH: 340,
-    Component: PulseApp,
+    Component: BeaconApp,
   },
-  gauge: {
-    id: "gauge",
-    name: "Gauge",
-    subtitle: "AI-assisted candidate evaluation",
+  lens: {
+    id: "lens",
+    name: "Lens",
+    subtitle: "Candidate Evaluation",
+    description: "Evaluate candidate evidence against role criteria.",
     tile: "linear-gradient(155deg,#e0933c,#a94e26)",
-    glyph: <GaugeGlyph />,
+    glyph: <LensGlyph />,
     rect: { x: 66, y: 38, w: 950, h: 574 },
     minW: 580,
     minH: 380,
-    Component: GaugeApp,
+    Component: LensApp,
   },
   relay: {
     id: "relay",
@@ -116,7 +118,7 @@ export const APPS: Record<AppId, AppDef> = {
 
 /** Apps pinned to each screen's desktop and dock. */
 export const SCREEN_APPS: Record<ScreenId, AppId[]> = {
-  left: ["rex", "pulse", "gauge", "relay"],
+  left: ["rex", "beacon", "lens", "relay"],
   right: ["resume", "linkedin", "mail", "terminal"],
 };
 

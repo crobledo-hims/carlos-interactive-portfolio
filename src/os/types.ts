@@ -2,8 +2,8 @@ import type { ComponentType, ReactNode } from "react";
 
 export type AppId =
   | "rex"
-  | "pulse"
-  | "gauge"
+  | "beacon"
+  | "lens"
   | "relay"
   | "resume"
   | "linkedin"
@@ -29,6 +29,12 @@ export interface AppDef {
   name: string;
   /** Shown under the window title and in the About panel. */
   subtitle: string;
+  /**
+   * One-sentence product description, used wherever an app is described rather
+   * than merely labelled. The About panel falls back to the subtitle for apps
+   * that carry no description of their own.
+   */
+  description?: string;
   /** CSS background for the rounded icon tile. */
   tile: string;
   glyph: ReactNode;

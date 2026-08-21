@@ -1,4 +1,4 @@
-// Editable sample content for the Gauge browser-extension mock.
+// Editable sample content for the Lens browser-extension mock.
 // The candidate below is entirely fictional. Never put a real profile here.
 
 /**
@@ -6,7 +6,7 @@
  * intake before any candidate is evaluated; the evaluation only ever runs
  * against what is locked.
  */
-export interface GaugeCriteriaLock {
+export interface LensCriteriaLock {
   scope: string;
   nonNegotiables: string[];
   niceToHaves: string[];
@@ -14,12 +14,12 @@ export interface GaugeCriteriaLock {
 }
 
 /** A conclusion tied to the exact profile statement that supports it. */
-export interface GaugeEvidence {
+export interface LensEvidence {
   conclusion: string;
   quote: string;
 }
 
-export interface GaugeExperience {
+export interface LensExperience {
   company: string;
   title: string;
   dates: string;
@@ -27,19 +27,19 @@ export interface GaugeExperience {
 }
 
 /** Something plausible that the profile does not actually establish. */
-export interface GaugeGap {
+export interface LensGap {
   item: string;
   why: string;
 }
 
-export const gaugeRole = {
+export const lensRole = {
   title: "Staff Backend Engineer — Payments Platform",
   req: "IC5-PAY-04",
   owner: "Carlos Robledo",
   project: "Payments Staff+ · 2026",
 };
 
-export const gaugeCriteriaLock: GaugeCriteriaLock = {
+export const lensCriteriaLock: LensCriteriaLock = {
   scope:
     "Staff Backend Engineer on the Payments Platform team. Owns the services behind money movement, end to end, including the reliability of what they ship.",
   nonNegotiables: [
@@ -58,27 +58,27 @@ export const gaugeCriteriaLock: GaugeCriteriaLock = {
 };
 
 /** Verbatim call-to-action shown before an evaluation has been run. */
-export const gaugeCta =
+export const lensCta =
   "Would you like to evaluate Maya for Staff Backend Engineer, Payments Platform?";
 
 /**
  * Dial zones. Every zone carries a label so the reading never depends on
  * colour alone.
  */
-export interface GaugeZone {
+export interface LensZone {
   /** Upper bound, exclusive. */
   max: number;
   label: string;
   tone: "red" | "yellow" | "green";
 }
 
-export const gaugeZones: GaugeZone[] = [
+export const lensZones: LensZone[] = [
   { max: 40, label: "Weak match", tone: "red" },
   { max: 70, label: "Partial match", tone: "yellow" },
   { max: 101, label: "Strong match", tone: "green" },
 ];
 
-export const gaugeCandidate = {
+export const lensCandidate = {
   name: "Maya Okafor",
   initials: "MO",
   headline: "Staff Software Engineer — Payments Platform",
@@ -108,7 +108,7 @@ export const gaugeCandidate = {
       dates: "2016 – 2019 · 3 yrs 1 mo",
       detail: "Invoicing and dunning systems; migrated billing off a monolith onto event-driven services.",
     },
-  ] as GaugeExperience[],
+  ] as LensExperience[],
   skills: [
     "Distributed systems",
     "Go",
@@ -122,7 +122,7 @@ export const gaugeCandidate = {
   education: "B.S. Computer Science — University of Illinois",
 };
 
-export const gaugeAssessment = {
+export const lensAssessment = {
   score: 82,
   recommendation: "Advance",
   summary:
@@ -135,7 +135,7 @@ export const gaugeAssessment = {
 };
 
 /** Conclusions mapped to the explicit profile statements behind them. */
-export const gaugeEvidence: GaugeEvidence[] = [
+export const lensEvidence: LensEvidence[] = [
   {
     conclusion: "Backend ownership at Staff-equivalent scope, currently",
     quote: "Staff Software Engineer, Payments Platform, 2022 to present.",
@@ -159,7 +159,7 @@ export const gaugeEvidence: GaugeEvidence[] = [
 ];
 
 /** Plausible but unsupported. Named rather than assumed. */
-export const gaugeGaps: GaugeGap[] = [
+export const lensGaps: LensGap[] = [
   {
     item: "Cross-functional technical influence",
     why: "The profile establishes platform ownership. It says nothing about influence beyond the immediate team, and that is not inferred from a Staff title.",
@@ -174,5 +174,5 @@ export const gaugeGaps: GaugeGap[] = [
   },
 ];
 
-export const gaugeResponsibleUse =
-  "Gauge provides an evidence-based recommendation. Carlos reviews the evidence and makes the final decision.";
+export const lensResponsibleUse =
+  "Lens provides an evidence-based recommendation. Carlos reviews the evidence and makes the final decision.";

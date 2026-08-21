@@ -23,7 +23,7 @@ const HELP: string[] = [
   "  help              show this list",
   "  whoami            who is behind this desk",
   "  ls projects       list the things I have built",
-  "  open <project>    open an app window (rex | pulse | gauge | relay)",
+  "  open <project>    open an app window (rex | beacon | lens | relay)",
   "  open resume       open the resume viewer",
   "  open linkedin     open my LinkedIn profile",
   "  contact           how to reach me",
@@ -32,8 +32,8 @@ const HELP: string[] = [
 
 const PROJECTS: string[] = [
   "rex/     automated recruiting operations — Ashby + Slack + Airtable + AI",
-  "pulse/   recruiting intelligence — rules-based R/Y/G health + forecasts",
-  "gauge/   AI-assisted Chrome extension for LinkedIn Recruiter",
+  "beacon/  role intelligence · see where recruiting attention is needed",
+  "lens/    candidate evaluation · evidence weighed against role criteria",
   "relay/   candidate communication and recruiter prep workflows",
 ];
 
@@ -47,8 +47,8 @@ const WHOAMI: string[] = [
 
 const OPENABLE: Record<string, AppId> = {
   rex: "rex",
-  pulse: "pulse",
-  gauge: "gauge",
+  beacon: "beacon",
+  lens: "lens",
   relay: "relay",
   resume: "resume",
   linkedin: "linkedin",
@@ -118,7 +118,7 @@ function TerminalAppImpl({ openApp }: AppProps) {
           emit([
             ...echo,
             { kind: "err", text: `open: nothing here called '${arg || "?"}'` },
-            { kind: "dim", text: "try: open rex | open pulse | open gauge | open resume | open linkedin" },
+            { kind: "dim", text: "try: open rex | open beacon | open lens | open resume | open linkedin" },
           ]);
         }
         return;

@@ -189,7 +189,16 @@ export function Desktop({ screen }: { screen: ScreenId }) {
                   {SCREEN_W} × {SCREEN_H}, scaled to fit
                 </dd>
                 <dt>Apps</dt>
-                <dd>{pinned.map((id) => APPS[id].name).join(", ")}</dd>
+                <dd>
+                  <ul className="os-about-apps">
+                    {pinned.map((id) => (
+                      <li key={id}>
+                        <b>{APPS[id].name}</b>
+                        {APPS[id].description ?? APPS[id].subtitle}
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
               </dl>
               <div className="os-about-actions">
                 <button

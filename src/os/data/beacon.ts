@@ -1,6 +1,6 @@
-// Pulse - synthetic demonstration fixtures.
+// Beacon - synthetic demonstration fixtures.
 //
-// Pulse reads a snapshot of recruiting activity and shows, per role, what is
+// Beacon reads a snapshot of recruiting activity and shows, per role, what is
 // happening, the data behind it, and who should take a look. It surfaces
 // conditions for a person to review; it does not score candidates, predict
 // outcomes, or decide anything.
@@ -21,17 +21,17 @@
 //     connection to an applicant tracking system.
 
 /** Written status is primary; colour and icon only ever support it. */
-export type PulseSignal = "needs-review" | "watch" | "on-track";
+export type BeaconSignal = "needs-review" | "watch" | "on-track";
 
 /** How long the condition has been visible, in plain words. */
-export type PulseTrend = "new" | "persistent" | "improving";
+export type BeaconTrend = "new" | "persistent" | "improving";
 
-export interface PulseRole {
+export interface BeaconRole {
   id: string;
   title: string;
   team: string;
-  signal: PulseSignal;
-  trend: PulseTrend;
+  signal: BeaconSignal;
+  trend: BeaconTrend;
   /** Short supporting phrase, e.g. "Needs review for 12 days". */
   trendLabel: string;
   /** One plain sentence naming what this role's snapshot shows. */
@@ -47,13 +47,13 @@ export interface PulseRole {
   reviewWith: string;
 }
 
-export const SIGNAL_LABEL: Record<PulseSignal, string> = {
+export const SIGNAL_LABEL: Record<BeaconSignal, string> = {
   "needs-review": "Needs review",
   watch: "Watch",
   "on-track": "On track",
 };
 
-export const pulseRoles: PulseRole[] = [
+export const beaconRoles: BeaconRole[] = [
   {
     id: "role-1",
     title: "Staff Data Engineer",
@@ -97,7 +97,7 @@ export const pulseRoles: PulseRole[] = [
       "Late-stage candidates increased from 1 to 2",
     ],
     explanation:
-      "The current snapshot does not show a condition that needs attention. Late-stage representation has improved since the previous snapshot, and Pulse will continue monitoring the role for changes.",
+      "The current snapshot does not show a condition that needs attention. Late-stage representation has improved since the previous snapshot, and Beacon will continue monitoring the role for changes.",
     reviewFocus: "No immediate review needed",
     reviewWith: "Recruiter",
   },
@@ -116,22 +116,22 @@ export const pulseRoles: PulseRole[] = [
       "1 late-stage candidate",
     ],
     explanation:
-      "The pipeline is active, but four of six candidates are currently in the same stage. Pulse is surfacing that concentration so the recruiting team can review candidate progression.",
+      "The pipeline is active, but four of six candidates are currently in the same stage. Beacon is surfacing that concentration so the recruiting team can review candidate progression.",
     reviewFocus: "Review progression through hiring-manager screens",
     reviewWith: "Recruiter + Hiring Manager",
   },
 ];
 
 /** The role the brief opens on. */
-export const pulseDefaultRole = "role-1";
+export const beaconDefaultRole = "role-1";
 
 /**
  * Header summary, counted from the roles above so it can never drift from
  * them. Each role is counted once by signal, then improving trends are named
  * separately.
  */
-export function pulseSummary(roles: PulseRole[]): string[] {
-  const count = (signal: PulseSignal) => roles.filter((r) => r.signal === signal).length;
+export function beaconSummary(roles: BeaconRole[]): string[] {
+  const count = (signal: BeaconSignal) => roles.filter((r) => r.signal === signal).length;
   return [
     `${roles.length} sample roles`,
     `${count("needs-review")} needs review`,
@@ -140,10 +140,10 @@ export function pulseSummary(roles: PulseRole[]): string[] {
   ];
 }
 
-export const pulseHowItWorks = {
+export const beaconHowItWorks = {
   steps: ["Snapshot", "Signals", "Explainable role brief"],
-  body: "Pulse checks recruiting activity for conditions that may need attention, then shows the supporting data and who should review it.",
+  body: "Beacon checks recruiting activity for conditions that may need attention, then shows the supporting data and who should review it.",
 };
 
-export const pulseDisclaimer =
+export const beaconDisclaimer =
   "Portfolio simulation using synthetic data. The interface and examples were created specifically for this demo.";

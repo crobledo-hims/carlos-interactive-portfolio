@@ -115,40 +115,52 @@ export function RexGlyph() {
   );
 }
 
-export function PulseGlyph() {
+/**
+ * A lighthouse throwing two flat beams.
+ *
+ * The beams are solid wedges rather than arcs on purpose: concentric rings
+ * would read as a signal-strength motif, which is the shape this icon exists
+ * to get away from. The lamp is the one warm accent, the way Terminal keeps a
+ * single green.
+ */
+export function BeaconGlyph() {
   return (
     <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
-      <path
-        d="M3.5 18h5.2l2.8-7.6 4 15L19.4 18h9.1"
-        fill="none"
-        stroke="#fff"
-        strokeWidth="2.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="26.4" cy="8.6" r="3" fill="#7ee39a" />
+      <g fill="#fff" opacity="0.4">
+        <path d="M12.9 10.2 3 6.8v6.8Z" />
+        <path d="M19.1 10.2 29 6.8v6.8Z" />
+      </g>
+      <path d="M12.4 26.4 13.7 13.6h4.6l1.3 12.8Z" fill="#fff" opacity="0.95" />
+      <rect x="12.6" y="11.7" width="6.8" height="2.1" rx="1.05" fill="#fff" />
+      <path d="M13.5 11.7V8.6h5v3.1Z" fill="#fff" />
+      <path d="M12.9 8.6 16 5.4l3.1 3.2Z" fill="#fff" opacity="0.78" />
+      <rect x="14.8" y="8.7" width="2.4" height="2.9" rx="0.7" fill="#ffd88a" />
+      <rect x="10.2" y="26.2" width="11.6" height="2.6" rx="1.3" fill="#fff" opacity="0.8" />
     </svg>
   );
 }
 
-export function GaugeGlyph() {
+/**
+ * A magnifier held over lines of text: reading the evidence, not scoring the
+ * person. Deliberately not an eye, a target, or a rank.
+ */
+export function LensGlyph() {
   return (
     <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
       <path
-        d="M5 22a11 11 0 1 1 22 0"
-        fill="none"
+        d="M21.4 21.4 27.6 27.6"
         stroke="#fff"
-        strokeWidth="2.6"
+        strokeWidth="3.4"
         strokeLinecap="round"
         opacity="0.85"
       />
-      <path
-        d="M16 22 22.4 13.6"
-        stroke="#fff"
-        strokeWidth="2.6"
-        strokeLinecap="round"
-      />
-      <circle cx="16" cy="22" r="2.4" fill="#fff" />
+      <circle cx="14" cy="14" r="8.7" fill="#fff" opacity="0.15" />
+      <circle cx="14" cy="14" r="8.7" fill="none" stroke="#fff" strokeWidth="2.6" />
+      <g stroke="#fff" strokeWidth="1.9" strokeLinecap="round">
+        <path d="M10.2 11.5h7.6" />
+        <path d="M10.2 14.8h7.6" opacity="0.8" />
+        <path d="M10.2 18.1h4.3" opacity="0.6" />
+      </g>
     </svg>
   );
 }
