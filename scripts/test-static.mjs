@@ -3,7 +3,7 @@
  * Run after `npm run build`: `npm run test:static`.
  * Dependency-free on purpose — the repo has no test framework.
  */
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const dist = join(process.cwd(), "dist");
@@ -68,6 +68,58 @@ for (const page of ["index.html", "resume.html"]) {
     check(`${page}: not noindex`, !/<meta[^>]+name=["']robots["'][^>]+noindex/i.test(html));
   } else {
     check(`${page}: present in build output`, false);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Rebrand guards.
+
+   The portfolio apps are Cadence, Beacon, Lens and Relay. Their former names
+   must not survive anywhere a visitor can read them, but Carlos's resume and
+   LinkedIn history legitimately describe the real internal tools he built,
+   which genuinely were called Rex, Pulse and Gauge. That career history is
+   fact and stays. These checks hold both halves of that line at once.
+   -------------------------------------------------------------------------- */
+
+const assetsDir = join(dist, "assets");
+const bundle = existsSync(assetsDir)
+  ? readdirSync(assetsDir)
+      .filter((f) => f.endsWith(".js") || f.endsWith(".css"))
+      .map((f) => readFileSync(join(assetsDir, f), "utf8"))
+      .join("\n")
+  : "";
+
+check("bundle: assets found", bundle.length > 0);
+
+if (bundle) {
+  // Retired app identities, in every form they were rendered.
+  for (const stale of ["@Rex", "Rex Ops", "Recruiting Support", "@Pulse", "@Gauge"]) {
+    check(`bundle: no stale label "${stale}"`, !bundle.includes(stale));
+  }
+  // Retired CSS prefixes; a straggler here means an unstyled or dead rule.
+  for (const prefix of ["rex-", "pulse-", "gauge-"]) {
+    check(`bundle: no "${prefix}" class prefix`, !bundle.includes(prefix));
+  }
+
+  // The current identities, as the interface presents them.
+  for (const wanted of [
+    "Cadence",
+    "@cadence",
+    "Recruiting Operations",
+    "Keeps recruiting teams informed and workflows moving.",
+    "Beacon",
+    "Role Intelligence",
+    "Lens",
+    "Candidate Evaluation",
+    "Relay",
+    "cad-",
+  ]) {
+    check(`bundle: contains "${wanted}"`, bundle.includes(wanted));
+  }
+
+  // The career-history carve-out: these describe real work and must survive.
+  for (const history of ["Designed and built Rex", "Developed Pulse", "Built Gauge"]) {
+    check(`bundle: career history preserved — "${history}"`, bundle.includes(history));
   }
 }
 

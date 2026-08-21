@@ -15,7 +15,7 @@ import {
 } from "../data/lens";
 import type { LensZone } from "../data/lens";
 
-/** The evaluation is run once per page session, like the Rex demo. */
+/** The evaluation is run once per page session, like the Cadence demo. */
 let lensEvaluated = false;
 
 /**

@@ -1,8 +1,8 @@
-// Rex — synthetic demonstration fixtures.
+// Cadence — synthetic demonstration fixtures.
 //
-// Rex is a Slack-first recruiting workflow automation built with Zapier,
-// Airtable, Slack and ChatGPT, with links back to Ashby for recruiting records
-// and interview feedback. It is not an ATS, a dashboard, a candidate evaluator
+// Cadence is a Slack-first recruiting operations product: it keeps recruiting
+// teams informed and workflows moving, and links back out to the recruiting
+// record for the details. It is not an ATS, a dashboard, a candidate evaluator
 // or a forecasting system, and nothing here should imply otherwise.
 //
 // Four workflows are demonstrated, one per sidebar entry:
@@ -17,16 +17,16 @@
 // nothing is transmitted anywhere: the app renders these fixtures locally and
 // the one interactive workflow simulates its outcome in React state.
 //
-// Editing rule: Rex only ever reports what it can observe. Do not add
+// Editing rule: Cadence only ever reports what it can observe. Do not add
 // forecasts, scores, role health, risk ratings, recommended strategy, or any
-// action Rex cannot actually take.
+// action Cadence cannot actually take.
 
 /* ==========================================================================
    Message blocks — the Slack/Block Kit vocabulary the renderer understands
    ========================================================================== */
 
 /** A bold-label line, the way Slack renders "*Label:* value". */
-export interface RexFieldLine {
+export interface CadenceFieldLine {
   label: string;
   value: string;
   /** Render the value as a candidate or role link. */
@@ -34,7 +34,7 @@ export interface RexFieldLine {
 }
 
 /** One candidate row inside a stage or role group. */
-export interface RexItem {
+export interface CadenceItem {
   /** Rendered as a Slack link. */
   name: string;
   /** Decorative glyph; the words in `detail` always carry the meaning. */
@@ -43,22 +43,22 @@ export interface RexItem {
 }
 
 /** A bulleted line that may carry a restrained leading glyph. */
-export interface RexLine {
+export interface CadenceLine {
   icon?: string;
   text: string;
 }
 
-export type RexBlock =
+export type CadenceBlock =
   /** The bold headline of a message. */
   | { kind: "title"; text: string; icon?: string }
   /** A bold section label inside a message. */
   | { kind: "subhead"; text: string }
   /** Plain paragraph text; supports *bold* and @mentions. */
   | { kind: "text"; text: string }
-  | { kind: "fields"; items: RexFieldLine[] }
+  | { kind: "fields"; items: CadenceFieldLine[] }
   /** A stage or role heading with its own candidate rows. */
-  | { kind: "group"; heading: string; count?: number; items: RexItem[] }
-  | { kind: "list"; items: RexLine[] }
+  | { kind: "group"; heading: string; count?: number; items: CadenceItem[] }
+  | { kind: "list"; items: CadenceLine[] }
   | { kind: "divider" }
   /** Small muted caption, Slack's context block. */
   | { kind: "context"; text: string }
@@ -74,12 +74,12 @@ export type RexBlock =
 /** The interactive feedback-reminder workflow. */
 export type FeedbackState = "pending" | "sending" | "sent" | "declined";
 
-export interface RexReaction {
+export interface CadenceReaction {
   emoji: string;
   count: number;
 }
 
-export interface RexMessage {
+export interface CadenceMessage {
   id: string;
   author: string;
   /** Shown next to the name, Slack-profile style. */
@@ -88,42 +88,49 @@ export interface RexMessage {
   color: string;
   bot: boolean;
   time: string;
+  /** Render the Cadence checkpoint mark instead of the initials tile. */
+  mark?: boolean;
   /** Caption above the message saying who can see it. */
   label?: string;
-  blocks: RexBlock[];
-  reactions?: RexReaction[];
+  blocks: CadenceBlock[];
+  reactions?: CadenceReaction[];
   /** Only rendered while the feedback workflow is in this state. */
   showWhen?: FeedbackState;
 }
 
-export interface RexChannel {
+export interface CadenceChannel {
   id: string;
   kind: "channel" | "workflow";
   name: string;
   topic: string;
   unread: number;
   /**
-   * Messages on screen before the composer types the next one out. That
-   * message's own text is the script. Only the story channel sets these.
+   * Indexes into `messages` that the composer types out live during the
+   * scripted opening, in order. Each one's own text is the script. Only the
+   * story channel sets these; every other channel renders complete.
    */
-  composerAfter?: number;
-  typingLabel?: string;
-  messages: RexMessage[];
+  typed?: number[];
+  /** Shown beside the three dots while Cadence is preparing its answer. */
+  processingLabel?: string;
+  messages: CadenceMessage[];
 }
 
-export const rexWorkspace = {
-  name: "Rex Ops",
-  initials: "RX",
-  tagline: "Zapier · Airtable · Slack · ChatGPT",
+export const cadenceWorkspace = {
+  name: "Cadence Ops",
+  tagline: "Recruiting operations, in the channel",
 };
 
-/** Rex's Slack app identity. */
-const REX = {
-  initials: "RX",
-  color: "#4d6bd8",
+/**
+ * Cadence's Slack app identity. `mark` swaps the letter tile for the
+ * three-checkpoint glyph, so the bot never wears initials.
+ */
+const CADENCE = {
+  initials: "CD",
+  mark: true,
+  color: "#5f4b8b",
   bot: true,
-  author: "Rex",
-  role: "Recruiting Support",
+  author: "Cadence",
+  role: "Recruiting Operations",
 };
 const CARLOS = { initials: "CR", color: "#3f7f6d", bot: false, author: "Carlos Robledo" };
 const AVERY = {
@@ -134,7 +141,7 @@ const AVERY = {
   role: "VP, Engineering",
 };
 
-const ROLE = "Staff Backend Engineer, Payments Platform";
+const ROLE = "Staff Backend Engineer — Payments Platform";
 
 /** Restrained glyphs. Every one of them sits beside words that say the same thing. */
 const SCHEDULED = "▸";
@@ -143,16 +150,17 @@ const ADVANCED = "↑";
 const ENTERED = "+";
 const WITHDREW = "×";
 
-export const rexChannels: RexChannel[] = [
+export const cadenceChannels: CadenceChannel[] = [
   /* ---------------------------------------- 1. on-demand pipeline report */
   {
     id: "role-status",
     kind: "channel",
     name: "role-status",
-    topic: "Ask Rex for a pipeline report at any time",
+    topic: "Ask Cadence for a pipeline report at any time",
     unread: 1,
-    composerAfter: 2,
-    typingLabel: "Rex is generating the pipeline report…",
+    // Carlos's two replies are typed into the composer during the opening.
+    typed: [1, 2],
+    processingLabel: "Cadence is preparing the latest pipeline report…",
     messages: [
       {
         ...AVERY,
@@ -161,7 +169,7 @@ export const rexChannels: RexChannel[] = [
         blocks: [
           {
             kind: "text",
-            text: `Hey Carlos, can you share a current pipeline update for the ${ROLE} search?`,
+            text: `Hey Carlos — can you share the latest pipeline status for the ${ROLE} role?`,
           },
         ],
       },
@@ -169,17 +177,20 @@ export const rexChannels: RexChannel[] = [
         ...CARLOS,
         id: "rs-2",
         time: "9:13 AM",
-        blocks: [{ kind: "text", text: "Absolutely. I'm going to use Rex to pull the latest pipeline report." }],
+        blocks: [
+          { kind: "text", text: "Absolutely — I'll use Cadence to pull the latest pipeline report now." },
+        ],
       },
       {
-        // The composer types this one out live before posting it.
         ...CARLOS,
         id: "rs-3",
         time: "9:14 AM",
-        blocks: [{ kind: "text", text: `@Rex Provide a pipeline report for ${ROLE}` }],
+        blocks: [
+          { kind: "text", text: `@cadence generate an updated pipeline report for ${ROLE}.` },
+        ],
       },
       {
-        ...REX,
+        ...CADENCE,
         id: "rs-4",
         time: "9:14 AM",
         blocks: [
@@ -249,7 +260,7 @@ export const rexChannels: RexChannel[] = [
     unread: 1,
     messages: [
       {
-        ...REX,
+        ...CADENCE,
         id: "fb-1",
         time: "2:00 PM",
         label: "Private feedback alert to Carlos",
@@ -268,13 +279,13 @@ export const rexChannels: RexChannel[] = [
           },
           {
             kind: "text",
-            text: "No feedback has been submitted yet. Would you like Rex to send Jordan a reminder?",
+            text: "No feedback has been submitted yet. Would you like Cadence to send Jordan a reminder?",
           },
           { kind: "feedback" },
         ],
       },
       {
-        ...REX,
+        ...CADENCE,
         id: "fb-2",
         time: "2:01 PM",
         label: "Direct message sent to interviewer",
@@ -299,7 +310,7 @@ export const rexChannels: RexChannel[] = [
     unread: 0,
     messages: [
       {
-        ...REX,
+        ...CADENCE,
         id: "sn-1",
         time: "Monday, 8:00 AM",
         label: "Private message to Carlos",
@@ -338,7 +349,7 @@ export const rexChannels: RexChannel[] = [
     unread: 1,
     messages: [
       {
-        ...REX,
+        ...CADENCE,
         id: "oa-1",
         time: "3:42 PM",
         blocks: [
@@ -357,7 +368,7 @@ export const rexChannels: RexChannel[] = [
   },
 ];
 
-export const rexDefaultChannel = "role-status";
+export const cadenceDefaultChannel = "role-status";
 
 /** Shown under the stream. Says what the demo is, once, without repeating it. */
-export const rexFootnote = "Interactive demonstration · All people and recruiting data are synthetic.";
+export const cadenceFootnote = "Interactive demonstration · All people and recruiting data are synthetic.";

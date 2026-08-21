@@ -1,6 +1,18 @@
 import { overlayState } from "../overlayState";
 
-const DURATION = 850;
+/**
+ * Monitor-to-monitor navigation: the switcher, the edge buttons and the arrow
+ * keys. Quick, because it is a control the visitor operates repeatedly.
+ */
+export const NAV_MS = 850;
+
+/**
+ * The one-time trip from the wide office shot down onto the Work monitor.
+ * Slower on purpose: it is the arrival, not a navigation, and the desk needs
+ * long enough to read as a place before the screen takes over.
+ */
+export const ENTER_MS = 2800;
+
 /** Extra time for drei's scroll damping to settle before the lock releases. */
 const SETTLE = 250;
 
@@ -34,8 +46,11 @@ export function isNavigating() {
  *
  * Returns false when the scroll container is not mounted yet or the lock is
  * held, so callers can tell a refused navigation from a completed one.
+ *
+ * `duration` defaults to NAV_MS: every navigation control keeps its existing
+ * feel, and only the caller that explicitly asks for a longer trip gets one.
  */
-export function scrollToOffset(offset: number): boolean {
+export function scrollToOffset(offset: number, duration: number = NAV_MS): boolean {
   const el = overlayState.scrollEl;
   if (!el || running) return false;
 
@@ -52,7 +67,7 @@ export function scrollToOffset(offset: number): boolean {
   const t0 = performance.now();
 
   const step = (now: number) => {
-    const p = Math.min(1, (now - t0) / DURATION);
+    const p = Math.min(1, (now - t0) / duration);
     el.scrollTop = start + (target - start) * easeInOutCubic(p);
     if (p < 1) {
       requestAnimationFrame(step);
@@ -68,7 +83,7 @@ export function scrollToOffset(offset: number): boolean {
   setTimeout(() => {
     if (Math.abs(el.scrollTop - target) > 1) el.scrollTop = target;
     running = false;
-  }, DURATION + SETTLE);
+  }, duration + SETTLE);
 
   return true;
 }

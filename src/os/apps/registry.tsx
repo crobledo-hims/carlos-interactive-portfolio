@@ -5,7 +5,7 @@ import {
   MailGlyph,
   RelayGlyph,
   ResumeGlyph,
-  RexGlyph,
+  CadenceGlyph,
   TerminalGlyph,
 } from "../icons";
 import type { AppDef, AppId, ScreenId } from "../types";
@@ -15,25 +15,26 @@ import { LinkedInApp } from "./LinkedInApp";
 import { MailApp } from "./MailApp";
 import { RelayApp } from "./RelayApp";
 import { ResumeApp } from "./ResumeApp";
-import { RexApp } from "./RexApp";
+import { CadenceApp } from "./CadenceApp";
 import { TerminalApp } from "./TerminalApp";
 
 /**
  * One registry for both screens. A screen only decides which apps get a
  * desktop icon and a dock slot — any app can be opened from anywhere (the
- * terminal's `open rex` relies on that).
+ * terminal's `open cadence` relies on that).
  */
 export const APPS: Record<AppId, AppDef> = {
-  rex: {
-    id: "rex",
-    name: "Rex",
-    subtitle: "Recruiting operations, automated",
+  cadence: {
+    id: "cadence",
+    name: "Cadence",
+    subtitle: "Recruiting Operations",
+    description: "Keeps recruiting teams informed and workflows moving.",
     tile: "linear-gradient(155deg,#5f4b8b,#3a2a5c)",
-    glyph: <RexGlyph />,
+    glyph: <CadenceGlyph />,
     rect: { x: 74, y: 40, w: 940, h: 572 },
     minW: 560,
     minH: 360,
-    Component: RexApp,
+    Component: CadenceApp,
   },
   beacon: {
     id: "beacon",
@@ -118,7 +119,7 @@ export const APPS: Record<AppId, AppDef> = {
 
 /** Apps pinned to each screen's desktop and dock. */
 export const SCREEN_APPS: Record<ScreenId, AppId[]> = {
-  left: ["rex", "beacon", "lens", "relay"],
+  left: ["cadence", "beacon", "lens", "relay"],
   right: ["resume", "linkedin", "mail", "terminal"],
 };
 

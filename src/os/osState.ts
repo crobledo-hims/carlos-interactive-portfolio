@@ -62,7 +62,7 @@ function patch(state: OsState, id: number, fn: (w: WinState) => WinState): OsSta
 
 export function initialOsState(screen: ScreenId): OsState {
   // Each screen boots with one window already open so the desk never looks dead.
-  const bootApp = screen === "left" ? "rex" : "resume";
+  const bootApp = screen === "left" ? "cadence" : "resume";
   const def = APPS[bootApp];
   return {
     wins: [

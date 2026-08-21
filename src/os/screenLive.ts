@@ -5,7 +5,7 @@ import { createContext, useContext } from "react";
  *
  * Both desktops mount at page load, long before the visitor scrolls to them,
  * so "the app just opened" is not the same as "someone can see it". Scripted
- * intros (the Rex demo) wait for this latch so the story starts when the
+ * intros (the Cadence demo) wait for this latch so the story starts when the
  * visitor arrives, not while the camera is still on the wide shot.
  */
 export const ScreenLiveContext = createContext(true);

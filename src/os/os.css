@@ -56,7 +56,7 @@
   border-radius: 6px;
 }
 
-.rex-sr,
+.cad-sr,
 .lens-sr,
 .li-sr {
   position: absolute;
@@ -776,10 +776,10 @@ body.os-dragging {
 }
 
 /* ==========================================================================
-   Rex — a recruiting conversation inside Slack, not a dashboard
+   Cadence — a recruiting conversation inside Slack, not a dashboard
    ========================================================================== */
 
-.rex {
+.cad {
   display: flex;
   background: #1f2126;
   color: #dcdee4;
@@ -787,7 +787,7 @@ body.os-dragging {
 
 /* --------------------------------------------------------------- sidebar */
 
-.rex-rail {
+.cad-rail {
   flex: 0 0 226px;
   display: flex;
   flex-direction: column;
@@ -795,7 +795,7 @@ body.os-dragging {
   background: #3a2545;
 }
 
-.rex-workspace {
+.cad-workspace {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -803,30 +803,37 @@ body.os-dragging {
   border-bottom: 1px solid rgba(255, 255, 255, 0.13);
 }
 
-.rex-ws-tile {
+.cad-ws-tile {
   flex: 0 0 32px;
   height: 32px;
   border-radius: 8px;
   display: grid;
   place-items: center;
   background: #fff;
-  color: #3a2545;
+  color: #4a3568;
   font-size: 12.5px;
   font-weight: 800;
 }
 
-.rex-ws-name {
+/* The checkpoint mark stands in for the letter tile everywhere Cadence
+   itself appears: the workspace header and its own message avatars. */
+.cad-ws-mark {
+  width: 21px;
+  height: 21px;
+}
+
+.cad-ws-name {
   font-size: 14px;
   font-weight: 700;
   color: #fff;
 }
 
-.rex-ws-sub {
+.cad-ws-sub {
   font-size: 11.5px;
   color: rgba(255, 255, 255, 0.62);
 }
 
-.rex-channels {
+.cad-channels {
   flex: 1;
   padding: 4px 8px 12px;
   overflow-y: auto;
@@ -834,7 +841,7 @@ body.os-dragging {
   scrollbar-width: thin;
 }
 
-.rex-group {
+.cad-group {
   padding: 13px 8px 5px;
   font-size: 11px;
   letter-spacing: 0.09em;
@@ -842,7 +849,7 @@ body.os-dragging {
   color: rgba(255, 255, 255, 0.5);
 }
 
-.rex-chan {
+.cad-chan {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -858,44 +865,44 @@ body.os-dragging {
 }
 
 /* The three story channels carry the demo, so they read a step louder. */
-.rex-chan.primary {
+.cad-chan.primary {
   font-size: 14px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.88);
   padding: 7px 9px;
 }
 
-.rex-chan:hover {
+.cad-chan:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
 
-.rex-chan:active {
+.cad-chan:active {
   background: rgba(255, 255, 255, 0.16);
 }
 
-.rex-chan.active {
+.cad-chan.active {
   background: #3f7fd6;
   color: #fff;
 }
 
-.rex-chan[aria-selected="true"] {
+.cad-chan[aria-selected="true"] {
   box-shadow: inset 2px 0 0 #fff;
 }
 
-.rex-hash {
+.cad-hash {
   opacity: 0.62;
   font-size: 12.5px;
 }
 
-.rex-chan-name {
+.cad-chan-name {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.rex-unread {
+.cad-unread {
   padding: 1px 7px;
   border-radius: 10px;
   background: #d6335f;
@@ -904,11 +911,11 @@ body.os-dragging {
   font-weight: 700;
 }
 
-.rex-chan.active .rex-unread {
+.cad-chan.active .cad-unread {
   background: rgba(0, 0, 0, 0.35);
 }
 
-.rex-badge {
+.cad-badge {
   padding: 1px 4px;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.16);
@@ -920,14 +927,14 @@ body.os-dragging {
 
 /* ------------------------------------------------------------ main column */
 
-.rex-main {
+.cad-main {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
-.rex-topbar {
+.cad-topbar {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -936,17 +943,17 @@ body.os-dragging {
   background: #22252a;
 }
 
-.rex-topbar-text {
+.cad-topbar-text {
   min-width: 0;
 }
 
-.rex-topbar-title {
+.cad-topbar-title {
   font-size: 15px;
   font-weight: 700;
   color: #fff;
 }
 
-.rex-topbar-topic {
+.cad-topbar-topic {
   font-size: 12.5px;
   color: #9298a3;
   overflow: hidden;
@@ -954,7 +961,7 @@ body.os-dragging {
   white-space: nowrap;
 }
 
-.rex-replay {
+.cad-replay {
   margin-left: auto;
   flex: none;
   padding: 4px 12px;
@@ -966,12 +973,12 @@ body.os-dragging {
   white-space: nowrap;
 }
 
-.rex-replay:hover {
+.cad-replay:hover {
   background: rgba(255, 255, 255, 0.16);
   color: #fff;
 }
 
-.rex-stream {
+.cad-stream {
   position: relative;
   flex: 1;
   min-height: 0;
@@ -982,21 +989,21 @@ body.os-dragging {
   scrollbar-color: rgba(190, 196, 210, 0.34) transparent;
 }
 
-.rex-stream::-webkit-scrollbar {
+.cad-stream::-webkit-scrollbar {
   width: 10px;
 }
-.rex-stream::-webkit-scrollbar-thumb {
+.cad-stream::-webkit-scrollbar-thumb {
   background: rgba(190, 196, 210, 0.34);
   border-radius: 9px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
-.rex-stream:hover::-webkit-scrollbar-thumb {
+.cad-stream:hover::-webkit-scrollbar-thumb {
   background: rgba(202, 208, 222, 0.5);
   background-clip: content-box;
 }
 
-.rex-divider {
+.cad-divider {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1005,8 +1012,8 @@ body.os-dragging {
   color: #9298a3;
 }
 
-.rex-divider::before,
-.rex-divider::after {
+.cad-divider::before,
+.cad-divider::after {
   content: "";
   flex: 1;
   height: 1px;
@@ -1015,14 +1022,14 @@ body.os-dragging {
 
 /* ------------------------------------------------------------- messages */
 
-.rex-msg-wrap {
+.cad-msg-wrap {
   display: flex;
   flex-direction: column;
 }
 
 /* Says who can actually see the message: these workflows are private to the
    recruiter, and the demo should never imply otherwise. */
-.rex-msg-label {
+.cad-msg-label {
   margin: 8px 0 -1px 51px;
   font-size: 11px;
   font-weight: 600;
@@ -1031,26 +1038,26 @@ body.os-dragging {
   color: #838b9d;
 }
 
-.rex-msg {
+.cad-msg {
   display: flex;
   gap: 11px;
   padding: 7px 4px;
   border-radius: 7px;
-  animation: rexMsgIn 0.26s ease-out;
+  animation: cadMsgIn 0.26s ease-out;
 }
 
-.rex-msg:hover {
+.cad-msg:hover {
   background: rgba(255, 255, 255, 0.028);
 }
 
-@keyframes rexMsgIn {
+@keyframes cadMsgIn {
   from {
     opacity: 0;
     transform: translateY(6px);
   }
 }
 
-.rex-avatar {
+.cad-avatar {
   flex: 0 0 36px;
   height: 36px;
   border-radius: 8px;
@@ -1061,25 +1068,30 @@ body.os-dragging {
   color: #fff;
 }
 
-.rex-msg-main {
+.cad-avatar-mark {
+  width: 25px;
+  height: 25px;
+}
+
+.cad-msg-main {
   min-width: 0;
   flex: 1;
 }
 
-.rex-msg-head {
+.cad-msg-head {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.rex-author {
+.cad-author {
   font-size: 14px;
   font-weight: 700;
   color: #fff;
 }
 
-.rex-role {
+.cad-role {
   padding: 1px 7px;
   border-radius: 9px;
   background: rgba(255, 255, 255, 0.08);
@@ -1088,60 +1100,60 @@ body.os-dragging {
   color: #aeb4bf;
 }
 
-.rex-time {
+.cad-time {
   font-size: 12px;
   color: #868c96;
 }
 
-.rex-text {
+.cad-text {
   margin-top: 2px;
   font-size: 14.5px;
   line-height: 1.55;
   color: #dcdee4;
 }
 
-.rex-text strong {
+.cad-text strong {
   font-weight: 700;
   color: #fff;
 }
 
 /* ------------------------------------------------ Slack message blocks
 
-   Rex's output is a Slack message, not a dashboard. The vocabulary below is
+   Cadence's output is a Slack message, not a dashboard. The vocabulary below is
    deliberately small: bold headings, "Label: value" lines, candidate groups,
    bullets, a muted context line, and Slack-style buttons. Nothing here draws
    a chart, a lens or a metric tile. */
 
-.rex-blocks {
+.cad-blocks {
   max-width: 620px;
   display: flex;
   flex-direction: column;
   gap: 9px;
 }
 
-.rex-blocks > :first-child {
+.cad-blocks > :first-child {
   margin-top: 1px;
 }
 
-.rex-b-title {
+.cad-b-title {
   font-size: 14.5px;
   font-weight: 700;
   line-height: 1.4;
   color: #f2f3f7;
 }
 
-.rex-b-subhead {
+.cad-b-subhead {
   margin-top: 3px;
   font-size: 13px;
   font-weight: 700;
   color: #eceef4;
 }
 
-.rex-b-icon {
+.cad-b-icon {
   margin-right: 6px;
 }
 
-.rex-b-icon.sm {
+.cad-b-icon.sm {
   display: inline-block;
   min-width: 11px;
   margin: 0 5px 0 7px;
@@ -1150,18 +1162,18 @@ body.os-dragging {
 }
 
 /* Leading glyph on a "what changed" line sits flush instead. */
-.rex-b-list.plain .rex-b-icon.sm {
+.cad-b-list.plain .cad-b-icon.sm {
   margin-left: 0;
 }
 
 /* "Label: value", the way Slack renders a bolded field line. */
-.rex-b-fields {
+.cad-b-fields {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.rex-b-field {
+.cad-b-field {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -1169,36 +1181,36 @@ body.os-dragging {
   line-height: 1.5;
 }
 
-.rex-b-field dt {
+.cad-b-field dt {
   font-weight: 700;
   color: #e6e8ef;
 }
 
-.rex-b-field dd {
+.cad-b-field dd {
   color: #c7cbd6;
 }
 
 /* Candidate and role links. Not anchors: nothing here navigates. */
-.rex-link {
+.cad-link {
   color: #7fa6e8;
 }
 
-.rex-b-group {
+.cad-b-group {
   margin-left: 2px;
 }
 
-.rex-b-group-head {
+.cad-b-group-head {
   font-size: 13px;
   font-weight: 700;
   color: #e6e8ef;
 }
 
-.rex-b-count {
+.cad-b-count {
   font-weight: 400;
   color: #9aa2b4;
 }
 
-.rex-b-list {
+.cad-b-list {
   margin: 3px 0 0;
   padding-left: 16px;
   list-style: none;
@@ -1207,53 +1219,53 @@ body.os-dragging {
   gap: 3px;
 }
 
-.rex-b-list li {
+.cad-b-list li {
   position: relative;
   font-size: 13px;
   line-height: 1.5;
   color: #c7cbd6;
 }
 
-.rex-b-list li::before {
+.cad-b-list li::before {
   content: "•";
   position: absolute;
   left: -13px;
   color: #6f7789;
 }
 
-.rex-b-list.plain {
+.cad-b-list.plain {
   padding-left: 2px;
 }
 
-.rex-b-list.plain li::before {
+.cad-b-list.plain li::before {
   content: none;
 }
 
-.rex-b-detail {
+.cad-b-detail {
   font-weight: 600;
   color: #dfe2ea;
 }
 
-.rex-b-divider {
+.cad-b-divider {
   height: 1px;
   border: 0;
   background: rgba(255, 255, 255, 0.09);
 }
 
-.rex-b-context {
+.cad-b-context {
   font-size: 11.5px;
   color: #8b93a5;
 }
 
 /* Illustrative link buttons. Deliberately not focusable: they do nothing, and
    a no-op in the tab order is worse than a label that says so. */
-.rex-b-links {
+.cad-b-links {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.rex-b-link-btn {
+.cad-b-link-btn {
   padding: 5px 12px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -1265,7 +1277,7 @@ body.os-dragging {
 
 /* ---- the one interactive workflow ---- */
 
-.rex-b-actions {
+.cad-b-actions {
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -1273,7 +1285,7 @@ body.os-dragging {
   margin-top: 2px;
 }
 
-.rex-btn {
+.cad-btn {
   font: inherit;
   font-size: 13px;
   font-weight: 700;
@@ -1286,38 +1298,38 @@ body.os-dragging {
   transition: background 160ms ease, border-color 160ms ease;
 }
 
-.rex-btn:hover:not(:disabled) {
+.cad-btn:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.rex-btn.primary {
+.cad-btn.primary {
   background: #2f7d5b;
   border-color: #2f7d5b;
   color: #f4faf7;
 }
 
-.rex-btn.primary:hover:not(:disabled) {
+.cad-btn.primary:hover:not(:disabled) {
   background: #369068;
 }
 
-.rex-btn.ghost {
+.cad-btn.ghost {
   align-self: flex-start;
   font-weight: 600;
   padding: 6px 12px;
   font-size: 12.5px;
 }
 
-.rex-btn:disabled {
+.cad-btn:disabled {
   cursor: default;
   opacity: 0.72;
 }
 
-.rex-btn:focus-visible {
+.cad-btn:focus-visible {
   outline: 2px solid #8ca8ff;
   outline-offset: 2px;
 }
 
-.rex-b-result {
+.cad-b-result {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1326,7 +1338,7 @@ body.os-dragging {
 }
 
 /* State is carried by the glyph and the sentence, never by colour alone. */
-.rex-b-done {
+.cad-b-done {
   display: flex;
   gap: 8px;
   font-size: 13px;
@@ -1334,22 +1346,22 @@ body.os-dragging {
   color: #c7cbd6;
 }
 
-.rex-b-done-icon {
+.cad-b-done-icon {
   color: #8e97ab;
 }
 
-.rex-b-done.ok .rex-b-done-icon {
+.cad-b-done.ok .cad-b-done-icon {
   color: #5cbc8c;
 }
 
 
-.rex-reactions {
+.cad-reactions {
   display: flex;
   gap: 6px;
   margin-top: 8px;
 }
 
-.rex-reaction {
+.cad-reaction {
   padding: 2px 9px;
   border-radius: 11px;
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -1357,47 +1369,47 @@ body.os-dragging {
   font-size: 12px;
 }
 
-.rex-reaction b {
+.cad-reaction b {
   color: #9fb6f0;
 }
 
 
 /* ------------------------------------------------------ typing indicator */
 
-.rex-typing-row {
+.cad-typing-row {
   display: flex;
   align-items: center;
   gap: 10px;
   height: 36px;
 }
 
-.rex-typing-label {
+.cad-typing-label {
   font-size: 14px;
   color: #9298a3;
   font-style: italic;
 }
 
-.rex-dots {
+.cad-dots {
   display: inline-flex;
   gap: 4px;
 }
 
-.rex-dots i {
+.cad-dots i {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: #7d8794;
-  animation: rexBlink 1.05s infinite ease-in-out;
+  animation: cadBlink 1.05s infinite ease-in-out;
 }
 
-.rex-dots i:nth-child(2) {
+.cad-dots i:nth-child(2) {
   animation-delay: 0.14s;
 }
-.rex-dots i:nth-child(3) {
+.cad-dots i:nth-child(3) {
   animation-delay: 0.28s;
 }
 
-@keyframes rexBlink {
+@keyframes cadBlink {
   0%,
   70%,
   100% {
@@ -1413,14 +1425,14 @@ body.os-dragging {
 /* -------------------------------------------------------------- composer */
 
 /* Full composer only while the scripted command is being typed. */
-.rex-composer {
+.cad-composer {
   flex: none;
   padding: 8px 18px 12px;
 }
 
 /* ...and a slim read-only footer the rest of the time, so report cards get
    the vertical space back. */
-.rex-footnote {
+.cad-footnote {
   flex: none;
   padding: 7px 18px 9px;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
@@ -1430,12 +1442,16 @@ body.os-dragging {
   color: #7c828c;
 }
 
-.rex-composer-box {
+.cad-composer-box {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   padding: 10px 13px;
+  /* Room for two lines from the outset. The longest scripted message wraps as
+     it is typed; reserving the space up front means the stream above it never
+     moves while the keystrokes land. */
+  min-height: 62px;
   border-radius: 9px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.03);
@@ -1445,18 +1461,18 @@ body.os-dragging {
 }
 
 /* While the scripted command is being typed the composer reads as focused. */
-.rex-composer-box.typing {
+.cad-composer-box.typing {
   border-color: rgba(126, 158, 240, 0.65);
   background: rgba(255, 255, 255, 0.05);
   box-shadow: 0 0 0 3px rgba(77, 107, 216, 0.16);
 }
 
-.rex-composer-placeholder {
+.cad-composer-placeholder {
   font-size: 13.5px;
   color: #868c96;
 }
 
-.rex-composer-typed {
+.cad-composer-typed {
   flex: 1;
   min-width: 0;
   font-size: 13.5px;
@@ -1464,23 +1480,23 @@ body.os-dragging {
   color: #eceef3;
 }
 
-.rex-caret {
+.cad-caret {
   display: inline-block;
   width: 2px;
   height: 15px;
   margin-left: 1px;
   vertical-align: text-bottom;
   background: #9cc0ff;
-  animation: rexCaret 1.05s steps(1) infinite;
+  animation: cadCaret 1.05s steps(1) infinite;
 }
 
-@keyframes rexCaret {
+@keyframes cadCaret {
   50% {
     opacity: 0;
   }
 }
 
-.rex-mention {
+.cad-mention {
   padding: 0 4px;
   border-radius: 4px;
   background: rgba(93, 130, 230, 0.2);
@@ -1488,13 +1504,13 @@ body.os-dragging {
   font-weight: 600;
 }
 
-.rex-send {
+.cad-send {
   flex: none;
   color: #4a5058;
   transition: color 0.18s ease;
 }
 
-.rex-send.ready {
+.cad-send.ready {
   color: #4ec27e;
 }
 
@@ -3193,7 +3209,7 @@ body.os-dragging {
   .os-win.closing,
   .os-menu-drop,
   .os-about,
-  .rex-msg {
+  .cad-msg {
     animation: none;
   }
 
@@ -3202,18 +3218,18 @@ body.os-dragging {
   .os-icon-tile,
   .os-dock-item,
   .os-dock-label,
-  .rex-chan,
+  .cad-chan,
   .beacon-row,
   .beacon-why {
     transition: none;
   }
 
-  .rex-dots i {
+  .cad-dots i {
     animation: none;
     opacity: 0.55;
   }
 
-  .rex-caret {
+  .cad-caret {
     animation: none;
   }
 

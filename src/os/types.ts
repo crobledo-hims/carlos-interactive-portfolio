@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 
 export type AppId =
-  | "rex"
+  | "cadence"
   | "beacon"
   | "lens"
   | "relay"

@@ -1,12 +1,14 @@
 import { overlayState } from "../overlayState";
 import { WORK_DOCK_OFFSET } from "../scene/CameraRig";
-import { scrollToOffset } from "./scrollTo";
+import { ENTER_MS, scrollToOffset } from "./scrollTo";
 import { useDrivenOpacity } from "./useDrivenOpacity";
 
 // Docks the camera on the Work desktop. Shares the scripted-scroll helper with
-// the monitor navigation controls, so both obey the same transition lock.
+// the monitor navigation controls, so both obey the same transition lock — but
+// asks for the longer arrival timing. Monitor-to-monitor navigation keeps the
+// helper's default, so nothing else in the OS slows down.
 function enterWorkspace() {
-  scrollToOffset(WORK_DOCK_OFFSET);
+  scrollToOffset(WORK_DOCK_OFFSET, ENTER_MS);
 }
 
 export function IntroOverlay() {

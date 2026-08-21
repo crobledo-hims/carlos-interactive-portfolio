@@ -1,7 +1,17 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { overlayState } from "../overlayState";
 import { APPS, SCREEN_APPS, SCREEN_LABEL } from "./apps/registry";
-import { COMPACT_H, COMPACT_W, FIT_H, FIT_W, SCREEN_H, SCREEN_W } from "./constants";
+import {
+  ARRIVED_ALPHA,
+  COMPACT_H,
+  COMPACT_W,
+  FIT_H,
+  FIT_W,
+  SCREEN_H,
+  SCREEN_W,
+  SETTLE_MS,
+  SETTLE_POLL_MS,
+} from "./constants";
 import { DesktopIcons } from "./DesktopIcons";
 import { Dock } from "./Dock";
 import { MenuBar } from "./MenuBar";
@@ -47,14 +57,24 @@ export function Desktop({ screen }: { screen: ScreenId }) {
     return () => ro.disconnect();
   }, []);
 
-  // Latch "this monitor has been on camera". Polled cheaply (and only until it
-  // flips) rather than on every animation frame; scripted app intros wait for
-  // it so they play when the visitor arrives.
+  // Latch "this monitor has arrived and the camera has stopped moving".
+  //
+  // Alpha crossing a threshold is not enough on its own: it crosses while the
+  // camera is still gliding in, and a scripted intro that started there would
+  // play over the tail of the movement. So the alpha has to *hold* — see
+  // ARRIVED_ALPHA / SETTLE_MS. Polled cheaply, and only until the latch flips.
   useEffect(() => {
     if (live) return;
+    let heldSince = 0;
     const id = setInterval(() => {
-      if (overlayState[screen] > 0.9) setLive(true);
-    }, 250);
+      if (overlayState[screen] < ARRIVED_ALPHA) {
+        heldSince = 0; // turned away again; the hold starts over
+        return;
+      }
+      const now = performance.now();
+      if (!heldSince) heldSince = now;
+      else if (now - heldSince >= SETTLE_MS) setLive(true);
+    }, SETTLE_POLL_MS);
     return () => clearInterval(id);
   }, [live, screen]);
 

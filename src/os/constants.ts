@@ -26,3 +26,19 @@ export const BASE_Z = 10;
 
 /** Pointer travel (CSS px) past which a press counts as a drag, not a click. */
 export const DRAG_SLOP = 6;
+
+/**
+ * When a monitor counts as "arrived and settled".
+ *
+ * The camera rig writes each overlay's alpha every frame. Rather than latching
+ * on the first frame that crosses a threshold — which fires while the camera is
+ * still gliding in — a monitor is considered live only once its alpha has held
+ * at ARRIVED_ALPHA continuously for SETTLE_MS. That single rule covers every
+ * way a visitor can arrive: the Enter Workspace trip, the monitor switcher, and
+ * plain scrolling all end with the alpha pinned high and the camera at rest.
+ * Turning away mid-settle drops the alpha and resets the hold.
+ */
+export const ARRIVED_ALPHA = 0.99;
+export const SETTLE_MS = 600;
+/** How often the hold is sampled. Cheap, and only until the latch flips. */
+export const SETTLE_POLL_MS = 100;

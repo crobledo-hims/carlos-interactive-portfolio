@@ -101,16 +101,21 @@ export function LockGlyph() {
 
 /* ---------------------------------------------------------------- app tiles */
 
-export function RexGlyph() {
+/**
+ * Three checkpoints stepping upward, joined by the path between them:
+ * coordination, and work moving forward. The leading checkpoint is the one
+ * accent, so the direction reads before the shape does.
+ */
+export function CadenceGlyph() {
   return (
     <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
-      <g fill="#fff">
-        <rect x="5" y="12.4" width="12.6" height="3.4" rx="1.7" opacity="0.95" />
-        <rect x="5" y="18" width="8.4" height="3.4" rx="1.7" opacity="0.7" />
-        <circle cx="23.2" cy="11.4" r="3.1" opacity="0.95" />
-        <path d="M18.4 22.8a4.8 4.8 0 0 1 9.6 0Z" opacity="0.7" />
-        <rect x="5" y="6.8" width="16.2" height="3.4" rx="1.7" opacity="0.55" />
+      <g stroke="#fff" strokeWidth="2.2" strokeLinecap="round" opacity="0.5">
+        <path d="M9.7 20.1 13.6 17.2" />
+        <path d="M18.9 14.3 22.7 11.5" />
       </g>
+      <circle cx="7" cy="22" r="3.1" fill="#fff" opacity="0.62" />
+      <circle cx="16" cy="16" r="3.1" fill="#fff" opacity="0.82" />
+      <circle cx="25" cy="10" r="3.4" fill="#c9bcff" />
     </svg>
   );
 }
