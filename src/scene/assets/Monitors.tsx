@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import * as THREE from "three";
 import { RoundedBox } from "@react-three/drei";
 import { materials } from "../materials";
-import { memoPaper, monitorChin } from "../textures";
+import { monitorChin } from "../textures";
+import { photoTexture } from "../photoTextures";
 import { parametricGeometry } from "../geometry";
 
 /**
@@ -85,7 +86,7 @@ function Webcam() {
  */
 function Memo() {
   const M = materials();
-  const tex = useMemo(() => memoPaper(), []);
+  const tex = useMemo(() => photoTexture("/textures/memo.jpg"), []);
   const paper = useMemo(
     () =>
       new THREE.MeshStandardMaterial({

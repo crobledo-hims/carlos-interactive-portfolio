@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows } from "@react-three/drei";
+import { ContactShadows, Environment } from "@react-three/drei";
 import { envEquirect } from "../textures";
 import { usePrefersReducedMotion } from "../reducedMotion";
 
@@ -27,7 +27,39 @@ import { usePrefersReducedMotion } from "../reducedMotion";
  * key light creates no mismatch with it — there is nothing to re-bake.
  */
 
-/** Procedural IBL: a warm gradient equirect run through PMREM. No HDRI files. */
+/**
+ * Image-based lighting: Poly Haven's "Small Empty Room 1" (CC0,
+ * polyhaven.com/a/small_empty_room_1), downscaled 1k -> 512x256 in Blender and
+ * served from /hdri. It is a plain room with one bright balcony window, light
+ * walls and a wood floor — structurally the same box this scene models, so the
+ * window streak it puts in the mug glaze, the tile glaze, the acrylic slab and
+ * the monitor bezels reads as *this* room rather than as an imported cast.
+ *
+ * `background` stays off: the room is real geometry, and the Canvas already
+ * attaches its own flat background colour behind it.
+ *
+ * Rotated so the HDRI's window lands roughly where this room's window is
+ * (+x, camera right). Reflections are the only thing consuming it, and a
+ * reflected window on the wrong side is the one mistake an eye catches.
+ */
+const HDRI_URL = "/hdri/small_empty_room_512.hdr";
+const HDRI_ROTATION = new THREE.Euler(0, -Math.PI / 2, 0);
+
+function HdriEnvironment({ intensity }: { intensity: number }) {
+  return (
+    <Environment
+      files={HDRI_URL}
+      environmentIntensity={intensity}
+      environmentRotation={HDRI_ROTATION}
+    />
+  );
+}
+
+/**
+ * Procedural IBL: a warm gradient equirect run through PMREM. No HDRI files.
+ * Still the Suspense fallback — it costs nothing and keeps every material lit
+ * during the frames before the .hdr lands.
+ */
 function ProceduralEnvironment({ intensity = 0.5 }: { intensity?: number }) {
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
@@ -133,10 +165,16 @@ function SunKey() {
 export function Lighting() {
   return (
     <>
-      <ProceduralEnvironment intensity={0.38} />
+      <Suspense fallback={<ProceduralEnvironment intensity={0.38} />}>
+        <HdriEnvironment intensity={0.5} />
+      </Suspense>
 
-      <ambientLight intensity={0.16} color="#fff3e2" />
-      <hemisphereLight intensity={0.3} color="#fff8ee" groundColor="#c0906a" />
+      {/* The HDRI carries real interior luminance, so the flat fills that used
+          to stand in for it are pulled back — ambient 0.16 -> 0.1, hemisphere
+          0.3 -> 0.22. Net exposure is about where it was; the difference is
+          that the light now has direction and structure. */}
+      <ambientLight intensity={0.1} color="#fff3e2" />
+      <hemisphereLight intensity={0.22} color="#fff8ee" groundColor="#c0906a" />
 
       <SunKey />
 

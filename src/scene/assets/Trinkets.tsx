@@ -1,14 +1,39 @@
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import * as THREE from "three";
-import { RoundedBox } from "@react-three/drei";
+import { RoundedBox, useGLTF } from "@react-three/drei";
 import { materials } from "../materials";
-import { ceramicTile, droidBadge, familyPhoto, gradedCard, letterboardFace } from "../textures";
+import { photoTexture } from "../photoTextures";
 import { lathe, starGeometry } from "../geometry";
 import { DESK_SURFACE } from "./Desk";
 
 /* ------------------------------------------------------------------ */
 /* Android figurine — ~7.5 cm classic bugdroid                          */
+/* Blender-built GLB with the real G-shield sticker; the procedural     */
+/* version below stays as the Suspense fallback while it streams in.    */
 /* ------------------------------------------------------------------ */
+
+const DROID_POS: [number, number, number] = [-0.055, DESK_SURFACE, -0.3];
+const DROID_ROT: [number, number, number] = [0, 0.22, 0];
+
+/* Meshopt-compressed; drei bundles the meshopt decoder, so no extra
+   decoder download — Draco was rejected for its 250KB cold-cache cost. */
+const DROID_GLB = "/models/droid.glb";
+
+function DroidModel() {
+  const { scene } = useGLTF(DROID_GLB, false);
+  const model = useMemo(() => {
+    scene.traverse((o) => {
+      if ((o as THREE.Mesh).isMesh) {
+        o.castShadow = true;
+        o.receiveShadow = true;
+      }
+    });
+    return scene;
+  }, [scene]);
+  return <primitive object={model} position={DROID_POS} rotation={DROID_ROT} />;
+}
+
+useGLTF.preload(DROID_GLB, false);
 
 function Droid() {
   const M = materials();
@@ -39,7 +64,7 @@ function Droid() {
   }, []);
 
   const badge = useMemo(() => {
-    const tex = droidBadge();
+    const tex = photoTexture("/textures/droid-badge.png");
     return new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: 0.3 });
   }, []);
 
@@ -49,7 +74,7 @@ function Droid() {
   );
 
   return (
-    <group position={[-0.055, DESK_SURFACE, -0.3]} rotation={[0, 0.22, 0]}>
+    <group position={DROID_POS} rotation={DROID_ROT}>
       {/* legs */}
       {[-0.0088, 0.0088].map((x) => (
         <mesh key={x} position={[x, 0.0087, 0]} castShadow material={M.whitePlastic}>
@@ -82,9 +107,9 @@ function Droid() {
         </mesh>
       ))}
 
-      {/* abstract chest badge */}
+      {/* chest badge — the actual G shield sticker, cut out with alpha */}
       <mesh position={[0, 0.031, 0.0193]} material={badge}>
-        <planeGeometry args={[0.0155, 0.019]} />
+        <planeGeometry args={[0.016, 0.0153]} />
       </mesh>
     </group>
   );
@@ -97,7 +122,7 @@ function Droid() {
 function GradedCard() {
   const M = materials();
   const face = useMemo(() => {
-    const tex = gradedCard();
+    const tex = photoTexture("/textures/card-face.jpg");
     return new THREE.MeshPhysicalMaterial({
       map: tex,
       roughness: 0.28,
@@ -105,6 +130,10 @@ function GradedCard() {
       clearcoat: 0.7,
       clearcoatRoughness: 0.15,
     });
+  }, []);
+  const label = useMemo(() => {
+    const tex = photoTexture("/textures/card-label.jpg");
+    return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5 });
   }, []);
 
   return (
@@ -129,12 +158,16 @@ function GradedCard() {
 
       {/* slab sits in the ledge, leaning with the easel */}
       <group position={[0, 0.069, 0.0035]} rotation={[-0.16, 0, 0]}>
+        {/* grading label at the top of the slab */}
+        <mesh position={[0, 0.0478, 0.0005]} material={label}>
+          <planeGeometry args={[0.06, 0.0175]} />
+        </mesh>
         {/* card inside */}
-        <mesh position={[0, 0, 0.0005]} castShadow material={face}>
-          <planeGeometry args={[0.064, 0.104]} />
+        <mesh position={[0, -0.0102, 0.0005]} castShadow material={face}>
+          <planeGeometry args={[0.058, 0.0943]} />
         </mesh>
         <mesh position={[0, 0, -0.0008]} material={M.paperWhite}>
-          <boxGeometry args={[0.064, 0.104, 0.0016]} />
+          <boxGeometry args={[0.064, 0.114, 0.0016]} />
         </mesh>
         {/* acrylic shell — thin, glossy, visible edge */}
         <mesh material={M.acrylic}>
@@ -152,7 +185,7 @@ function GradedCard() {
 function Letterboard() {
   const M = materials();
   const felt = useMemo(() => {
-    const tex = letterboardFace();
+    const tex = photoTexture("/textures/letterboard.jpg");
     return new THREE.MeshStandardMaterial({
       map: tex,
       bumpMap: tex,
@@ -210,7 +243,7 @@ function Letterboard() {
 function PhotoFrame() {
   const M = materials();
   const photo = useMemo(() => {
-    const tex = familyPhoto();
+    const tex = photoTexture("/textures/family-photo.jpg");
     return new THREE.MeshPhysicalMaterial({
       map: tex,
       roughness: 0.12,
@@ -272,7 +305,7 @@ function CeramicTile() {
     [],
   );
   const glaze = useMemo(() => {
-    const tex = ceramicTile();
+    const tex = photoTexture("/textures/tile.jpg");
     return new THREE.MeshPhysicalMaterial({
       map: tex,
       roughness: 0.11,
@@ -304,7 +337,9 @@ function CeramicTile() {
 export function Trinkets() {
   return (
     <group>
-      <Droid />
+      <Suspense fallback={<Droid />}>
+        <DroidModel />
+      </Suspense>
       <GradedCard />
       <Letterboard />
       <PhotoFrame />
