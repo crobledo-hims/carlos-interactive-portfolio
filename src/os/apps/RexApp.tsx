@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
-import { rexChannels, rexDefaultChannel, rexWorkspace } from "../data/rex";
-import type { RexCard, RexChannel, RexMessage } from "../data/rex";
+import { rexChannels, rexDefaultChannel, rexFootnote, rexWorkspace } from "../data/rex";
+import type { FeedbackState, RexBlock, RexChannel, RexMessage } from "../data/rex";
 import { useScreenLive } from "../screenLive";
 
 /** The scripted intro plays once per page session, not once per window. */
@@ -15,8 +15,8 @@ let demoPlayed = false;
  *   0ms      two messages already visible
  *   420ms    the @Rex command fills the composer
  *   900ms    ...and posts; the composer collapses to its read-only footer
- *   1060ms   "Rex is generating a pipeline report…"
- *   1660ms   the report card
+ *   1060ms   "Rex is generating the pipeline report…"
+ *   1660ms   the pipeline snapshot
  */
 const PRE_TYPE_MS = 420;
 const TYPE_MS = 480;
@@ -24,12 +24,15 @@ const SEND_MS = 160;
 const THINK_MS = 600;
 const SETTLE_MS = 400; // grace after the report before scroll-follow lets go
 
+/** How long the simulated Slack DM takes to "send". */
+const FEEDBACK_MS = 700;
+
 function reducedMotion() {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** *bold* spans and @mentions, without pulling in a markdown dependency. */
-const TOKEN = /(\*[^*]+\*|@[A-Za-z][\w-]*)/g;
+/** *bold* spans, @mentions and [links], without a markdown dependency. */
+const TOKEN = /(\*[^*]+\*|@[A-Za-z][\w-]*|\[[^\]]+\])/g;
 
 function RichText({ text }: { text: string }) {
   return (
@@ -43,6 +46,13 @@ function RichText({ text }: { text: string }) {
             </span>
           );
         }
+        if (part.length > 2 && part.startsWith("[") && part.endsWith("]")) {
+          return (
+            <span className="rex-link" key={i}>
+              {part.slice(1, -1)}
+            </span>
+          );
+        }
         if (part.length > 2 && part.startsWith("*") && part.endsWith("*")) {
           return <strong key={i}>{part.slice(1, -1)}</strong>;
         }
@@ -52,149 +62,189 @@ function RichText({ text }: { text: string }) {
   );
 }
 
-/* ------------------------------------------------------------------ card */
+/* ------------------------------------------------- interactive workflow */
 
-function Card({ card }: { card: RexCard }) {
-  const { status, fields, stages, progress, sections, footer, actions } = card;
-  const maxStage = stages ? Math.max(...stages.map((s) => s.count), 1) : 1;
-  const hasLeft = Boolean(status || fields || stages || progress);
+interface FeedbackProps {
+  state: FeedbackState;
+  onSend: () => void;
+  onDecline: () => void;
+  onReset: () => void;
+}
 
+/**
+ * The one interactive workflow in the demo. Detection and the alert above are
+ * automatic; this reminder goes to the interviewer only when the recruiter
+ * presses the button. Nothing leaves the page: the outcome is React state.
+ *
+ * Every state carries a glyph *and* words, so none of them is distinguished by
+ * colour alone.
+ */
+function Feedback({ state, onSend, onDecline, onReset }: FeedbackProps) {
+  if (state === "sent" || state === "declined") {
+    const sent = state === "sent";
+    return (
+      <div className="rex-b-result">
+        <p className={`rex-b-done${sent ? " ok" : ""}`}>
+          <span className="rex-b-done-icon" aria-hidden="true">
+            {sent ? "✓" : "○"}
+          </span>
+          {sent
+            ? "Reminder sent to Jordan Lee."
+            : "Feedback marked not required. No reminder was sent to Jordan Lee."}
+        </p>
+        <button type="button" className="rex-btn ghost" onClick={onReset}>
+          Reset example
+        </button>
+      </div>
+    );
+  }
+
+  const busy = state === "sending";
   return (
-    <article className="rex-card" style={{ borderLeftColor: card.accent }}>
-      <h3 className="rex-card-title">{card.title}</h3>
+    <div className="rex-b-actions">
+      <button type="button" className="rex-btn primary" onClick={onSend} disabled={busy}>
+        {busy ? "Sending…" : "Send follow-up to interviewer"}
+      </button>
+      <button type="button" className="rex-btn" onClick={onDecline} disabled={busy}>
+        Mark not required
+      </button>
+    </div>
+  );
+}
 
-      <div className="rex-card-body">
-        {hasLeft && (
-          <div className="rex-card-col">
-            {status && (
-              <p className={`rex-status ${status.tone}`}>
-                <span className="rex-status-icon" aria-hidden="true">
-                  {status.icon}
-                </span>
-                <span className="rex-status-key">Status</span>
-                <span className="rex-status-label">{status.label}</span>
+/* ------------------------------------------------------------- blocks */
+
+function Blocks({ blocks, feedback }: { blocks: RexBlock[]; feedback: FeedbackProps }) {
+  return (
+    <div className="rex-blocks">
+      {blocks.map((b, i) => {
+        switch (b.kind) {
+          case "title":
+            return (
+              <h3 className="rex-b-title" key={i}>
+                {b.icon && (
+                  <span className="rex-b-icon" aria-hidden="true">
+                    {b.icon}
+                  </span>
+                )}
+                {b.text}
+              </h3>
+            );
+          case "subhead":
+            return (
+              <h4 className="rex-b-subhead" key={i}>
+                {b.text}
+              </h4>
+            );
+          case "text":
+            return (
+              <p className="rex-text" key={i}>
+                <RichText text={b.text} />
               </p>
-            )}
-
-            {fields && (
-              <dl className="rex-fields">
-                {fields.map((f) => (
-                  <div className={`rex-field${f.wide ? " wide" : ""}`} key={f.label}>
-                    <dt className="rex-field-label">{f.label}</dt>
-                    <dd className="rex-field-value">{f.value}</dd>
+            );
+          case "fields":
+            return (
+              <dl className="rex-b-fields" key={i}>
+                {b.items.map((f) => (
+                  <div className="rex-b-field" key={f.label}>
+                    <dt>{f.label}:</dt>
+                    <dd className={f.link ? "rex-link" : undefined}>{f.value}</dd>
                   </div>
                 ))}
               </dl>
-            )}
-
-            {stages && (
-              <div className="rex-stages">
-                <p className="rex-stages-head">Pipeline</p>
-                <ul>
-                  {stages.map((s) => (
-                    <li className="rex-stage" key={s.label}>
-                      <span className="rex-stage-label">{s.label}</span>
-                      <span className="rex-stage-bar" aria-hidden="true">
-                        <span style={{ width: `${Math.round((s.count / maxStage) * 100)}%` }} />
-                      </span>
-                      <span className="rex-stage-count">{s.count}</span>
+            );
+          case "group":
+            return (
+              <div className="rex-b-group" key={i}>
+                <p className="rex-b-group-head">
+                  {b.heading}
+                  {b.count !== undefined && <span className="rex-b-count"> ({b.count})</span>}
+                </p>
+                <ul className="rex-b-list">
+                  {b.items.map((it) => (
+                    <li key={it.name}>
+                      <span className="rex-link">{it.name}</span>
+                      {it.icon && (
+                        <span className="rex-b-icon sm" aria-hidden="true">
+                          {it.icon}
+                        </span>
+                      )}
+                      <span className="rex-b-detail">{it.detail}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-            )}
-
-            {progress && (
-              <div className="rex-progress">
-                <div
-                  className="rex-progress-track"
-                  role="img"
-                  aria-label={`${progress.label}: ${progress.value} of ${progress.max}`}
-                >
-                  {Array.from({ length: progress.max }, (_, i) => (
-                    <span key={i} className={i < progress.value ? "on" : ""} />
-                  ))}
-                </div>
-                <p className="rex-progress-note">{progress.note}</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {sections && (
-          <div className="rex-card-col">
-            {sections.map((sec) => (
-              <section className="rex-section" key={sec.heading}>
-                <h4>{sec.heading}</h4>
-                {sec.ordered ? (
-                  <ol>
-                    {sec.items.map((it) => (
-                      <li key={it}>{it}</li>
-                    ))}
-                  </ol>
-                ) : (
-                  <ul>
-                    {sec.items.map((it) => (
-                      <li key={it}>{it}</li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {(footer || actions) && (
-        <div className="rex-card-foot">
-          {footer && <p className="rex-card-footer">{footer}</p>}
-          {actions && (
-            <div className="rex-actions">
-              <span className="rex-sr">Read-only demo controls:</span>
-              {actions.map((a) => (
-                <span className="rex-action" key={a}>
-                  {a}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </article>
+            );
+          case "list":
+            return (
+              <ul className="rex-b-list plain" key={i}>
+                {b.items.map((l) => (
+                  <li key={l.text}>
+                    {l.icon && (
+                      <span className="rex-b-icon sm" aria-hidden="true">
+                        {l.icon}
+                      </span>
+                    )}
+                    <span>{l.text}</span>
+                  </li>
+                ))}
+              </ul>
+            );
+          case "divider":
+            return <hr className="rex-b-divider" key={i} />;
+          case "context":
+            return (
+              <p className="rex-b-context" key={i}>
+                {b.text}
+              </p>
+            );
+          case "actions":
+            return (
+              <p className="rex-b-links" key={i}>
+                <span className="rex-sr">Illustrative controls, not connected to anything: </span>
+                {b.items.map((a) => (
+                  <span className="rex-b-link-btn" key={a}>
+                    {a}
+                  </span>
+                ))}
+              </p>
+            );
+          case "feedback":
+            return <Feedback key={i} {...feedback} />;
+        }
+      })}
+    </div>
   );
 }
 
 /* --------------------------------------------------------------- message */
 
-function Message({ m, last }: { m: RexMessage; last: boolean }) {
+function Message({ m, last, feedback }: { m: RexMessage; last: boolean; feedback: FeedbackProps }) {
   return (
-    <div className="rex-msg" data-last={last ? "" : undefined}>
-      <div className="rex-avatar" style={{ background: m.color }} aria-hidden="true">
-        {m.initials}
-      </div>
-      <div className="rex-msg-main">
-        <div className="rex-msg-head">
-          <span className="rex-author">{m.author}</span>
-          {m.bot && <span className="rex-badge">APP</span>}
-          {m.role && <span className="rex-role">{m.role}</span>}
-          <span className="rex-time">{m.time}</span>
+    <div className="rex-msg-wrap" data-last={last ? "" : undefined}>
+      {m.label && <p className="rex-msg-label">{m.label}</p>}
+      <div className="rex-msg">
+        <div className="rex-avatar" style={{ background: m.color }} aria-hidden="true">
+          {m.initials}
         </div>
-        {m.text && (
-          <p className="rex-text">
-            <RichText text={m.text} />
-          </p>
-        )}
-        {m.card && <Card card={m.card} />}
-        {m.reactions && (
-          <div className="rex-reactions">
-            {m.reactions.map((r) => (
-              <span className="rex-reaction" key={r.emoji}>
-                {r.emoji} <b>{r.count}</b>
-              </span>
-            ))}
+        <div className="rex-msg-main">
+          <div className="rex-msg-head">
+            <span className="rex-author">{m.author}</span>
+            {m.bot && <span className="rex-badge">APP</span>}
+            {m.role && <span className="rex-role">{m.role}</span>}
+            <span className="rex-time">{m.time}</span>
           </div>
-        )}
-        {m.thread && <div className="rex-thread">{m.thread}</div>}
+          <Blocks blocks={m.blocks} feedback={feedback} />
+          {m.reactions && (
+            <div className="rex-reactions">
+              {m.reactions.map((r) => (
+                <span className="rex-reaction" key={r.emoji}>
+                  {r.emoji} <b>{r.count}</b>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -202,14 +252,26 @@ function Message({ m, last }: { m: RexMessage; last: boolean }) {
 
 /* ------------------------------------------------------------------- app */
 
-const CHANNEL_ORDER = rexChannels.map((c) => c.id);
+const CHANNELS = rexChannels.filter((c) => c.kind === "channel");
+const WORKFLOWS = rexChannels.filter((c) => c.kind === "workflow");
+/** Arrow-key order follows the order the rail actually renders. */
+const CHANNEL_ORDER = [...CHANNELS, ...WORKFLOWS].map((c) => c.id);
+
 const DEMO = rexChannels.find((c) => c.id === rexDefaultChannel) as RexChannel;
 const DEMO_TOTAL = DEMO.messages.length;
 /** Messages on screen while the composer types the next one out. */
 const COMPOSER_AFTER = DEMO.composerAfter ?? DEMO_TOTAL;
-const SCRIPT = DEMO.messages[COMPOSER_AFTER]?.text ?? "";
 /** Messages already on screen when Rex opens — the channel is never empty. */
 const SEED = COMPOSER_AFTER;
+
+/** The headline of a message, for the live region and the composer script. */
+function firstText(m: RexMessage | undefined) {
+  if (!m) return "";
+  for (const b of m.blocks) if (b.kind === "title" || b.kind === "text") return b.text;
+  return "";
+}
+
+const SCRIPT = firstText(DEMO.messages[COMPOSER_AFTER]);
 
 function RexAppImpl() {
   const live = useScreenLive();
@@ -220,6 +282,7 @@ function RexAppImpl() {
   const [composer, setComposer] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const [announce, setAnnounce] = useState("");
+  const [feedback, setFeedbackState] = useState<FeedbackState>("pending");
 
   const timers = useRef<number[]>([]);
   const rafRef = useRef(0);
@@ -232,10 +295,18 @@ function RexAppImpl() {
   const scrollMem = useRef<Record<string, number>>({});
   const shownChannel = useRef(activeId);
   const activeRef = useRef(activeId);
+  /** The feedback simulation runs on its own timer, outside the story's token. */
+  const fbTimer = useRef(0);
+  const feedbackRef = useRef<FeedbackState>("pending");
 
   useEffect(() => {
     activeRef.current = activeId;
   }, [activeId]);
+
+  const setFeedback = useCallback((s: FeedbackState) => {
+    feedbackRef.current = s;
+    setFeedbackState(s);
+  }, []);
 
   const cancel = useCallback(() => {
     token.current += 1;
@@ -291,12 +362,12 @@ function RexAppImpl() {
         setComposer(null); // the composer collapses the moment it sends
         setRevealed(SEED + 1);
         setTyping(true);
-        setAnnounce(`${cmd.author} sent: ${cmd.text}`);
+        setAnnounce(`${cmd.author} sent: ${firstText(cmd)}`);
         at(THINK_MS, () => {
           const report = DEMO.messages[DEMO_TOTAL - 1];
           setTyping(false);
           setRevealed(DEMO_TOTAL);
-          setAnnounce(`${report.author} posted: ${report.text ?? ""}`);
+          setAnnounce(`${report.author} posted: ${firstText(report)}`);
           // Let the follow-scroll land, then stop steering.
           at(SETTLE_MS, () => setPlay(false));
         });
@@ -306,7 +377,11 @@ function RexAppImpl() {
         setComposer("");
         const t0 = performance.now();
         const step = (now: number) => {
-          if (!alive()) return;
+          // Stop touching the composer once the command has posted. If rAF is
+          // paused mid-type (backgrounded tab) the stall fallback sends first,
+          // and a late frame resuming here would otherwise refill the composer
+          // and leave it on screen for good.
+          if (!alive() || sent.current) return;
           const t = Math.min((now - t0) / TYPE_MS, 1);
           const eased = 1 - (1 - t) * (1 - t); // fast in, settles into the send
           setComposer(SCRIPT.slice(0, Math.max(1, Math.round(eased * SCRIPT.length))));
@@ -338,10 +413,59 @@ function RexAppImpl() {
   }, [live, play]);
 
   useEffect(() => cancel, [cancel]);
+  useEffect(() => () => clearTimeout(fbTimer.current), []);
+
+  /* ------------------------------------------- feedback workflow actions */
+
+  const sendFollowUp = useCallback(() => {
+    if (feedbackRef.current !== "pending") return;
+    const done = () => {
+      setFeedback("sent");
+      setAnnounce("Reminder sent to Jordan Lee.");
+    };
+    if (reducedMotion()) {
+      done();
+      return;
+    }
+    setFeedback("sending");
+    clearTimeout(fbTimer.current);
+    fbTimer.current = window.setTimeout(done, FEEDBACK_MS);
+  }, [setFeedback]);
+
+  const declineFollowUp = useCallback(() => {
+    if (feedbackRef.current !== "pending") return;
+    setFeedback("declined");
+    setAnnounce("Feedback marked not required");
+  }, [setFeedback]);
+
+  const resetFeedback = useCallback(() => {
+    clearTimeout(fbTimer.current);
+    setFeedback("pending");
+    setAnnounce("Feedback example reset.");
+  }, [setFeedback]);
+
+  const feedbackProps: FeedbackProps = {
+    state: feedback,
+    onSend: sendFollowUp,
+    onDecline: declineFollowUp,
+    onReset: resetFeedback,
+  };
+
+  // The simulated DM appears below the fold; bring it into view once, in
+  // direct response to the visitor's own button press.
+  useEffect(() => {
+    if (feedback !== "sent") return;
+    const s = streamRef.current;
+    if (!s) return;
+    s.scrollTo({ top: s.scrollHeight, behavior: reducedMotion() ? "auto" : "smooth" });
+  }, [feedback]);
+
+  /* --------------------------------------------------------- navigation */
 
   const active = rexChannels.find((c) => c.id === activeId) ?? DEMO;
   const isDemo = active.id === DEMO.id;
-  const messages = isDemo ? active.messages.slice(0, revealed) : active.messages;
+  const visible = active.messages.filter((m) => !m.showWhen || m.showWhen === feedback);
+  const messages = isDemo ? visible.slice(0, revealed) : visible;
   // Composer keystrokes and the read-only footer belong to the story channel.
   const typedText = isDemo ? composer : null;
 
@@ -365,9 +489,7 @@ function RexAppImpl() {
     s.scrollTop = scrollMem.current[activeId] ?? 0;
   }, [activeId]);
 
-  // While the demo runs, keep the newest thing on screen. Scrolling the newest
-  // message to the top of the stream is what puts the report's title, status,
-  // metrics and first recommended action in view at once. Once playback is
+  // While the demo runs, keep the newest thing on screen. Once playback is
   // over this stops entirely, so a visitor's own scrolling is never fought.
   useEffect(() => {
     if (!playing) return;
@@ -410,12 +532,12 @@ function RexAppImpl() {
         aria-selected={selected}
         aria-controls={`rex-panel-${c.id}`}
         tabIndex={selected ? 0 : -1}
-        className={`rex-chan${selected ? " active" : ""}${c.primary ? " primary" : ""}`}
+        className={`rex-chan${selected ? " active" : ""}`}
         onClick={() => selectChannel(c.id)}
         onKeyDown={(e) => onTabKey(e, c.id)}
       >
         <span className="rex-hash" aria-hidden="true">
-          {c.kind === "dm" ? "●" : "#"}
+          {c.kind === "workflow" ? "⚡" : "#"}
         </span>
         <span className="rex-chan-name">{c.name}</span>
         {c.unread > 0 && (
@@ -427,10 +549,6 @@ function RexAppImpl() {
       </button>
     );
   };
-
-  const primary = rexChannels.filter((c) => c.primary);
-  const secondary = rexChannels.filter((c) => !c.primary && c.kind === "channel");
-  const dms = rexChannels.filter((c) => c.kind === "dm");
 
   return (
     <div className="rex">
@@ -449,20 +567,16 @@ function RexAppImpl() {
           className="rex-channels"
           role="tablist"
           aria-orientation="vertical"
-          aria-label="Rex channels"
+          aria-label="Rex channels and workflows"
         >
           <p className="rex-group" aria-hidden="true">
             Channels
           </p>
-          {primary.map(renderTab)}
+          {CHANNELS.map(renderTab)}
           <p className="rex-group" aria-hidden="true">
-            More
+            Rex workflows
           </p>
-          {secondary.map(renderTab)}
-          <p className="rex-group" aria-hidden="true">
-            Direct messages
-          </p>
-          {dms.map(renderTab)}
+          {WORKFLOWS.map(renderTab)}
         </div>
       </div>
 
@@ -487,7 +601,7 @@ function RexAppImpl() {
         </div>
 
         {/* One restrained live region for the whole app: it carries the newest
-            message only, never the conversation again. */}
+            message or workflow result only, never the conversation again. */}
         <p className="rex-sr" role="status" aria-live="polite">
           {announce}
         </p>
@@ -504,7 +618,12 @@ function RexAppImpl() {
             <span>Today</span>
           </div>
           {messages.map((m, i) => (
-            <Message key={m.id} m={m} last={!typing && i === messages.length - 1} />
+            <Message
+              key={m.id}
+              m={m}
+              last={!typing && i === messages.length - 1}
+              feedback={feedbackProps}
+            />
           ))}
           {typing && (
             <div className="rex-msg rex-typing" data-last="" aria-hidden="true">
@@ -527,10 +646,8 @@ function RexAppImpl() {
 
         {typedText === null ? (
           // Read-only demo: once the command is sent the composer gives its
-          // vertical space back to the report cards.
-          <p className="rex-footnote">
-            Read-only demo · Rex drafts and reports; recruiters review and approve.
-          </p>
+          // vertical space back to the message.
+          <p className="rex-footnote">{rexFootnote}</p>
         ) : (
           <div className="rex-composer">
             {/* Never an editable control — the demo "types" into static text, so

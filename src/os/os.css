@@ -996,6 +996,22 @@ body.os-dragging {
 
 /* ------------------------------------------------------------- messages */
 
+.rex-msg-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Says who can actually see the message: these workflows are private to the
+   recruiter, and the demo should never imply otherwise. */
+.rex-msg-label {
+  margin: 8px 0 -1px 51px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #838b9d;
+}
+
 .rex-msg {
   display: flex;
   gap: 11px;
@@ -1070,242 +1086,243 @@ body.os-dragging {
   color: #fff;
 }
 
-/* ----------------------------------------------------------- report card */
+/* ------------------------------------------------ Slack message blocks
 
-.rex-card {
-  max-width: 660px;
-  margin-top: 8px;
-  padding: 11px 14px 12px;
-  border-left: 4px solid;
-  border-radius: 0 9px 9px 0;
-  background: rgba(255, 255, 255, 0.045);
-  animation: rexCardIn 0.32s cubic-bezier(0.2, 0.8, 0.3, 1);
-}
+   Rex's output is a Slack message, not a dashboard. The vocabulary below is
+   deliberately small: bold headings, "Label: value" lines, candidate groups,
+   bullets, a muted context line, and Slack-style buttons. Nothing here draws
+   a chart, a gauge or a metric tile. */
 
-@keyframes rexCardIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.99);
-  }
-}
-
-.rex-card-title {
-  font-size: 14.5px;
-  font-weight: 700;
-  line-height: 1.35;
-  color: #fff;
-}
-
-.rex-card-body {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
-  gap: 9px 20px;
-  margin-top: 8px;
-}
-
-.rex-card-col {
-  min-width: 0;
+.rex-blocks {
+  max-width: 620px;
   display: flex;
   flex-direction: column;
   gap: 9px;
 }
 
-.rex-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 11px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 650;
-  border: 1px solid;
+.rex-blocks > :first-child {
+  margin-top: 1px;
 }
 
-.rex-status-icon {
-  font-size: 12px;
-}
-
-.rex-status-key {
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.75;
+.rex-b-title {
+  font-size: 14.5px;
   font-weight: 700;
-}
-
-.rex-status.yellow {
-  background: rgba(213, 154, 58, 0.16);
-  border-color: rgba(213, 154, 58, 0.42);
-  color: #f0c274;
-}
-
-.rex-status.green {
-  background: rgba(63, 156, 109, 0.16);
-  border-color: rgba(63, 156, 109, 0.42);
-  color: #7fd8a6;
-}
-
-.rex-status.red {
-  background: rgba(214, 87, 80, 0.16);
-  border-color: rgba(214, 87, 80, 0.42);
-  color: #f09a94;
-}
-
-.rex-status.neutral {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: #cdd2da;
-}
-
-.rex-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px 18px;
-}
-
-.rex-field.wide {
-  grid-column: 1 / -1;
-}
-
-.rex-field-label {
-  font-size: 12px;
-  color: #9298a3;
-}
-
-.rex-field-value {
-  margin: 0;
-  font-size: 14px;
   line-height: 1.4;
-  color: #eceef3;
+  color: #f2f3f7;
 }
 
-.rex-stages-head,
-.rex-section h4 {
-  font-size: 11px;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: #9298a3;
-  margin-bottom: 7px;
+.rex-b-subhead {
+  margin-top: 3px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #eceef4;
 }
 
-.rex-stages ul {
+.rex-b-icon {
+  margin-right: 6px;
+}
+
+.rex-b-icon.sm {
+  display: inline-block;
+  min-width: 11px;
+  margin: 0 5px 0 7px;
+  font-size: 11.5px;
+  color: #8e97ab;
+}
+
+/* Leading glyph on a "what changed" line sits flush instead. */
+.rex-b-list.plain .rex-b-icon.sm {
+  margin-left: 0;
+}
+
+/* "Label: value", the way Slack renders a bolded field line. */
+.rex-b-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rex-b-field {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rex-b-field dt {
+  font-weight: 700;
+  color: #e6e8ef;
+}
+
+.rex-b-field dd {
+  color: #c7cbd6;
+}
+
+/* Candidate and role links. Not anchors: nothing here navigates. */
+.rex-link {
+  color: #7fa6e8;
+}
+
+.rex-b-group {
+  margin-left: 2px;
+}
+
+.rex-b-group-head {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e6e8ef;
+}
+
+.rex-b-count {
+  font-weight: 400;
+  color: #9aa2b4;
+}
+
+.rex-b-list {
+  margin: 3px 0 0;
+  padding-left: 16px;
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 3px;
 }
 
-.rex-stage {
-  display: grid;
-  grid-template-columns: 1fr 82px 26px;
-  align-items: center;
-  gap: 10px;
+.rex-b-list li {
+  position: relative;
   font-size: 13px;
-  color: #c6cad3;
+  line-height: 1.5;
+  color: #c7cbd6;
 }
 
-.rex-stage-bar {
-  height: 7px;
-  border-radius: 4px;
+.rex-b-list li::before {
+  content: "•";
+  position: absolute;
+  left: -13px;
+  color: #6f7789;
+}
+
+.rex-b-list.plain {
+  padding-left: 2px;
+}
+
+.rex-b-list.plain li::before {
+  content: none;
+}
+
+.rex-b-detail {
+  font-weight: 600;
+  color: #dfe2ea;
+}
+
+.rex-b-divider {
+  height: 1px;
+  border: 0;
   background: rgba(255, 255, 255, 0.09);
-  overflow: hidden;
 }
 
-.rex-stage-bar > span {
-  display: block;
-  height: 100%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #7d97e8, #4d6bd8);
+.rex-b-context {
+  font-size: 11.5px;
+  color: #8b93a5;
 }
 
-.rex-stage-count {
-  text-align: right;
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
-  font-variant-numeric: tabular-nums;
-}
-
-.rex-progress {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.rex-progress-track {
-  display: flex;
-  gap: 5px;
-}
-
-.rex-progress-track > span {
-  flex: 1;
-  height: 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.rex-progress-track > span.on {
-  background: #4fbd88;
-}
-
-.rex-progress-note {
-  font-size: 13.5px;
-  color: #d4d8e0;
-}
-
-.rex-section ul,
-.rex-section ol {
-  padding-left: 17px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.rex-section li {
-  font-size: 14px;
-  line-height: 1.45;
-  color: #c9cdd6;
-}
-
-.rex-section + .rex-section {
-  margin-top: 10px;
-}
-
-/* Footer note and the read-only action chips share one row when there is
-   room, which keeps the report card a screen shorter. */
-.rex-card-foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 18px;
-  margin-top: 9px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.rex-card-footer {
-  flex: 1 1 240px;
-  font-size: 12px;
-  line-height: 1.45;
-  color: #9298a3;
-}
-
-.rex-actions {
+/* Illustrative link buttons. Deliberately not focusable: they do nothing, and
+   a no-op in the tab order is worse than a label that says so. */
+.rex-b-links {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.rex-action {
+.rex-b-link-btn {
   padding: 5px 12px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
   font-size: 12.5px;
   font-weight: 600;
-  color: #dcdee4;
+  color: #9fb6f0;
 }
+
+/* ---- the one interactive workflow ---- */
+
+.rex-b-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-width: 340px;
+  margin-top: 2px;
+}
+
+.rex-btn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 14px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e8eaf1;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.rex-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.rex-btn.primary {
+  background: #2f7d5b;
+  border-color: #2f7d5b;
+  color: #f4faf7;
+}
+
+.rex-btn.primary:hover:not(:disabled) {
+  background: #369068;
+}
+
+.rex-btn.ghost {
+  align-self: flex-start;
+  font-weight: 600;
+  padding: 6px 12px;
+  font-size: 12.5px;
+}
+
+.rex-btn:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.rex-btn:focus-visible {
+  outline: 2px solid #8ca8ff;
+  outline-offset: 2px;
+}
+
+.rex-b-result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 2px;
+}
+
+/* State is carried by the glyph and the sentence, never by colour alone. */
+.rex-b-done {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #c7cbd6;
+}
+
+.rex-b-done-icon {
+  color: #8e97ab;
+}
+
+.rex-b-done.ok .rex-b-done-icon {
+  color: #5cbc8c;
+}
+
 
 .rex-reactions {
   display: flex;
@@ -1325,12 +1342,6 @@ body.os-dragging {
   color: #9fb6f0;
 }
 
-.rex-thread {
-  margin-top: 7px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #7fa6e8;
-}
 
 /* ------------------------------------------------------ typing indicator */
 
@@ -3118,8 +3129,7 @@ body.os-dragging {
   .os-win.closing,
   .os-menu-drop,
   .os-about,
-  .rex-msg,
-  .rex-card {
+  .rex-msg {
     animation: none;
   }
 

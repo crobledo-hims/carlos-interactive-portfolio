@@ -1,62 +1,78 @@
-// Editable sample content for the Rex app window.
+// Rex — synthetic demonstration fixtures.
 //
-// Everything here is illustrative: people, candidates, reqs and numbers are
-// fictional placeholders meant to be swapped for real (redacted) copy later.
-// No real candidate data belongs in this file.
+// Rex is a Slack-first recruiting workflow automation built with Zapier,
+// Airtable, Slack and ChatGPT, with links back to Ashby for recruiting records
+// and interview feedback. It is not an ATS, a dashboard, a candidate evaluator
+// or a forecasting system, and nothing here should imply otherwise.
 //
-// The three story channels are meant to be read as one connected week:
-//   #role-status      a VP asks for a status update, Rex generates the report
-//   #offer-stage      the one outstanding offer in that report is accepted
-//   #stale-candidates the follow-up SLA breaches Rex flags every morning
+// Four workflows are demonstrated, one per sidebar entry:
+//   #role-status        a pipeline report produced on demand
+//   Feedback reminder   an overdue-feedback alert, and the reminder the
+//                       recruiter can choose to send to the interviewer
+//   Weekly stale nudge  candidates with no recorded action for 5+ business days
+//   #offer-accepted     an offer acceptance, posted as it happens
+//
+// Every person, role, candidate, date and number below is invented for this
+// portfolio. Nothing is drawn from a real employer, requisition or person, and
+// nothing is transmitted anywhere: the app renders these fixtures locally and
+// the one interactive workflow simulates its outcome in React state.
+//
+// Editing rule: Rex only ever reports what it can observe. Do not add
+// forecasts, scores, role health, risk ratings, recommended strategy, or any
+// action Rex cannot actually take.
 
-export type RexTone = "green" | "yellow" | "red" | "neutral";
+/* ==========================================================================
+   Message blocks — the Slack/Block Kit vocabulary the renderer understands
+   ========================================================================== */
 
-export interface RexField {
+/** A bold-label line, the way Slack renders "*Label:* value". */
+export interface RexFieldLine {
   label: string;
   value: string;
-  /** Span the full width of the field grid. */
-  wide?: boolean;
+  /** Render the value as a candidate or role link. */
+  link?: boolean;
 }
 
-/** One stage of the pipeline funnel, rendered as a labelled bar. */
-export interface RexStage {
-  label: string;
-  count: number;
+/** One candidate row inside a stage or role group. */
+export interface RexItem {
+  /** Rendered as a Slack link. */
+  name: string;
+  /** Decorative glyph; the words in `detail` always carry the meaning. */
+  icon?: string;
+  detail: string;
 }
 
-export interface RexCardSection {
-  heading: string;
-  items: string[];
-  /** Render as an ordered list (recommended actions). */
-  ordered?: boolean;
+/** A bulleted line that may carry a restrained leading glyph. */
+export interface RexLine {
+  icon?: string;
+  text: string;
 }
 
-/** Status never depends on colour alone: it always carries a glyph and words. */
-export interface RexStatus {
-  tone: RexTone;
-  icon: string;
-  label: string;
-}
+export type RexBlock =
+  /** The bold headline of a message. */
+  | { kind: "title"; text: string; icon?: string }
+  /** A bold section label inside a message. */
+  | { kind: "subhead"; text: string }
+  /** Plain paragraph text; supports *bold* and @mentions. */
+  | { kind: "text"; text: string }
+  | { kind: "fields"; items: RexFieldLine[] }
+  /** A stage or role heading with its own candidate rows. */
+  | { kind: "group"; heading: string; count?: number; items: RexItem[] }
+  | { kind: "list"; items: RexLine[] }
+  | { kind: "divider" }
+  /** Small muted caption, Slack's context block. */
+  | { kind: "context"; text: string }
+  /** Illustrative link buttons. Not interactive: they mutate nothing. */
+  | { kind: "actions"; items: string[] }
+  /** Slot for the one interactive workflow; its state lives in the app. */
+  | { kind: "feedback" };
 
-export interface RexProgress {
-  label: string;
-  value: number;
-  max: number;
-  note: string;
-}
+/* ==========================================================================
+   Messages and channels
+   ========================================================================== */
 
-export interface RexCard {
-  accent: string;
-  title: string;
-  status?: RexStatus;
-  fields?: RexField[];
-  stages?: RexStage[];
-  progress?: RexProgress;
-  sections?: RexCardSection[];
-  footer?: string;
-  /** Read-only interface states — they never mutate anything. */
-  actions?: string[];
-}
+/** The interactive feedback-reminder workflow. */
+export type FeedbackState = "pending" | "sending" | "sent" | "declined";
 
 export interface RexReaction {
   emoji: string;
@@ -66,33 +82,31 @@ export interface RexReaction {
 export interface RexMessage {
   id: string;
   author: string;
-  /** Job title shown next to the name, Slack-profile style. */
+  /** Shown next to the name, Slack-profile style. */
   role?: string;
   initials: string;
   color: string;
   bot: boolean;
   time: string;
-  text?: string;
-  card?: RexCard;
+  /** Caption above the message saying who can see it. */
+  label?: string;
+  blocks: RexBlock[];
   reactions?: RexReaction[];
-  thread?: string;
+  /** Only rendered while the feedback workflow is in this state. */
+  showWhen?: FeedbackState;
 }
 
 export interface RexChannel {
   id: string;
-  kind: "channel" | "dm";
+  kind: "channel" | "workflow";
   name: string;
   topic: string;
   unread: number;
-  /** One of the three headline story channels. */
-  primary?: boolean;
   /**
-   * Number of messages shown before the composer types the next one out
-   * character by character. That message's own text is the script.
+   * Messages on screen before the composer types the next one out. That
+   * message's own text is the script. Only the story channel sets these.
    */
   composerAfter?: number;
-  /** Number of messages shown before the "Rex is working" pause. */
-  typingAfter?: number;
   typingLabel?: string;
   messages: RexMessage[];
 }
@@ -100,10 +114,17 @@ export interface RexChannel {
 export const rexWorkspace = {
   name: "Rex Ops",
   initials: "RX",
-  tagline: "Recruiting operations, automated",
+  tagline: "Zapier · Airtable · Slack · ChatGPT",
 };
 
-const REX = { initials: "RX", color: "#4d6bd8", bot: true, author: "Rex" };
+/** Rex's Slack app identity. */
+const REX = {
+  initials: "RX",
+  color: "#4d6bd8",
+  bot: true,
+  author: "Rex",
+  role: "Recruiting Support",
+};
 const CARLOS = { initials: "CR", color: "#3f7f6d", bot: false, author: "Carlos Robledo" };
 const AVERY = {
   initials: "AC",
@@ -113,272 +134,230 @@ const AVERY = {
   role: "VP, Engineering",
 };
 
-const ACCENT_BLUE = "#4d6bd8";
-const ACCENT_AMBER = "#d59a3a";
-const ACCENT_GREEN = "#3f9c6d";
+const ROLE = "Staff Backend Engineer, Payments Platform";
+
+/** Restrained glyphs. Every one of them sits beside words that say the same thing. */
+const SCHEDULED = "▸";
+const DONE = "✓";
+const ADVANCED = "↑";
+const ENTERED = "+";
+const WITHDREW = "×";
 
 export const rexChannels: RexChannel[] = [
+  /* ---------------------------------------- 1. on-demand pipeline report */
   {
     id: "role-status",
     kind: "channel",
     name: "role-status",
-    topic: "Live status for open searches — ask Rex for a report any time",
+    topic: "Ask Rex for a pipeline report at any time",
     unread: 1,
-    primary: true,
     composerAfter: 2,
-    typingAfter: 3,
-    typingLabel: "Rex is generating a pipeline report…",
+    typingLabel: "Rex is generating the pipeline report…",
     messages: [
       {
         ...AVERY,
         id: "rs-1",
         time: "9:12 AM",
-        text: "Hey Carlos — can you give me a quick status update on the Staff Backend Engineer (Payments) search? Are we on track for two hires this quarter, and where do you need help?",
+        blocks: [
+          {
+            kind: "text",
+            text: `Hey Carlos, can you share a current pipeline update for the ${ROLE} search?`,
+          },
+        ],
       },
       {
         ...CARLOS,
         id: "rs-2",
-        time: "9:14 AM",
-        text: "Absolutely. I'm going to use Rex to pull the live pipeline and generate a status report.",
+        time: "9:13 AM",
+        blocks: [{ kind: "text", text: "Absolutely. I'm going to use Rex to pull the latest pipeline report." }],
       },
       {
-        // The composer types this one out live before posting it — @Rex
-        // renders as a mention chip.
+        // The composer types this one out live before posting it.
         ...CARLOS,
         id: "rs-3",
         time: "9:14 AM",
-        text: "@Rex Provide a pipeline update for Staff Backend Engineer (Payments)",
+        blocks: [{ kind: "text", text: `@Rex Provide a pipeline report for ${ROLE}` }],
       },
       {
         ...REX,
         id: "rs-4",
-        time: "9:15 AM",
-        text: "Pipeline report ready — Staff Backend Engineer (Payments)",
-        card: {
-          accent: ACCENT_AMBER,
-          title: "Pipeline report — Staff Backend Engineer (Payments)",
-          status: { tone: "yellow", icon: "▲", label: "Yellow — At risk" },
-          fields: [
-            { label: "Hiring goal", value: "2 hires by September 30" },
-            { label: "Current forecast", value: "1.7 hires" },
-            { label: "Active candidates", value: "38" },
-          ],
-          stages: [
-            { label: "Recruiter screen", count: 9 },
-            { label: "Hiring manager screen", count: 5 },
-            { label: "Onsite", count: 2 },
-            { label: "Offer", count: 1 },
-          ],
-          sections: [
-            {
-              heading: "Primary risks",
-              items: [
-                "Onsite inventory is two candidates below plan.",
-                "Four candidates have been awaiting hiring-manager review for more than three days.",
-                "One outstanding offer is the largest near-term forecast dependency.",
-              ],
-            },
-            {
-              heading: "Recommended actions",
-              ordered: true,
-              items: [
-                "Confirm onsite loops for Maya Okafor and Daniel Kim by Friday.",
-                "Review the four aging hiring-manager packets today.",
-                "Re-engage eight qualified silver-medalist candidates.",
-              ],
-            },
-          ],
-          footer: "Source: Ashby · Synced at 9:14 AM · Report generated by Rex",
-          actions: ["Open full report", "Share update"],
-        },
-      },
-    ],
-  },
-  {
-    id: "offer-stage",
-    kind: "channel",
-    name: "offer-stage",
-    topic: "Offer extended → decision → accept, with forecast updates",
-    unread: 1,
-    primary: true,
-    messages: [
-      {
-        ...REX,
-        id: "os-1",
-        time: "3:42 PM",
-        text: "Offer accepted 🎉",
-        card: {
-          accent: ACCENT_GREEN,
-          title: "Offer accepted — Staff Backend Engineer (Payments)",
-          status: { tone: "green", icon: "✓", label: "Green — Accepted" },
-          fields: [
-            { label: "Candidate", value: "Priya Shah" },
-            { label: "Role", value: "Staff Backend Engineer (Payments)" },
-            { label: "Level", value: "IC5" },
-            { label: "Source", value: "Outbound" },
-            { label: "Recruiter", value: "Carlos Robledo" },
-            { label: "Start date", value: "September 14" },
-            { label: "Time in process", value: "24 days" },
-          ],
-          progress: {
-            label: "Hiring goal",
-            value: 1,
-            max: 2,
-            note: "Hiring goal is now 1 of 2 accepted.",
+        time: "9:14 AM",
+        blocks: [
+          { kind: "title", text: `${ROLE} · Pipeline Snapshot` },
+          {
+            kind: "fields",
+            items: [
+              { label: "Hiring Manager", value: "Avery Chen" },
+              { label: "Active Candidates", value: "6" },
+              { label: "Week-over-week", value: "+1 active candidate" },
+            ],
           },
-          sections: [
-            {
-              heading: "Follow-up",
-              items: [
-                "Rex has updated the hiring forecast and removed this offer from the outstanding-offer risk.",
-              ],
-            },
-          ],
-          actions: ["Open candidate", "View updated forecast"],
-        },
-        reactions: [
-          { emoji: "🎉", count: 12 },
-          { emoji: "🙌", count: 5 },
+          { kind: "subhead", text: "Active Pipeline" },
+          {
+            kind: "group",
+            heading: "Recruiter Screen",
+            count: 2,
+            items: [
+              { name: "Nia Whitfield", icon: SCHEDULED, detail: "Scheduled: Aug 25" },
+              { name: "Elena Torres", icon: DONE, detail: "Interviewed: Aug 20" },
+            ],
+          },
+          {
+            kind: "group",
+            heading: "Hiring Manager Screen",
+            count: 1,
+            items: [{ name: "Noah Williams", icon: SCHEDULED, detail: "Scheduled: Aug 22" }],
+          },
+          {
+            kind: "group",
+            heading: "Interview Loop",
+            count: 2,
+            items: [
+              { name: "Maya Okafor", icon: SCHEDULED, detail: "Scheduled: Aug 26" },
+              { name: "Daniel Kim", icon: DONE, detail: "Interviewed: Aug 19" },
+            ],
+          },
+          {
+            kind: "group",
+            heading: "Offer",
+            count: 1,
+            items: [{ name: "Priya Shah", icon: DONE, detail: "Offer extended: Aug 20" }],
+          },
+          { kind: "subhead", text: "What Changed in the Last 7 Days" },
+          {
+            kind: "list",
+            items: [
+              { icon: ENTERED, text: "Nia Whitfield entered the pipeline." },
+              { icon: ENTERED, text: "Elena Torres entered the pipeline." },
+              { icon: ADVANCED, text: "Daniel Kim advanced to Interview Loop." },
+              { icon: ADVANCED, text: "Priya Shah advanced to Offer." },
+              { icon: WITHDREW, text: "One candidate withdrew." },
+            ],
+          },
+          { kind: "context", text: "Updated Aug 21 at 9:14 AM" },
         ],
       },
     ],
   },
+
+  /* ------------------------- 2. feedback alert and interviewer reminder */
   {
-    id: "stale-candidates",
-    kind: "channel",
-    name: "stale-candidates",
-    topic: "Follow-up SLA breaches — Rex drafts, Carlos approves",
-    unread: 6,
-    primary: true,
+    id: "feedback-reminder",
+    kind: "workflow",
+    name: "Feedback reminder",
+    topic: "Overdue interview feedback, and the reminder you choose to send",
+    unread: 1,
     messages: [
       {
         ...REX,
-        id: "sc-1",
-        time: "8:45 AM",
-        text: "Good morning, Carlos — 6 candidates are past their follow-up SLA and need action today.",
-        card: {
-          accent: ACCENT_AMBER,
-          title: "Follow-up SLA breaches — 6 candidates",
-          status: { tone: "yellow", icon: "▲", label: "Yellow — Action needed today" },
-          fields: [
-            { label: "Recruiter screen", value: "2 candidates · 4+ days" },
-            { label: "Hiring-manager review", value: "3 candidates · 3+ days" },
-            { label: "Onsite follow-up", value: "1 candidate · 2+ days" },
-            {
-              label: "Oldest item",
-              value: "Elena Torres — Hiring-manager review — 6 days without action",
-              wide: true,
-            },
-          ],
-          sections: [
-            {
-              heading: "Recommended next step",
-              items: [
-                "Review the three highest-priority candidates this morning. Rex has drafted follow-up messages for your approval.",
-              ],
-            },
-          ],
-          footer: "Rex drafts follow-ups; Carlos reviews and approves before anything is sent.",
-          actions: ["Review candidates", "View drafts"],
-        },
+        id: "fb-1",
+        time: "2:00 PM",
+        label: "Private feedback alert to Carlos",
+        blocks: [
+          { kind: "title", icon: "⏳", text: "Feedback outstanding · 50h" },
+          {
+            kind: "fields",
+            items: [
+              { label: "Candidate", value: "Maya Okafor", link: true },
+              { label: "Role", value: ROLE, link: true },
+              { label: "Interview", value: "Systems Design" },
+              { label: "Interviewer", value: "Jordan Lee" },
+              { label: "Interview date", value: "Aug 19" },
+              { label: "Feedback outstanding", value: "50 hours" },
+            ],
+          },
+          {
+            kind: "text",
+            text: "No feedback has been submitted yet. Would you like Rex to send Jordan a reminder?",
+          },
+          { kind: "feedback" },
+        ],
+      },
+      {
+        ...REX,
+        id: "fb-2",
+        time: "2:01 PM",
+        label: "Direct message sent to interviewer",
+        showWhen: "sent",
+        blocks: [
+          {
+            kind: "text",
+            text: `Hi Jordan, interview feedback is still outstanding for Maya Okafor's Systems Design interview for the ${ROLE} role. Please submit your feedback in Ashby when you can.`,
+          },
+          { kind: "actions", items: ["Open feedback form in Ashby"] },
+        ],
       },
     ],
   },
+
+  /* ------------------------------- 3. weekly stale-candidate nudge */
   {
-    id: "weekly-report",
-    kind: "channel",
-    name: "weekly-report",
-    topic: "Monday 8:00 AM CT — auto-generated hiring report",
+    id: "stale-nudge",
+    kind: "workflow",
+    name: "Weekly stale nudge",
+    topic: "Monday summary of candidates waiting 5+ business days",
     unread: 0,
     messages: [
       {
         ...REX,
-        id: "wr-1",
-        time: "Mon 8:00 AM",
-        text: "Weekly hiring report — week of September 8.",
-        card: {
-          accent: ACCENT_BLUE,
-          title: "Week 37 summary",
-          fields: [
-            { label: "Offers out", value: "3" },
-            { label: "Accepts", value: "2" },
-            { label: "Onsites", value: "9" },
-            { label: "Time to offer", value: "34 days" },
-            { label: "Screens", value: "27" },
-            { label: "Pass-through", value: "38%" },
-          ],
-          footer: "Auto-generated from Ashby + Airtable · no manual assembly required",
-          actions: ["View full report", "Share with leadership"],
-        },
-      },
-      {
-        ...REX,
-        id: "wr-2",
-        time: "Mon 8:00 AM",
-        text: "Estimated recruiter time returned this week: *6.4 hours* across 5 recruiters (reporting + follow-up automation).",
-        reactions: [{ emoji: "🙌", count: 6 }],
+        id: "sn-1",
+        time: "Monday, 8:00 AM",
+        label: "Private message to Carlos",
+        blocks: [
+          { kind: "title", text: "Weekly stale candidate nudge" },
+          {
+            kind: "text",
+            text: "You have 3 candidates with no recorded action for 5+ business days across 2 roles.",
+          },
+          {
+            kind: "group",
+            heading: ROLE,
+            items: [
+              { name: "Elena Torres", detail: "Hiring Manager Review · 6 business days" },
+              { name: "Daniel Kim", detail: "Interview Loop · 8 business days" },
+            ],
+          },
+          {
+            kind: "group",
+            heading: "Senior Product Designer",
+            items: [{ name: "Jordan Bell", detail: "Portfolio Review · 5 business days" }],
+          },
+          { kind: "text", text: "Please review these candidates in Ashby to keep the pipelines moving." },
+          { kind: "actions", items: ["Review candidates"] },
+        ],
       },
     ],
   },
+
+  /* ------------------------------------ 4. immediate offer acceptance */
   {
-    id: "interview-ops",
+    id: "offer-accepted",
     kind: "channel",
-    name: "interview-ops",
-    topic: "Panel coverage, debrief scheduling, loop hygiene",
-    unread: 0,
+    name: "offer-accepted",
+    topic: "Offer acceptances, posted as they happen",
+    unread: 1,
     messages: [
       {
         ...REX,
-        id: "io-1",
-        time: "1:20 PM",
-        text: "Panel gap — Systems Design interviewer unassigned for the September 12 loop.",
-        card: {
-          accent: ACCENT_AMBER,
-          title: "Loop at risk — Maya Okafor",
-          status: { tone: "yellow", icon: "▲", label: "Yellow — Needs an interviewer" },
-          fields: [
-            { label: "Candidate", value: "Maya Okafor" },
-            { label: "Missing", value: "Systems Design" },
-            { label: "Loop", value: "September 12, 10:00 AM CT" },
-          ],
-          actions: ["Suggest interviewers"],
-        },
-      },
-      {
-        ...REX,
-        id: "io-2",
-        time: "3:02 PM",
-        text: "Debrief scheduled — *Daniel Kim* · Staff Backend Engineer (Payments) · September 11, 4:30 PM CT.",
-      },
-    ],
-  },
-  {
-    id: "dm-rex",
-    kind: "dm",
-    name: "Rex",
-    topic: "Direct messages with the Rex bot",
-    unread: 0,
-    messages: [
-      {
-        ...REX,
-        id: "dm-1",
-        time: "6:55 AM",
-        text: "Heads up — your Monday report will run 30 minutes early next week while Ashby backfills a schema change. Nothing for you to do.",
-      },
-      {
-        ...CARLOS,
-        id: "dm-2",
-        time: "7:10 AM",
-        text: "Thanks. Post it in #weekly-report as usual.",
-      },
-      {
-        ...REX,
-        id: "dm-3",
-        time: "7:10 AM",
-        text: "Confirmed. Same channel, 7:30 AM CT.",
+        id: "oa-1",
+        time: "3:42 PM",
+        blocks: [
+          { kind: "title", icon: "🎉", text: "Offer accepted" },
+          {
+            kind: "text",
+            text: `[Priya Shah] has accepted the offer for ${ROLE}!`,
+          },
+        ],
+        reactions: [
+          { emoji: "🎉", count: 9 },
+          { emoji: "🙌", count: 4 },
+        ],
       },
     ],
   },
 ];
 
 export const rexDefaultChannel = "role-status";
+
+/** Shown under the stream. Says what the demo is, once, without repeating it. */
+export const rexFootnote = "Interactive demonstration · All people and recruiting data are synthetic.";
