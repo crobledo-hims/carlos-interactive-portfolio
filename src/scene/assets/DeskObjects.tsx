@@ -222,6 +222,13 @@ function Steam() {
   );
 }
 
+/**
+ * Stays procedural on purpose. Poly Haven's model library has no coffee mug —
+ * the nearest candidates are `tea_set_01` (a Victorian floral bone-china cup
+ * and saucer) and `modified_thermos` / `plastic_thermos` (sealed vintage
+ * camping flasks). All three would read as costume-drama props on a
+ * two-monitor desk, and none has an open rim for the steam above to leave.
+ */
 function Mug() {
   const body = useMemo(
     () =>

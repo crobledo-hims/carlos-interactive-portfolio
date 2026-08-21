@@ -52,6 +52,58 @@ export interface SceneMaterials {
 
 let cache: SceneMaterials | null = null;
 
+/* ------------------------------------------------------------------ */
+/* Photoscanned floor                                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Poly Haven "Laminate Floor 02" (CC0, polyhaven.com/a/laminate_floor_02):
+ * a photoscanned wide-plank oak laminate — the same surface the procedural
+ * `floorAlbedo` below was drawing by hand, with real grain and real plank
+ * lengths instead of bezier strokes. 1k JPEGs: albedo at q75, normal at q85
+ * (its chroma carries direction, so it does not survive the lower setting),
+ * roughness at 512 because it is low-frequency. 521 KB for the set.
+ *
+ * The procedural maps stay as the material's initial state. Texture loading
+ * is not suspendable, so the floor renders procedurally for the frame or two
+ * before the JPEGs land — and permanently if they never do.
+ */
+/** The asset scans a 1.7 m square; Room.tsx floors the scene with a 10 m plane. */
+const PH_FLOOR_REPEAT = 10 / 1.7;
+
+function upgradeFloor(material: THREE.MeshStandardMaterial): void {
+  const load = (file: string, srgb: boolean, assign: (tex: THREE.Texture) => void) => {
+    new THREE.TextureLoader().load(`/textures/${file}`, (tex) => {
+      tex.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(PH_FLOOR_REPEAT, PH_FLOOR_REPEAT);
+      // the floor is only ever seen at a grazing angle — without this the
+      // planks smear into mush a metre past the desk
+      tex.anisotropy = 8;
+      assign(tex);
+      // swapping in a normalMap the material did not have changes the shader
+      material.needsUpdate = true;
+    });
+  };
+
+  load("floor-albedo.jpg", true, (tex) => {
+    material.map?.dispose();
+    material.map = tex;
+  });
+  load("floor-rough.jpg", false, (tex) => {
+    material.roughnessMap?.dispose();
+    material.roughnessMap = tex;
+    // the scan's own values, not a scaled version of the procedural map's
+    material.roughness = 1;
+  });
+  load("floor-normal.jpg", false, (tex) => {
+    material.normalMap = tex;
+    // laminate is nearly flat; full strength reads as corrugation
+    material.normalScale.set(0.55, 0.55);
+  });
+}
+
 function repeated(tex: THREE.Texture, x: number, y: number): THREE.Texture {
   const clone = tex.clone();
   clone.needsUpdate = true;
@@ -299,5 +351,6 @@ export function materials(): SceneMaterials {
     }),
   };
 
+  upgradeFloor(cache.floor);
   return cache;
 }
