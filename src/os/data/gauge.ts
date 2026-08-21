@@ -7,8 +7,6 @@
  * against what is locked.
  */
 export interface GaugeCriteriaLock {
-  version: string;
-  lockedOn: string;
   scope: string;
   nonNegotiables: string[];
   niceToHaves: string[];
@@ -37,16 +35,11 @@ export interface GaugeGap {
 export const gaugeRole = {
   title: "Staff Backend Engineer — Payments Platform",
   req: "IC5-PAY-04",
-  locked: "Criteria locked Aug 12 · v3",
   owner: "Carlos Robledo",
   project: "Payments Staff+ · 2026",
-  /** Same candidate Rex is chasing an onsite loop for in #role-status. */
-  stage: "Onsite — loop being scheduled",
 };
 
 export const gaugeCriteriaLock: GaugeCriteriaLock = {
-  version: "v3",
-  lockedOn: "August 12",
   scope:
     "Staff Backend Engineer on the Payments Platform team. Owns the services behind money movement, end to end, including the reliability of what they ship.",
   nonNegotiables: [

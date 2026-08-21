@@ -2279,8 +2279,10 @@ body.os-dragging {
   padding: 12px 14px 18px;
 }
 
+/* Two rows: the role, then the lock badge sitting beside the drawer toggle.
+   Nothing between them, so the card closes up tight around what it says. */
 .gauge-role {
-  padding: 10px 12px;
+  padding: 9px 12px 10px;
   border-radius: 8px;
   background: #f4f5f8;
   border: 1px solid #e4e6eb;
@@ -2296,7 +2298,7 @@ body.os-dragging {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 7px;
 }
 
 .gauge-lock-badge {
@@ -2312,13 +2314,8 @@ body.os-dragging {
   color: #2c5c46;
 }
 
-.gauge-lock-meta {
-  font-size: 11px;
-  color: #6d7078;
-}
-
+/* Shares the badge's row, so it carries no margin of its own. */
 .gauge-criteria-toggle {
-  margin-top: 8px;
   padding: 4px 11px;
   border-radius: 13px;
   border: 1px solid #b9bdc6;
@@ -2390,14 +2387,6 @@ body.os-dragging {
 
 /* ------------------------------------------------- pre-evaluation state */
 
-.gauge-role-stage {
-  margin-top: 4px;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #7d8590;
-}
-
 .gauge-precheck {
   display: flex;
   flex-direction: column;
@@ -2434,13 +2423,46 @@ body.os-dragging {
 }
 
 .gauge-evaluate:hover {
-  filter: brightness(1.06);
-  box-shadow: 0 10px 22px rgba(169, 78, 38, 0.34);
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(169, 78, 38, 0.38);
 }
 
 .gauge-evaluate:active {
   transform: translateY(1px) scale(0.995);
   box-shadow: 0 5px 12px rgba(169, 78, 38, 0.3);
+}
+
+/* The button keeps its own corner radius under the OS focus ring, and stands
+   the ring off far enough to read against the warm fill. */
+.gauge-evaluate:focus-visible {
+  border-radius: 10px;
+  outline-offset: 3px;
+}
+
+/* ---- the attention nudge ----
+   Three gentle breaths, then it stops for good. Only transform and box-shadow
+   animate, so nothing around the button can shift: the halo is shadow spread,
+   which takes no layout space. GaugeApp removes the class on hover, focus,
+   click, or animationend — CSS cannot cancel a running animation on its own. */
+
+@keyframes gauge-nudge {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 8px 18px rgba(169, 78, 38, 0.28), 0 0 0 0 rgba(224, 147, 60, 0.45);
+  }
+  55% {
+    transform: scale(1.025);
+    box-shadow: 0 11px 24px rgba(169, 78, 38, 0.34), 0 0 0 10px rgba(224, 147, 60, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 8px 18px rgba(169, 78, 38, 0.28), 0 0 0 0 rgba(224, 147, 60, 0);
+  }
+}
+
+.gauge-evaluate.nudge {
+  animation: gauge-nudge 1.6s ease-in-out 3;
 }
 
 /* ------------------------------------------------------------- the dial */
@@ -3183,6 +3205,13 @@ body.os-dragging {
 
   .gauge-reveal {
     animation: none;
+  }
+
+  /* No breathing, no halo sweep. The button is emphasised by standing still
+     with a firmer ring, and GaugeApp releases it after a short hold. */
+  .gauge-evaluate.nudge {
+    animation: none;
+    box-shadow: 0 8px 18px rgba(169, 78, 38, 0.3), 0 0 0 3px rgba(224, 147, 60, 0.55);
   }
 
   .li-open,

@@ -18,11 +18,22 @@ import type { GaugeZone } from "../data/gauge";
 /** The evaluation is run once per page session, like the Rex demo. */
 let gaugeEvaluated = false;
 
+/**
+ * The attention nudge on the evaluate button also runs once per page session.
+ * Anything that proves the visitor has found the button — a hover, a focus, a
+ * click — sets this too, so the nudge never argues with someone already there.
+ */
+let gaugeNudged = false;
+
 type Phase = "idle" | "sweeping" | "done";
 
 const SWEEP_MS = 820; // restrained evaluation state, not a progress theatre
 const OVERSHOOT = 1.09; // the needle passes the reading, then settles back
 const RISE = 0.45; // fraction of the sweep spent climbing
+
+const NUDGE_DELAY_MS = 900; // let the window settle before drawing the eye
+const NUDGE_RUN_MS = 4800; // three 1.6s breaths, matching the keyframes
+const NUDGE_STATIC_MS = 2400; // reduced motion: hold the emphasis, then release
 
 function reducedMotion() {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -137,6 +148,7 @@ function GaugeAppImpl() {
   const [evidenceOpen, setEvidenceOpen] = useState(true);
   const [phase, setPhase] = useState<Phase>(() => (gaugeEvaluated ? "done" : "idle"));
   const [cascade, setCascade] = useState(false);
+  const [nudge, setNudge] = useState(false);
 
   const needleRef = useRef<SVGGElement | null>(null);
   const progressRef = useRef<SVGPathElement | null>(null);
@@ -198,6 +210,39 @@ function GaugeAppImpl() {
     timerRef.current = window.setTimeout(land, SWEEP_MS + 900);
     return stop;
   }, [phase, score, stop]);
+
+  /**
+   * Ends the nudge for the rest of the session. Dropping the class is what
+   * actually cancels the animation: CSS alone cannot stop a running one, and
+   * the button's existing transform transition eases the last 2.5% back.
+   */
+  const stopNudge = useCallback(() => {
+    gaugeNudged = true;
+    setNudge(false);
+  }, []);
+
+  // Arm the nudge a beat after the panel settles, and hold a timer behind it:
+  // animationend never arrives if the tab is throttled, and reduced motion has
+  // no animation to end at all.
+  useEffect(() => {
+    if (phase !== "idle" || gaugeNudged) return;
+    let run = 0;
+    const arm = window.setTimeout(() => {
+      if (gaugeNudged) return;
+      setNudge(true);
+      run = window.setTimeout(
+        () => {
+          gaugeNudged = true;
+          setNudge(false);
+        },
+        reducedMotion() ? NUDGE_STATIC_MS : NUDGE_RUN_MS + 400,
+      );
+    }, NUDGE_DELAY_MS);
+    return () => {
+      clearTimeout(arm);
+      if (run) clearTimeout(run);
+    };
+  }, [phase]);
 
   const evaluate = useCallback(() => {
     stop();
@@ -338,26 +383,25 @@ function GaugeAppImpl() {
             </div>
 
             <ScrollArea className="gauge-panel-body">
+              {/* Title, then one row carrying the lock badge and the drawer
+                  toggle. Two rows is the whole card: the operational metadata
+                  that used to sit between them said nothing a visitor needs. */}
               <div className="gauge-role">
                 <div className="gauge-role-title">{gaugeRole.title}</div>
                 <div className="gauge-role-lock">
                   <span className="gauge-lock-badge">
                     <LockGlyph /> Criteria locked
                   </span>
-                  <span className="gauge-lock-meta">
-                    {gaugeCriteriaLock.version} · locked {gaugeCriteriaLock.lockedOn}
-                  </span>
+                  <button
+                    type="button"
+                    className="gauge-criteria-toggle"
+                    aria-expanded={criteriaOpen}
+                    aria-controls="gauge-criteria-drawer"
+                    onClick={() => setCriteriaOpen(!criteriaOpen)}
+                  >
+                    {criteriaOpen ? "Hide locked criteria" : "View locked criteria"}
+                  </button>
                 </div>
-                <div className="gauge-role-stage">{gaugeRole.stage}</div>
-                <button
-                  type="button"
-                  className="gauge-criteria-toggle"
-                  aria-expanded={criteriaOpen}
-                  aria-controls="gauge-criteria-drawer"
-                  onClick={() => setCriteriaOpen(!criteriaOpen)}
-                >
-                  {criteriaOpen ? "Hide locked criteria" : "View locked criteria"}
-                </button>
               </div>
 
               {criteriaOpen && (
@@ -384,7 +428,17 @@ function GaugeAppImpl() {
                 <div className="gauge-precheck">
                   <Dial score={score} phase={phase} needleRef={needleRef} progressRef={progressRef} />
                   <p className="gauge-precheck-note">{gaugeCta}</p>
-                  <button className="gauge-evaluate" type="button" onClick={evaluate}>
+                  <button
+                    className={`gauge-evaluate${nudge ? " nudge" : ""}`}
+                    type="button"
+                    onClick={() => {
+                      stopNudge();
+                      evaluate();
+                    }}
+                    onPointerEnter={stopNudge}
+                    onFocus={stopNudge}
+                    onAnimationEnd={stopNudge}
+                  >
                     Evaluate candidate
                   </button>
                   <p className="gauge-hitl">{gaugeResponsibleUse}</p>
