@@ -25,6 +25,7 @@ const HELP: string[] = [
   "  ls projects       list the things I have built",
   "  open <project>    open an app window (rex | pulse | gauge | relay)",
   "  open resume       open the resume viewer",
+  "  open linkedin     open my LinkedIn profile",
   "  contact           how to reach me",
   "  clear             clear the screen",
 ];
@@ -50,6 +51,7 @@ const OPENABLE: Record<string, AppId> = {
   gauge: "gauge",
   relay: "relay",
   resume: "resume",
+  linkedin: "linkedin",
   mail: "mail",
   contact: "mail",
 };
@@ -116,7 +118,7 @@ function TerminalAppImpl({ openApp }: AppProps) {
           emit([
             ...echo,
             { kind: "err", text: `open: nothing here called '${arg || "?"}'` },
-            { kind: "dim", text: "try: open rex | open pulse | open gauge | open resume" },
+            { kind: "dim", text: "try: open rex | open pulse | open gauge | open resume | open linkedin" },
           ]);
         }
         return;
@@ -126,7 +128,7 @@ function TerminalAppImpl({ openApp }: AppProps) {
           ...echo,
           { kind: "out", text: "email     thecarlosrobledo@gmail.com" },
           { kind: "out", text: "linkedin  linkedin.com/in/thecarlosrobledo" },
-          { kind: "dim", text: "`open mail` drafts a message for you." },
+          { kind: "dim", text: "`open mail` drafts a message. `open linkedin` opens the profile." },
         ]);
         return;
       case "sudo":

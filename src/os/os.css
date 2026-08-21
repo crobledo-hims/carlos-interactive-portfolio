@@ -57,7 +57,8 @@
 }
 
 .rex-sr,
-.gauge-sr {
+.gauge-sr,
+.li-sr {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -3184,6 +3185,12 @@ body.os-dragging {
     animation: none;
   }
 
+  .li-open,
+  .li-btn,
+  .li-link {
+    transition: none;
+  }
+
   .term-cursor {
     animation: none;
   }
@@ -3904,4 +3911,494 @@ body.os-dragging {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #6d727c !important;
+}
+
+/* ==========================================================================
+   LinkedIn — Carlos's real public profile, rebuilt inside a browser window.
+   The layout is evoked, not copied: no brand blue, no logo, no trade dress.
+   Public visitor view only — nothing here styles an owner-only surface.
+   ========================================================================== */
+
+.li {
+  display: flex;
+  flex-direction: column;
+  background: #eceff3;
+  color: #21242a;
+}
+
+/* ---- inert browser chrome, matching the Gauge mock ---- */
+
+.li-chrome {
+  flex: none;
+  background: #d9dce2;
+  border-bottom: 1px solid #b9bdc6;
+}
+
+.li-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 6px 8px 0;
+}
+
+.li-tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 280px;
+  padding: 6px 10px;
+  border-radius: 8px 8px 0 0;
+  background: #cdd1d9;
+  font-size: 12.5px;
+  color: #4a4f58;
+}
+
+.li-tab.active {
+  background: #f5f6f8;
+  color: #21242a;
+}
+
+.li-tab-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.li-tab-x {
+  color: #7b8089;
+}
+
+.li-favicon {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  background: linear-gradient(150deg, #3d84cf, #14568f);
+}
+
+.li-newtab {
+  padding: 0 8px 4px;
+  color: #5c616a;
+  font-size: 16px;
+}
+
+.li-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  background: #f5f6f8;
+}
+
+.li-nav {
+  color: #4a4f58;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.li-nav.dim {
+  color: #aeb2ba;
+}
+
+.li-omnibox {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 13px;
+  background: #e6e8ec;
+  color: #4a4f58;
+  font-size: 12.5px;
+}
+
+.li-omnibox span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.li-omnibox svg {
+  flex: none;
+  color: #5e8a5e;
+}
+
+/* ---- the one external link ---- */
+
+.li-open {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 15px;
+  border-radius: 16px;
+  background: #2f5d9e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.li-open:hover {
+  background: #27508a;
+}
+
+.li-open.compact {
+  padding: 4px 11px;
+  border-radius: 13px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ---- the page ---- */
+
+.li-page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  align-items: center;
+}
+
+/* The page is a flex column inside a scroller, so every card must opt out of
+   shrinking or the browser squashes them all to fit instead of overflowing. */
+.li-card {
+  flex: none;
+  width: 100%;
+  max-width: 740px;
+  background: #fff;
+  border: 1px solid #dfe2e8;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.li-card:not(.li-top) {
+  padding: 18px 22px 20px;
+}
+
+/* ---- banner: matrix green under a purple bloom, drawn in CSS ---- */
+
+.li-banner {
+  height: 96px;
+  background:
+    radial-gradient(120% 150% at 78% 8%, rgba(139, 92, 246, 0.5), transparent 58%),
+    repeating-linear-gradient(
+      180deg,
+      rgba(74, 222, 128, 0.14) 0 2px,
+      transparent 2px 7px
+    ),
+    linear-gradient(105deg, #0d1f18 0%, #123227 44%, #1a1436 100%);
+}
+
+.li-banner.photo {
+  background-size: cover;
+  background-position: center;
+}
+
+/* ---- top card ---- */
+
+.li-top-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 0 22px 20px;
+}
+
+.li-avatar {
+  flex: none;
+  width: 92px;
+  height: 92px;
+  margin-top: -34px;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  background: linear-gradient(150deg, #3d84cf, #14568f);
+  color: #fff;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.li-avatar.photo {
+  object-fit: cover;
+  display: block;
+}
+
+.li-identity {
+  flex: 1 1 320px;
+  min-width: 0;
+  padding-top: 12px;
+}
+
+.li-name-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.li-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: #16181d;
+}
+
+.li-verified {
+  display: inline-flex;
+}
+
+.li-verified svg {
+  width: 16px;
+  height: 16px;
+}
+
+.li-verified-disc {
+  fill: #4a7fc1;
+}
+
+.li-verified-tick {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.li-headline {
+  margin-top: 3px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #24272d;
+}
+
+.li-meta,
+.li-connections {
+  margin-top: 5px;
+  font-size: 12.5px;
+  color: #6b707a;
+}
+
+.li-connections {
+  margin-top: 2px;
+  font-weight: 600;
+  color: #2f5d9e;
+}
+
+.li-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #2f5d9e;
+  transition: color 0.15s ease;
+}
+
+.li-link:hover {
+  color: #1d3f6f;
+  text-decoration: underline;
+}
+
+.li-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.li-btn {
+  padding: 7px 15px;
+  border-radius: 16px;
+  border: 1px solid #2f5d9e;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2f5d9e;
+  transition: background 0.15s ease;
+}
+
+.li-btn:hover {
+  background: #eaf0f9;
+}
+
+/* ---- right rail: current company and school ---- */
+
+.li-rail {
+  flex: 0 1 210px;
+  min-width: 0;
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.li-rail-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #3a3e46;
+}
+
+.li-rail-mark {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  background: #e3e7ee;
+  color: #5b6270;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- sections ---- */
+
+.li-sec-title {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: #16181d;
+  margin-bottom: 10px;
+}
+
+.li-about-p {
+  font-size: 13.5px;
+  line-height: 1.62;
+  color: #33373f;
+}
+
+.li-about-p + .li-about-p {
+  margin-top: 10px;
+}
+
+.li-job {
+  display: flex;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #eceef2;
+}
+
+.li-job:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.li-job + .li-job {
+  margin-top: 4px;
+}
+
+.li-job-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.li-company {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #16181d;
+}
+
+.li-pos {
+  margin-top: 6px;
+}
+
+/* A company with more than one position gets LinkedIn's indented timeline. */
+.li-pos.grouped {
+  margin-left: 4px;
+  padding-left: 14px;
+  border-left: 2px solid #e4e7ec;
+}
+
+.li-pos.grouped + .li-pos.grouped {
+  margin-top: 14px;
+}
+
+.li-pos-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #24272d;
+}
+
+.li-pos-dates {
+  margin-top: 1px;
+  font-size: 12px;
+  color: #767b85;
+}
+
+.li-pos-summary {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.58;
+  color: #33373f;
+}
+
+.li-bullets {
+  margin-top: 8px;
+  padding-left: 16px;
+  list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.li-bullets li {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #3d424b;
+}
+
+.li-bullets li::marker {
+  color: #a8adb6;
+}
+
+/* ---- skills and languages ---- */
+
+.li-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  list-style: none;
+}
+
+.li-chip {
+  padding: 5px 12px;
+  border-radius: 14px;
+  background: #eef1f6;
+  border: 1px solid #dfe3ea;
+  font-size: 12.5px;
+  color: #3a3e46;
+}
+
+.li-langs {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.li-langs dt {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #24272d;
+}
+
+.li-langs dd {
+  font-size: 12.5px;
+  color: #767b85;
+}
+
+.li-note {
+  flex: none;
+  width: 100%;
+  max-width: 740px;
+  padding: 2px 4px 8px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #767b85;
 }

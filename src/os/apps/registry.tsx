@@ -10,6 +10,7 @@ import {
 } from "../icons";
 import type { AppDef, AppId, ScreenId } from "../types";
 import { GaugeApp } from "./GaugeApp";
+import { LinkedInApp } from "./LinkedInApp";
 import { MailApp } from "./MailApp";
 import { PulseApp } from "./PulseApp";
 import { RelayApp } from "./RelayApp";
@@ -84,11 +85,10 @@ export const APPS: Record<AppId, AppDef> = {
     subtitle: "linkedin.com/in/thecarlosrobledo",
     tile: "linear-gradient(155deg,#3d84cf,#14568f)",
     glyph: <LinkedInGlyph />,
-    href: "https://linkedin.com/in/thecarlosrobledo",
-    rect: { x: 0, y: 0, w: 0, h: 0 },
-    minW: 0,
-    minH: 0,
-    Component: null,
+    rect: { x: 84, y: 40, w: 920, h: 572 },
+    minW: 520,
+    minH: 360,
+    Component: LinkedInApp,
   },
   mail: {
     id: "mail",
