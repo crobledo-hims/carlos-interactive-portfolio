@@ -27,6 +27,8 @@ export interface Clock {
   /** False once cancelled. Check after every await. */
   alive: () => boolean;
   paused: () => boolean;
+  /** Unpaused milliseconds since this clock was created. */
+  elapsed: () => number;
 }
 
 interface Pending {
@@ -41,7 +43,12 @@ interface Pending {
 export function makeClock(): Clock {
   let cancelled = false;
   let isPaused = false;
+  let elapsedBeforePause = 0;
+  let activeStartedAt = performance.now();
   const pending = new Set<Pending>();
+
+  const elapsed = () =>
+    elapsedBeforePause + (isPaused || cancelled ? 0 : performance.now() - activeStartedAt);
 
   const arm = (p: Pending) => {
     p.armedAt = performance.now();
@@ -63,20 +70,24 @@ export function makeClock(): Clock {
     },
     pause() {
       if (isPaused || cancelled) return;
+      const now = performance.now();
+      elapsedBeforePause += now - activeStartedAt;
       isPaused = true;
       for (const p of pending) {
         clearTimeout(p.timer);
         p.timer = 0;
-        p.remaining = Math.max(0, p.remaining - (performance.now() - p.armedAt));
+        p.remaining = Math.max(0, p.remaining - (now - p.armedAt));
       }
     },
     resume() {
       if (!isPaused || cancelled) return;
       isPaused = false;
+      activeStartedAt = performance.now();
       for (const p of pending) arm(p);
     },
     cancel() {
       if (cancelled) return;
+      if (!isPaused) elapsedBeforePause += performance.now() - activeStartedAt;
       cancelled = true;
       for (const p of pending) {
         clearTimeout(p.timer);
@@ -86,6 +97,7 @@ export function makeClock(): Clock {
     },
     alive: () => !cancelled,
     paused: () => isPaused,
+    elapsed,
   };
 }
 
@@ -116,8 +128,10 @@ export function charDelay(prev: string, i: number): number {
 
 /**
  * Types `text` one character at a time, publishing each prefix through
- * `onText`. Awaits the clock between characters, so pausing the tab pauses the
- * typing exactly where it stands.
+ * `onText`. Each character targets an absolute point on the clock so delayed
+ * browser timers cannot compound into a slower effective WPM. Because the
+ * clock counts only unpaused time, hiding the tab still freezes the typing
+ * exactly where it stands.
  */
 export async function typeOut(
   clock: Clock,
@@ -128,9 +142,12 @@ export async function typeOut(
   const rawDuration = delays.reduce((total, delay) => total + delay, 0);
   const targetDuration = typingDurationMs(text);
   const scale = rawDuration > 0 ? targetDuration / rawDuration : 0;
+  const startedAt = clock.elapsed();
+  let scheduledAt = startedAt;
 
   for (let i = 0; i < text.length; i++) {
-    await clock.sleep(delays[i] * scale);
+    scheduledAt += delays[i] * scale;
+    await clock.sleep(Math.max(0, scheduledAt - clock.elapsed()));
     if (!clock.alive()) return;
     onText(text.slice(0, i + 1));
   }
