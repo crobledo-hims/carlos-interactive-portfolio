@@ -3287,6 +3287,27 @@ body.os-dragging {
   color: #eef2ec;
 }
 
+.term-line.action {
+  padding-top: 5px;
+}
+
+.term-action {
+  padding: 7px 11px;
+  border: 1px solid rgba(141, 224, 141, 0.42);
+  border-radius: 7px;
+  background: rgba(68, 124, 79, 0.16);
+  color: #9ee69e;
+  font: inherit;
+  cursor: pointer;
+}
+
+.term-action:hover,
+.term-action:focus-visible {
+  border-color: rgba(158, 230, 158, 0.78);
+  background: rgba(68, 124, 79, 0.28);
+  outline: none;
+}
+
 .term-prompt {
   color: #6fa8dc;
 }

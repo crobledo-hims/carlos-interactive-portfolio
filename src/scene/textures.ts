@@ -1264,3 +1264,56 @@ export function paintClockFace(canvas: HTMLCanvasElement, time: string): void {
   ctx.shadowBlur = 0;
   ctx.letterSpacing = "0px";
 }
+
+/** Alternate TV faces used by the command easter egg. */
+export function paintTvCommandFace(
+  canvas: HTMLCanvasElement,
+  mode: "hint" | "running" | "complete",
+): void {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const W = canvas.width;
+  const H = canvas.height;
+
+  ctx.clearRect(0, 0, W, H);
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, "#121820");
+  bg.addColorStop(0.56, "#0d1319");
+  bg.addColorStop(1, "#090d12");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const glow = ctx.createRadialGradient(W * 0.5, H * 0.48, 0, W * 0.5, H * 0.48, W * 0.48);
+  glow.addColorStop(0, mode === "complete" ? "rgba(105,210,145,0.13)" : "rgba(110,170,220,0.1)");
+  glow.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.shadowBlur = 18;
+
+  if (mode === "complete") {
+    const status = "INTERVIEW REQUESTED".split(" ");
+    ctx.shadowColor = "rgba(124,232,162,0.28)";
+    ctx.fillStyle = "#a9dfb8";
+    ctx.font = `600 78px ${SANS}`;
+    ctx.letterSpacing = "4px";
+    ctx.fillText(status[0], W / 2, H / 2 - 48);
+    ctx.fillText(status[1], W / 2, H / 2 + 48);
+  } else {
+    ctx.shadowColor = "rgba(174,214,241,0.28)";
+    ctx.fillStyle = "#b9d4df";
+    ctx.font = `500 156px ui-monospace, SFMono-Regular, Menlo, monospace`;
+    ctx.letterSpacing = "0px";
+    ctx.fillText(">_", W / 2, H / 2 - 26);
+
+    ctx.fillStyle = "#8fa6b0";
+    ctx.font = `600 30px ${SANS}`;
+    ctx.letterSpacing = "7px";
+    ctx.fillText(mode === "running" ? "RUNNING COMMAND" : "RUN A COMMAND", W / 2, H / 2 + 128);
+  }
+
+  ctx.shadowBlur = 0;
+  ctx.letterSpacing = "0px";
+}

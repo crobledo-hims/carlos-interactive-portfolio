@@ -5,6 +5,7 @@ import { CameraRig } from "./scene/CameraRig";
 import { LeftMonitorOverlay, RightMonitorOverlay } from "./overlay/Overlays";
 import { IntroOverlay } from "./overlay/IntroOverlay";
 import { WorkspaceNav } from "./overlay/WorkspaceNav";
+import { TvCommandTrigger } from "./overlay/TvCommandTrigger";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
       </Canvas>
 
       <IntroOverlay />
+      <TvCommandTrigger />
       <LeftMonitorOverlay />
       <RightMonitorOverlay />
       <WorkspaceNav />

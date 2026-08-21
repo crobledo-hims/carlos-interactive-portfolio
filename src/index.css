@@ -109,6 +109,62 @@ body,
   outline-offset: 3px;
 }
 
+/* ---- Wall-TV easter egg --------------------------------------------------
+   A transparent, keyboard-accessible target sits exactly over the physical TV
+   in the opening camera composition. The layer never captures clicks itself;
+   only the screen-sized button does, so the intro card remains untouched. */
+.tv-command-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 61;
+  pointer-events: none;
+}
+
+.tv-command-trigger {
+  position: absolute;
+  top: 6.25vh;
+  left: 50%;
+  width: min(27vh, 23vw);
+  aspect-ratio: 16 / 9;
+  transform: translateX(-50%);
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.tv-command-trigger:focus-visible {
+  outline: 2px solid rgba(222, 205, 175, 0.9);
+  outline-offset: 5px;
+}
+
+.tv-command-label {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 10px);
+  transform: translate(-50%, -3px);
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 999px;
+  background: rgba(17, 19, 24, 0.9);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.24);
+  color: rgba(248, 242, 231, 0.96);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.tv-command-trigger:hover .tv-command-label,
+.tv-command-trigger:focus-visible .tv-command-label {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
 @media (max-width: 480px) {
   .intro-inner {
     margin: 0 16px 10vh;
@@ -117,6 +173,12 @@ body,
   .intro-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-command-label {
+    transition: none;
   }
 }
 

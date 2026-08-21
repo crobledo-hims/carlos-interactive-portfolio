@@ -119,6 +119,12 @@ if (bundle) {
     "Pipeline shape",
     "Priority profile",
     "Next milestone",
+    "sudo hire carlos",
+    "Technical sourcing ........ PASS",
+    "Recommendation: STRONG HIRE",
+    "Preparing next step...",
+    "Send Carlos a message →",
+    "INTERVIEW REQUESTED",
   ]) {
     check(`bundle: contains "${wanted}"`, bundle.includes(wanted));
   }
