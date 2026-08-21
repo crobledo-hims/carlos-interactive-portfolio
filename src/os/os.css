@@ -1481,399 +1481,436 @@ body.os-dragging {
 
 
 /* ==========================================================================
-   Pulse — pipeline health dashboard
+/* ==========================================================================
+   Pulse — an explainable role brief, not a dashboard
+
+   Deliberately unlike an enterprise analytics screen: no KPI tiles, no filter
+   rail, no role table, no charts. One dark column, a single focus card, three
+   compact rows, and a thin signal rail carrying the status colour. Written
+   status sits beside every colour and glyph, so nothing depends on hue.
    ========================================================================== */
 
 .pulse {
   display: flex;
   flex-direction: column;
-  background: #191b20;
-  color: #dfe1e7;
+  min-width: 0;
+  background: #15161b;
+  color: #e6e8ef;
 }
 
-.pulse-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: #1e2027;
+/* Signal colours are soft and used only as support. */
+.pulse {
+  --sig-needs: #e0705f;
+  --sig-watch: #d6a247;
+  --sig-ok: #56b487;
+  --sig-accent: #8b7ff0;
 }
 
-.pulse-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.pulse-sub {
-  font-size: 12px;
-  color: #8b8f9a;
-}
-
-.pulse-chips {
-  display: flex;
-  gap: 6px;
-}
-
-.pulse-chip {
-  padding: 3px 11px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  font-size: 12px;
-  color: #a8acb6;
-}
-
-.pulse-chip.active {
-  background: rgba(110, 140, 240, 0.24);
-  border-color: rgba(130, 160, 255, 0.5);
-  color: #cdd8ff;
-}
-
-.pulse-body {
-  flex: 1;
-  padding: 16px 18px 24px;
-}
-
-.pulse-headline {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-.pulse-stat {
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: #21242c;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.pulse-stat-label {
-  font-size: 11.5px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #8b8f9a;
-}
-
-.pulse-stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: #fff;
-}
-
-.pulse-stat-sub {
-  font-size: 12px;
-  color: #8b8f9a;
-}
-
-.pulse-panel {
-  margin-top: 16px;
-  padding: 14px 16px 10px;
-  border-radius: 10px;
-  background: #21242c;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.pulse-panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.pulse-panel-head h3 {
-  font-size: 14px;
-  font-weight: 650;
-}
-
-.pulse-legend {
-  display: flex;
-  gap: 14px;
-  font-size: 12px;
-  color: #9aa0ac;
-}
-
-.pulse-legend .lg::before {
-  content: "";
-  display: inline-block;
-  width: 14px;
-  height: 2px;
-  margin-right: 6px;
-  vertical-align: middle;
-  border-radius: 2px;
-}
-
-.pulse-legend .actual::before {
-  background: #6f8ff0;
-}
-.pulse-legend .projected::before {
-  background: repeating-linear-gradient(90deg, #7ec8a9 0 4px, transparent 4px 7px);
-}
-.pulse-legend .plan::before {
-  background: #5c6272;
-}
-
-.pulse-chart {
-  width: 100%;
-  height: auto;
-  margin-top: 6px;
-}
-
-.pulse-gridline {
-  stroke: rgba(255, 255, 255, 0.07);
-  stroke-width: 1;
-}
-
-.pulse-axis {
-  fill: #7f8492;
-  font-size: 11px;
-}
-
-.pulse-plan {
-  fill: none;
-  stroke: #5c6272;
-  stroke-width: 1.6;
-  stroke-dasharray: 2 4;
-}
-
-.pulse-actual {
-  fill: none;
-  stroke: #6f8ff0;
-  stroke-width: 2.4;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-}
-
-.pulse-projected {
-  fill: none;
-  stroke: #7ec8a9;
-  stroke-width: 2.2;
-  stroke-dasharray: 5 5;
-  stroke-linecap: round;
-}
-
-.pulse-dot {
-  fill: #6f8ff0;
-  stroke: #21242c;
-  stroke-width: 1.6;
-}
-
-.pulse-dot.ghost {
-  fill: #21242c;
-  stroke: #7ec8a9;
-}
-
-.pulse-panel-note {
-  margin-top: 2px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #8b8f9a;
-}
-
-.pulse-section {
-  margin: 20px 0 10px;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #8b8f9a;
-}
-
-.pulse-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(252px, 1fr));
-  gap: 12px;
-}
-
-.pulse-card {
-  display: block;
-  width: 100%;
-  padding: 12px 14px 11px;
-  border-radius: 10px;
-  background: #21242c;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-left: 3px solid;
-  text-align: left;
-  transition: background 0.12s, transform 0.12s;
-}
-
-.pulse-card.green {
-  border-left-color: #4bbd7f;
-}
-.pulse-card.yellow {
-  border-left-color: #dfa63a;
-}
-.pulse-card.red {
-  border-left-color: #e0605a;
-}
-
-.pulse-card:hover {
-  background: #262a33;
-}
-
-.pulse-card.active {
-  background: #272c37;
-  border-color: rgba(140, 165, 255, 0.5);
-}
-
-.pulse-card-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.pulse-card-title {
-  font-size: 14px;
-  font-weight: 650;
-  color: #fff;
-}
-
-.pulse-card-team {
-  font-size: 12px;
-  color: #8b8f9a;
-}
-
-.pulse-pill {
+.pulse-head {
   flex: none;
-  padding: 2px 9px;
-  border-radius: 10px;
-  font-size: 11.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 20px 11px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.pulse-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.pulse-wave {
+  width: 44px;
+  height: 14px;
+  flex: none;
+  fill: none;
+  stroke: var(--sig-accent);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+
+.pulse-name {
+  font-size: 13px;
   font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f1f2f7;
+}
+
+.pulse-tagline {
+  font-size: 12px;
+  color: #9198a8;
+}
+
+.pulse-updated {
+  flex: none;
+  font-size: 11.5px;
+  color: #7f8697;
+}
+
+/* A single line of text, not a metric ribbon. */
+.pulse-summary {
+  flex: none;
+  padding: 9px 20px;
+  font-size: 12.5px;
+  color: #aab1c1;
+  background: rgba(139, 127, 240, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pulse-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 
-.pulse-pill.green {
-  background: rgba(75, 189, 127, 0.16);
-  color: #7fdca7;
-}
-.pulse-pill.yellow {
-  background: rgba(223, 166, 58, 0.16);
-  color: #eec172;
-}
-.pulse-pill.red {
-  background: rgba(224, 96, 90, 0.18);
-  color: #f0938e;
-}
-
-.pulse-card-metrics {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-top: 11px;
-}
-
-.pulse-metric-value {
-  font-size: 16px;
-  font-weight: 650;
-  color: #eceef3;
-}
-
-.pulse-metric-label {
-  font-size: 11px;
-  color: #8b8f9a;
-}
-
-.pulse-metric-hint {
-  font-size: 10.5px;
-  color: #6b7080;
-}
-
-.pulse-card-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.pulse-spark {
-  width: 104px;
-  height: 30px;
-}
-
-.pulse-spark.green {
-  stroke: #4bbd7f;
-}
-.pulse-spark.yellow {
-  stroke: #dfa63a;
-}
-.pulse-spark.red {
-  stroke: #e0605a;
-}
-
-.pulse-card-meta {
-  font-size: 11.5px;
-  color: #8b8f9a;
-}
-
-.pulse-rule {
-  margin-top: 9px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 11px;
-  line-height: 1.45;
-  color: #797e8c;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-
-.pulse-risks {
+.pulse-body {
+  padding: 16px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 18px;
 }
 
-.pulse-risk {
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: #21242c;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+/* This column scrolls, so nothing in it may be compressed to fit: the brief
+   clips its own overflow and would otherwise collapse to its first line. */
+.pulse-body > * {
+  flex: none;
 }
 
-.pulse-risk.red {
-  background: linear-gradient(90deg, rgba(224, 96, 90, 0.1), #21242c 46%);
-}
-.pulse-risk.yellow {
-  background: linear-gradient(90deg, rgba(223, 166, 58, 0.09), #21242c 46%);
+.pulse-eyebrow {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: #7f8697;
 }
 
-.pulse-risk-head {
-  display: flex;
+.pulse-eyebrow.standalone {
+  margin-bottom: -8px;
+}
+
+/* ---- signal chip ---- */
+
+.pulse-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-}
-
-.pulse-risk-role {
-  font-size: 13.5px;
+  gap: 6px;
+  padding: 4px 11px 4px 9px;
+  border-radius: 999px;
+  font-size: 12px;
   font-weight: 650;
-  color: #fff;
+  white-space: nowrap;
+  border: 1px solid;
 }
 
-.pulse-risk-rule {
-  margin-left: auto;
+.pulse-chip.sm {
+  padding: 3px 9px 3px 7px;
+  font-size: 11px;
+}
+
+.pulse-sig-icon {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pulse-chip.needs-action {
+  color: var(--sig-needs);
+  border-color: rgba(224, 112, 95, 0.42);
+  background: rgba(224, 112, 95, 0.12);
+}
+
+.pulse-chip.watch {
+  color: var(--sig-watch);
+  border-color: rgba(214, 162, 71, 0.42);
+  background: rgba(214, 162, 71, 0.12);
+}
+
+.pulse-chip.on-track {
+  color: var(--sig-ok);
+  border-color: rgba(86, 180, 135, 0.42);
+  background: rgba(86, 180, 135, 0.12);
+}
+
+/* ---- the focus brief ---- */
+
+.pulse-brief {
+  position: relative;
+  padding: 15px 18px 16px 20px;
+  border-radius: 12px;
+  background: #1c1e25;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+/* The signal rail: a thin bar, never the only cue. */
+.pulse-brief::before,
+.pulse-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: currentColor;
+}
+
+.pulse-brief.needs-action::before,
+.pulse-row.needs-action::before {
+  background: var(--sig-needs);
+}
+.pulse-brief.watch::before,
+.pulse-row.watch::before {
+  background: var(--sig-watch);
+}
+.pulse-brief.on-track::before,
+.pulse-row.on-track::before {
+  background: var(--sig-ok);
+}
+
+.pulse-brief-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pulse-brief-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #f3f4f9;
+}
+
+.pulse-brief-team {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: #9198a8;
+}
+
+.pulse-brief-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.pulse-trend {
   font-size: 11.5px;
-  color: #797e8c;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #8990a1;
 }
 
-.pulse-risk-detail {
-  margin-top: 7px;
+.pulse-reason {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #dfe2ea;
+  max-width: 62ch;
+}
+
+.pulse-evidence h4,
+.pulse-next dt {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: #7f8697;
+  margin-bottom: 3px;
+}
+
+.pulse-evidence p {
+  font-size: 13px;
+  color: #cfd4df;
+  font-variant-numeric: tabular-nums;
+}
+
+.pulse-next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 34px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.pulse-next dd {
+  font-size: 13px;
+  color: #dfe2ea;
+}
+
+/* ---- why this signal ---- */
+
+.pulse-why {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  padding: 6px 12px 6px 9px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: #c4c9d6;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.pulse-why:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #eef0f6;
+}
+
+.pulse-why-caret {
+  font-size: 10px;
+  color: var(--sig-accent);
+}
+
+.pulse-why-panel {
+  padding: 12px 14px;
+  border-radius: 9px;
+  background: rgba(139, 127, 240, 0.08);
+  border: 1px solid rgba(139, 127, 240, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   font-size: 13px;
   line-height: 1.55;
-  color: #b9bdc7;
+  color: #d3d7e2;
+  max-width: 66ch;
 }
 
-.pulse-risk-action {
-  margin-top: 6px;
-  font-size: 13px;
-  color: #dfe1e7;
+.pulse-why-note {
+  font-size: 12px;
+  color: #949bab;
 }
 
-.pulse-risk-action span {
-  margin-right: 6px;
+/* ---- the three supporting rows ---- */
+
+.pulse-rows {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pulse-row {
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 14px;
+  padding: 11px 14px 11px 17px;
+  border-radius: 10px;
+  background: #1a1c22;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.pulse-row:hover {
+  background: #21242c;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.pulse-row-main {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.pulse-row-title {
+  font-size: 13.5px;
+  font-weight: 650;
+  color: #eceef4;
+}
+
+.pulse-row-team {
+  font-size: 12px;
+  color: #8990a1;
+}
+
+.pulse-row-reason {
+  grid-column: 1 / -1;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #a8aebd;
+}
+
+/* ---- how it works, and the one quiet disclaimer ---- */
+
+.pulse-how {
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pulse-steps {
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  color: #b6bcc9;
+}
+
+.pulse-arrow {
+  margin: 0 8px;
+  color: var(--sig-accent);
+}
+
+.pulse-how-body {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #8f96a6;
+  max-width: 70ch;
+}
+
+.pulse-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pulse-disclaimer {
+  font-size: 11.5px;
+  color: #7c8394;
+}
+
+.pulse-disclaimer.sub {
   font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #8b8f9a;
+  color: #6c7383;
+  max-width: 74ch;
+}
+
+.pulse-why:focus-visible,
+.pulse-row:focus-visible {
+  outline: 2px solid #8ca8ff;
+  outline-offset: 2px;
 }
 
 /* ==========================================================================
@@ -3139,7 +3176,8 @@ body.os-dragging {
   .os-dock-item,
   .os-dock-label,
   .rex-chan,
-  .pulse-card {
+  .pulse-row,
+  .pulse-why {
     transition: none;
   }
 

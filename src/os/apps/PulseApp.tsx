@@ -1,213 +1,216 @@
 import { memo, useState } from "react";
 import { ScrollArea } from "../ScrollArea";
-import { pulseForecast, pulseRisks, pulseRoles, pulseSummary } from "../data/pulse";
-import type { Health, PulseRole } from "../data/pulse";
+import {
+  SIGNAL_LABEL,
+  pulseDefaultRole,
+  pulseDisclaimer,
+  pulseEvidence,
+  pulseHowItWorks,
+  pulseRoles,
+  pulseSummary,
+} from "../data/pulse";
+import type { PulseRole, PulseSignal } from "../data/pulse";
 
-const HEALTH_LABEL: Record<Health, string> = {
-  green: "On track",
-  yellow: "Watch",
-  red: "At risk",
-};
+/* ------------------------------------------------------------------ icons */
 
-/* ------------------------------------------------------------- sparkline */
-
-function Sparkline({ values, health }: { values: number[]; health: Health }) {
-  const w = 104;
-  const h = 30;
-  const max = Math.max(...values, 1);
-  const min = Math.min(...values, 0);
-  const span = Math.max(max - min, 1);
-  const pts = values
-    .map((v, i) => {
-      const x = (i * w) / (values.length - 1);
-      const y = h - 3 - ((v - min) / span) * (h - 6);
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
+/**
+ * One small glyph per signal. Decorative only: the written label sits beside
+ * every one of them, so neither colour nor shape ever carries meaning alone.
+ */
+function SignalIcon({ signal }: { signal: PulseSignal }) {
   return (
-    <svg className={`pulse-spark ${health}`} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
-      <polyline points={pts} fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <svg className="pulse-sig-icon" viewBox="0 0 12 12" aria-hidden="true">
+      {signal === "needs-action" && <path d="M6 1.6l4.6 8.2H1.4L6 1.6zM6 5v2.1M6 8.6v.1" />}
+      {signal === "watch" && <path d="M1.2 6S3.3 2.6 6 2.6 10.8 6 10.8 6 8.7 9.4 6 9.4 1.2 6 1.2 6zM6 4.8v2.4" />}
+      {signal === "on-track" && <path d="M2.2 6.3l2.6 2.5 5-5.6" />}
     </svg>
   );
 }
 
-/* -------------------------------------------------------------- forecast */
-
-const CW = 640;
-const CH = 236;
-const PAD = { l: 30, r: 14, t: 16, b: 26 };
-
-function px(i: number, n: number) {
-  return PAD.l + (i * (CW - PAD.l - PAD.r)) / (n - 1);
-}
-function py(v: number) {
-  return CH - PAD.b - (v / pulseForecast.max) * (CH - PAD.t - PAD.b);
-}
-function linePath(vals: (number | null)[]) {
-  let d = "";
-  vals.forEach((v, i) => {
-    if (v === null) return;
-    d += `${d ? "L" : "M"}${px(i, vals.length).toFixed(1)} ${py(v).toFixed(1)} `;
-  });
-  return d.trim();
-}
-
-function ForecastChart() {
-  const { months, actual, projected, plan, max } = pulseForecast;
-  const n = months.length;
-  const areaTop = linePath(actual);
-  const lastActual = actual.reduce<number>((acc, v, i) => (v === null ? acc : i), 0);
-  const area = areaTop
-    ? `${areaTop} L${px(lastActual, n).toFixed(1)} ${py(0).toFixed(1)} L${px(0, n).toFixed(1)} ${py(0).toFixed(1)} Z`
-    : "";
-
+/** The header motif: a quiet waveform, not a chart. */
+function Waveform() {
   return (
-    <svg className="pulse-chart" viewBox={`0 0 ${CW} ${CH}`} role="img" aria-label="Cumulative hires versus plan">
-      <defs>
-        <linearGradient id="pulseFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#6f8ff0" stopOpacity="0.34" />
-          <stop offset="100%" stopColor="#6f8ff0" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-
-      {[0, max / 3, (max * 2) / 3, max].map((v) => (
-        <g key={v}>
-          <line className="pulse-gridline" x1={PAD.l} x2={CW - PAD.r} y1={py(v)} y2={py(v)} />
-          <text className="pulse-axis" x={PAD.l - 8} y={py(v) + 3.5} textAnchor="end">
-            {Math.round(v)}
-          </text>
-        </g>
-      ))}
-
-      {area && <path d={area} fill="url(#pulseFill)" />}
-      <path className="pulse-plan" d={linePath(plan)} />
-      <path className="pulse-actual" d={linePath(actual)} />
-      <path className="pulse-projected" d={linePath(projected)} />
-
-      {actual.map((v, i) =>
-        v === null ? null : <circle key={`a${i}`} className="pulse-dot" cx={px(i, n)} cy={py(v)} r="3.4" />,
-      )}
-      {projected.map((v, i) =>
-        v === null || i === lastActual ? null : (
-          <circle key={`p${i}`} className="pulse-dot ghost" cx={px(i, n)} cy={py(v)} r="3.2" />
-        ),
-      )}
-
-      {months.map((m, i) => (
-        <text key={m} className="pulse-axis" x={px(i, n)} y={CH - 8} textAnchor="middle">
-          {m}
-        </text>
-      ))}
+    <svg className="pulse-wave" viewBox="0 0 44 14" aria-hidden="true">
+      <path d="M1 7h6l2.5-5 3 10 3-8 2.5 3H26l2.5-4 3 8 2.5-4h7" />
     </svg>
   );
 }
 
-/* ----------------------------------------------------------- role cards */
+/* ------------------------------------------------------------------ chip */
 
-function RoleCard({ role, active, onSelect }: { role: PulseRole; active: boolean; onSelect: () => void }) {
+function SignalChip({ signal, small }: { signal: PulseSignal; small?: boolean }) {
   return (
-    <button className={`pulse-card ${role.health}${active ? " active" : ""}`} onClick={onSelect}>
-      <div className="pulse-card-head">
+    <span className={`pulse-chip ${signal}${small ? " sm" : ""}`}>
+      <SignalIcon signal={signal} />
+      {SIGNAL_LABEL[signal]}
+    </span>
+  );
+}
+
+/* ------------------------------------------------------------------ brief */
+
+interface BriefProps {
+  role: PulseRole;
+  open: boolean;
+  onToggle: () => void;
+}
+
+function Brief({ role, open, onToggle }: BriefProps) {
+  const evidence = pulseEvidence(role);
+  return (
+    <section className={`pulse-brief ${role.signal}`} aria-labelledby="pulse-brief-title">
+      <p className="pulse-eyebrow">Focus now</p>
+
+      <div className="pulse-brief-head">
         <div>
-          <div className="pulse-card-title">{role.title}</div>
-          <div className="pulse-card-team">{role.team}</div>
+          <h3 className="pulse-brief-title" id="pulse-brief-title">
+            {role.title}
+          </h3>
+          <p className="pulse-brief-team">{role.team}</p>
         </div>
-        <span className={`pulse-pill ${role.health}`}>{HEALTH_LABEL[role.health]}</span>
-      </div>
-      <div className="pulse-card-metrics">
-        {role.metrics.map((m) => (
-          <div className="pulse-metric" key={m.label}>
-            <div className="pulse-metric-value">{m.value}</div>
-            <div className="pulse-metric-label">{m.label}</div>
-            <div className="pulse-metric-hint">{m.hint}</div>
-          </div>
-        ))}
-      </div>
-      <div className="pulse-card-foot">
-        <Sparkline values={role.trend} health={role.health} />
-        <div className="pulse-card-meta">
-          {role.openings} opening{role.openings > 1 ? "s" : ""} · {role.daysOpen}d open
+        <div className="pulse-brief-status">
+          <SignalChip signal={role.signal} />
+          <p className="pulse-trend">{role.trendLabel}</p>
         </div>
       </div>
-      <div className="pulse-rule">{role.rule}</div>
-    </button>
+
+      <p className="pulse-reason">{role.reason}</p>
+
+      <div className="pulse-evidence">
+        <h4>Observed evidence</h4>
+        <p>
+          {evidence.map((e, i) => (
+            <span key={e}>
+              {i > 0 && <span aria-hidden="true"> · </span>}
+              {e}
+            </span>
+          ))}
+        </p>
+      </div>
+
+      <dl className="pulse-next">
+        <div>
+          <dt>Suggested review</dt>
+          <dd>{role.suggestedReview}</dd>
+        </div>
+        <div>
+          <dt>Owner</dt>
+          <dd>{role.owner}</dd>
+        </div>
+      </dl>
+
+      <button
+        type="button"
+        className="pulse-why"
+        aria-expanded={open}
+        aria-controls="pulse-why-panel"
+        onClick={onToggle}
+      >
+        <span className="pulse-why-caret" aria-hidden="true">
+          {open ? "▾" : "▸"}
+        </span>
+        Why this signal
+      </button>
+
+      {open && (
+        <div className="pulse-why-panel" id="pulse-why-panel">
+          <p>{role.explanation}</p>
+          <p className="pulse-why-note">
+            Pulse is surfacing this condition for review. It does not determine the cause.
+          </p>
+        </div>
+      )}
+    </section>
   );
 }
+
+/* ------------------------------------------------------------------- app */
 
 function PulseAppImpl() {
-  const [activeRole, setActiveRole] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState(pulseDefaultRole);
+  const [whyOpen, setWhyOpen] = useState(false);
+  const [announce, setAnnounce] = useState("");
+
+  const active = pulseRoles.find((r) => r.id === activeId) ?? pulseRoles[0];
+  const others = pulseRoles.filter((r) => r.id !== active.id);
+  const summary = pulseSummary(pulseRoles);
+
+  // Selecting a role swaps it into the brief in place. Nothing navigates, and
+  // the disclosure keeps its state so two explanations can be compared.
+  const select = (role: PulseRole) => {
+    setActiveId(role.id);
+    setAnnounce(`Now showing ${role.title}, ${role.team}. Signal: ${SIGNAL_LABEL[role.signal]}.`);
+  };
+
+  const toggleWhy = () => setWhyOpen((v) => !v);
 
   return (
     <div className="pulse">
-      <div className="pulse-topbar">
-        <div>
-          <div className="pulse-title">Pipeline health</div>
-          <div className="pulse-sub">
-            {pulseSummary.quarter} · rules-based scoring · synced {pulseSummary.synced}
+      <header className="pulse-head">
+        <div className="pulse-brand">
+          <Waveform />
+          <div>
+            <p className="pulse-name">Pulse</p>
+            <p className="pulse-tagline">Explainable role intelligence</p>
           </div>
         </div>
-        <div className="pulse-chips">
-          <span className="pulse-chip active">Health</span>
-          <span className="pulse-chip">Forecast</span>
-          <span className="pulse-chip">Rules</span>
-        </div>
-      </div>
+        <p className="pulse-updated">Updated today</p>
+      </header>
+
+      <p className="pulse-summary">
+        {summary.map((s, i) => (
+          <span key={s}>
+            {i > 0 && <span aria-hidden="true"> · </span>}
+            {s}
+          </span>
+        ))}
+      </p>
+
+      {/* One polite region for the whole app: it carries the newly selected
+          role only, never the brief again. */}
+      <p className="pulse-sr" role="status" aria-live="polite">
+        {announce}
+      </p>
 
       <ScrollArea className="pulse-body">
-        <div className="pulse-headline">
-          {pulseSummary.headline.map((h) => (
-            <div className="pulse-stat" key={h.label}>
-              <div className="pulse-stat-label">{h.label}</div>
-              <div className="pulse-stat-value">{h.value}</div>
-              <div className="pulse-stat-sub">{h.sub}</div>
-            </div>
-          ))}
-        </div>
+        <Brief role={active} open={whyOpen} onToggle={toggleWhy} />
 
-        <div className="pulse-panel">
-          <div className="pulse-panel-head">
-            <h3>Hiring forecast — cumulative</h3>
-            <div className="pulse-legend">
-              <span className="lg actual">Actual</span>
-              <span className="lg projected">Forecast</span>
-              <span className="lg plan">Plan</span>
-            </div>
-          </div>
-          <ForecastChart />
-          <div className="pulse-panel-note">
-            Forecast extends the trailing 8-week conversion rates against remaining capacity. No model, no black
-            box — the same arithmetic a recruiter would do by hand, run every night.
-          </div>
-        </div>
-
-        <h3 className="pulse-section">Role scorecards</h3>
-        <div className="pulse-cards">
-          {pulseRoles.map((r) => (
-            <RoleCard
-              key={r.id}
-              role={r}
-              active={activeRole === r.id}
-              onSelect={() => setActiveRole(activeRole === r.id ? null : r.id)}
-            />
+        <h3 className="pulse-eyebrow standalone">Other signals</h3>
+        <ul className="pulse-rows">
+          {others.map((r) => (
+            <li key={r.id}>
+              <button type="button" className={`pulse-row ${r.signal}`} onClick={() => select(r)}>
+                <span className="pulse-row-main">
+                  <span className="pulse-row-title">{r.title}</span>
+                  <span className="pulse-row-team">{r.team}</span>
+                </span>
+                <SignalChip signal={r.signal} small />
+                <span className="pulse-row-reason">{r.reason}</span>
+              </button>
+            </li>
           ))}
-        </div>
+        </ul>
 
-        <h3 className="pulse-section">Risk callouts</h3>
-        <div className="pulse-risks">
-          {pulseRisks.map((k) => (
-            <div className={`pulse-risk ${k.severity}`} key={k.id}>
-              <div className="pulse-risk-head">
-                <span className={`pulse-pill ${k.severity}`}>{HEALTH_LABEL[k.severity]}</span>
-                <span className="pulse-risk-role">{k.role}</span>
-                <span className="pulse-risk-rule">Rule {k.rule}</span>
-              </div>
-              <p className="pulse-risk-detail">{k.detail}</p>
-              <p className="pulse-risk-action">
-                <span>Recommended action</span> {k.action}
-              </p>
-            </div>
-          ))}
-        </div>
+        <section className="pulse-how" aria-label="How Pulse works">
+          <p className="pulse-steps">
+            {pulseHowItWorks.steps.map((s, i) => (
+              <span key={s}>
+                {i > 0 && (
+                  <span className="pulse-arrow" aria-hidden="true">
+                    →
+                  </span>
+                )}
+                {s}
+              </span>
+            ))}
+          </p>
+          <p className="pulse-how-body">{pulseHowItWorks.body}</p>
+        </section>
+
+        <footer className="pulse-foot">
+          <p className="pulse-disclaimer">{pulseDisclaimer.primary}</p>
+          <p className="pulse-disclaimer sub">{pulseDisclaimer.secondary}</p>
+        </footer>
       </ScrollArea>
     </div>
   );
