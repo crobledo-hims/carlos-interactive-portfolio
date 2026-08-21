@@ -22,11 +22,9 @@ let offerDemoPlayed = false;
  *   0ms       the Slack interface, settled and empty
  *   600ms     Avery starts typing
  *   2000ms    her message lands
- *   2850ms    Carlos begins typing his reply (~125 WPM)
- *   ~9200ms   ...and sends it
- *   ~10.1s    he begins the @cadence request
- *   ~19s      ...and sends it; Cadence starts preparing
- *   ~21.5s    the pipeline report
+ *   2850ms    Carlos begins typing his reply (~150 WPM)
+ *              ...then sends it and types the @cadence request at the same rate
+ *              ...Cadence prepares and posts the pipeline report
  */
 const ORIENT_MS = 600; // beat before anything moves, so the UI reads first
 const AVERY_TYPING_MS = 1400; // spec: 1.2-1.6s
@@ -39,10 +37,9 @@ const TAIL_MS = 500; // grace after the report before scroll-follow lets go
 /** Reduced motion: no typing, just each message in turn with a beat between. */
 const RM_STEP_MS = 700;
 
-/** The recruiter starts the workflow; the interviewer reply is paced at 150 WPM. */
+/** Timing around the feedback workflow; human typing uses the shared 150 WPM rate. */
 const FEEDBACK_SEND_MS = 900;
 const FEEDBACK_READ_MS = 900;
-const INCOMING_WPM = 150;
 
 /** The offer channel opens on the earlier conversation, then compresses hours. */
 const OFFER_PRELUDE_COUNT = 3;
@@ -502,7 +499,7 @@ function CadenceAppImpl() {
       await clock.sleep(OFFER_AFTER_ALERT_MS);
       if (!alive()) return;
       setOfferIndicator(indicatorFor(reply, `${reply.author} is typing…`));
-      await clock.sleep(typingDurationMs(firstText(reply), INCOMING_WPM));
+      await clock.sleep(typingDurationMs(firstText(reply)));
       if (!alive()) return;
 
       setOfferIndicator(null);
@@ -677,7 +674,7 @@ function CadenceAppImpl() {
       if (!alive()) return;
       setFeedback("replying");
       setFeedbackIndicator(indicatorFor(reply, `${reply.author} is typing…`));
-      await clock.sleep(typingDurationMs(firstText(reply), INCOMING_WPM));
+      await clock.sleep(typingDurationMs(firstText(reply)));
       if (!alive()) return;
 
       setFeedback("replied");

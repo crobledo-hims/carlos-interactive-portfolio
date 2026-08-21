@@ -91,8 +91,10 @@ export function makeClock(): Clock {
 
 /* ------------------------------------------------------------- typing feel */
 
-/** ~125 WPM: five characters to a word, so a shade under 100ms each. */
-const BASE_MS = 95;
+/** Every simulated human response uses the same 150 WPM baseline. */
+export const TYPING_WPM = 150;
+const CHARS_PER_WORD = 5;
+const BASE_MS = Math.round(60_000 / (TYPING_WPM * CHARS_PER_WORD));
 
 /** Characters a person pauses after, mid-thought. */
 const PUNCTUATION = /[.,!?;:—]/;
@@ -122,8 +124,13 @@ export async function typeOut(
   text: string,
   onText: (value: string) => void,
 ): Promise<void> {
+  const delays = Array.from(text, (_, i) => charDelay(i === 0 ? "" : text[i - 1], i));
+  const rawDuration = delays.reduce((total, delay) => total + delay, 0);
+  const targetDuration = typingDurationMs(text);
+  const scale = rawDuration > 0 ? targetDuration / rawDuration : 0;
+
   for (let i = 0; i < text.length; i++) {
-    await clock.sleep(charDelay(i === 0 ? "" : text[i - 1], i));
+    await clock.sleep(delays[i] * scale);
     if (!clock.alive()) return;
     onText(text.slice(0, i + 1));
   }
@@ -135,7 +142,7 @@ export async function typeOut(
  * human pace is represented by the indicator rather than characters appearing
  * inside the posted message.
  */
-export function typingDurationMs(text: string, wordsPerMinute: number): number {
+export function typingDurationMs(text: string, wordsPerMinute: number = TYPING_WPM): number {
   const words = text.trim().match(/\S+/g)?.length ?? 0;
   if (words === 0 || wordsPerMinute <= 0) return 0;
   return Math.round((words / wordsPerMinute) * 60_000);
