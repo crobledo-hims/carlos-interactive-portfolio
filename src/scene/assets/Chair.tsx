@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import * as THREE from "three";
-import { RoundedBox } from "@react-three/drei";
+import { RoundedBox, useGLTF } from "@react-three/drei";
 import { materials } from "../materials";
 import {
   panelOutline,
@@ -257,10 +257,13 @@ function Seat() {
   );
 }
 
-export function AeronChair() {
+const CHAIR_POS: [number, number, number] = [0, 0, 0.85];
+const CHAIR_ROT: [number, number, number] = [0, 0.07, 0];
+
+function ProceduralAeronChair() {
   const M = materials();
   return (
-    <group position={[0, 0, 0.85]} rotation={[0, 0.07, 0]}>
+    <group position={CHAIR_POS} rotation={CHAIR_ROT}>
       <Base />
       <GasLift />
       {/* tilt mechanism housing */}
@@ -285,5 +288,52 @@ export function AeronChair() {
       <Armrest side={-1} />
       <Armrest side={1} />
     </group>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Marketplace upgrade                                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Asset credit — required by the licence, keep this comment with the file:
+ *   "Ergonomic mesh office chair" by guillaumecrz
+ *   CC Attribution (CC BY 4.0)
+ *   https://sketchfab.com/3d-models/ergonomic-mesh-office-chair-cd5ef0305d8545dd8cd934ebb99cf7d5
+ *
+ * Rebuilt for this scene in Blender: cameras/lights stripped, the star base
+ * pulled in from a 1.0 m span to 0.71 m (the source model's base was splayed
+ * far wider than a real Aeron), every white mechanism part repainted graphite
+ * to match IMG_1907/1908, gas-lift piston left chrome as in the photo, and the
+ * whole thing decimated 181k -> 44.5k tris with area-proportional budgets so
+ * the silhouette parts keep their density and the knobs give theirs up.
+ * 0.71 x 0.62 x 1.03 m, origin on the floor under the column, back facing +Z.
+ *
+ * The exact Herman Miller Aeron on Sketchfab (bumbeishvili) is CC BY-NC-SA and
+ * was rejected on licence, not quality. Don't re-search it.
+ */
+const CHAIR_GLB = "/models/aeron-chair.glb";
+
+function AeronChairModel() {
+  const { scene } = useGLTF(CHAIR_GLB, false);
+  const model = useMemo(() => {
+    scene.traverse((o) => {
+      if ((o as THREE.Mesh).isMesh) {
+        o.castShadow = true;
+        o.receiveShadow = true;
+      }
+    });
+    return scene;
+  }, [scene]);
+  return <primitive object={model} position={CHAIR_POS} rotation={CHAIR_ROT} />;
+}
+
+useGLTF.preload(CHAIR_GLB, false);
+
+export function AeronChair() {
+  return (
+    <Suspense fallback={<ProceduralAeronChair />}>
+      <AeronChairModel />
+    </Suspense>
   );
 }

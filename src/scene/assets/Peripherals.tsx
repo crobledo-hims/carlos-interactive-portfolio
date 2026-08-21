@@ -19,6 +19,15 @@ const MAT_TOP = DESK_SURFACE + 0.004;
 /* MX Mechanical Mini — 75%, real keycaps rather than a painted plate   */
 /* ------------------------------------------------------------------ */
 
+/*
+ * Sketchfab pass — nothing shippable, don't re-run this search.
+ * Sketchfab has no CC-BY low-profile 75% board in pale grey. The closest,
+ * "Low Profile Mechanical Keyboard" (DatSketch, CC-BY), is a black RGB-backlit
+ * board welded to a desk mat — the opposite of the white keycaps in IMG_1899.
+ * Everything else under this search is a black gaming keyboard. The keycap
+ * field below is already the real MX Mechanical Mini layout and tones.
+ */
+
 type KeySpec = [widthUnits: number, tone: number]; // tone -1 = spacer
 
 const UNIT = 0.018;
@@ -163,7 +172,30 @@ const MOUSE_H: ControlPoint[] = [
   [1.0, 0.006],
 ];
 
-function Mouse() {
+const MOUSE_POS: [number, number, number] = [0.235, DESK_SURFACE + 0.0005, 0.115];
+const MOUSE_ROT: [number, number, number] = [0, -0.07, 0];
+
+/**
+ * Sketchfab pass — nothing shippable, don't re-run this search.
+ *
+ * Only two CC-BY MX Masters exist and both are photogrammetry scans:
+ *   - "Logitech MX Master 3 Scan" (chopraz2431, 573k tris) was taken all the
+ *     way through the pipeline. It is chunked into seven overlapping shells,
+ *     so any decimation to web weight makes the duplicated surfaces diverge
+ *     and z-fight — the mouse renders as black-and-white shrapnel. Its UV
+ *     atlas is per-triangle fragmented too, so decimated triangles sample the
+ *     white atlas background. Untextured and un-decimated it is fine and
+ *     useless; neither fix survives the 200 KB budget.
+ *   - "Mouse Logitech MX Master 3S white" (Guibazilla) is a white scan; the
+ *     real mouse is graphite (IMG_1898) and a scan's baked lighting does not
+ *     survive being darkened.
+ * "Logitech MX master 2S" (danish_blends) is the one clean model and it is
+ * CC BY-NC — rejected on licence.
+ *
+ * The lofted shell below stays. It already has the thumb shelf, the magnetic
+ * scroll wheel and the thumb wheel, and it does not shatter.
+ */
+function ProceduralMouse() {
   const M = materials();
 
   const shell = useMemo(
@@ -216,7 +248,7 @@ function Mouse() {
   );
 
   return (
-    <group position={[0.235, DESK_SURFACE + 0.0005, 0.115]} rotation={[0, -0.07, 0]}>
+    <group position={MOUSE_POS} rotation={MOUSE_ROT}>
       <mesh geometry={shell} material={shellMat} castShadow receiveShadow />
       {/* magnetic scroll wheel, inset just proud of the shell */}
       <mesh position={[0, 0.0345, -0.014]} rotation={[0, 0, Math.PI / 2]} material={wheelMat} castShadow>
@@ -236,6 +268,15 @@ function Mouse() {
 /* ------------------------------------------------------------------ */
 /* MacBook Pro 14", closed                                              */
 /* ------------------------------------------------------------------ */
+
+/*
+ * Sketchfab pass — nothing shippable, don't re-run this search.
+ * Every CC-BY MacBook on Sketchfab is modelled open — CGDELUXE's Pro 2020,
+ * dwayne.p-marshall's Pro 14, rtql8d's Air M2 (which is midnight blue as well).
+ * IMG_1897 is a closed silver Pro 14 lying flat, so a marketplace model would
+ * mean detaching and rotating a lid to hide 90% of its own detail. The slab
+ * below is already the real 312 x 221 mm footprint in the right finish.
+ */
 
 function Laptop() {
   const M = materials();
@@ -340,7 +381,7 @@ export function Peripherals() {
     <group>
       <Keyboard />
       <WristRest />
-      <Mouse />
+      <ProceduralMouse />
       <Laptop />
       <Dock />
     </group>
