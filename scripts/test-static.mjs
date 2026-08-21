@@ -113,6 +113,12 @@ if (bundle) {
     "Candidate Evaluation",
     "Relay",
     "cad-",
+    "Direct message · Interviewer view",
+    "Sorry for the delay",
+    "A few hours later",
+    "Pipeline shape",
+    "Priority profile",
+    "Next milestone",
   ]) {
     check(`bundle: contains "${wanted}"`, bundle.includes(wanted));
   }

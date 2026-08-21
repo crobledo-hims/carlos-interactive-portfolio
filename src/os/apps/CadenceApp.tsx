@@ -3,11 +3,13 @@ import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { cadenceChannels, cadenceDefaultChannel, cadenceFootnote, cadenceWorkspace } from "../data/cadence";
 import type { FeedbackState, CadenceBlock, CadenceChannel, CadenceMessage } from "../data/cadence";
 import { useScreenLive } from "../screenLive";
-import { makeClock, typeOut } from "./cadence/clock";
+import { makeClock, typeOut, typingDurationMs } from "./cadence/clock";
 import type { Clock } from "./cadence/clock";
 
 /** The scripted opening plays once per page session, not once per window. */
 let demoPlayed = false;
+/** The offer story also plays once per page session, when its channel opens. */
+let offerDemoPlayed = false;
 
 /*
  * The opening conversation, at conversation speed.
@@ -37,8 +39,16 @@ const TAIL_MS = 500; // grace after the report before scroll-follow lets go
 /** Reduced motion: no typing, just each message in turn with a beat between. */
 const RM_STEP_MS = 700;
 
-/** How long the simulated Slack DM takes to "send". */
-const FEEDBACK_MS = 700;
+/** The recruiter starts the workflow; the interviewer reply is paced at 150 WPM. */
+const FEEDBACK_SEND_MS = 900;
+const FEEDBACK_READ_MS = 900;
+const INCOMING_WPM = 150;
+
+/** The offer channel opens on the earlier conversation, then compresses hours. */
+const OFFER_PRELUDE_COUNT = 3;
+const OFFER_ORIENT_MS = 4200;
+const OFFER_AFTER_ALERT_MS = 850;
+const OFFER_TAIL_MS = 500;
 
 function reducedMotion() {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -135,8 +145,9 @@ interface FeedbackProps {
  * colour alone.
  */
 function Feedback({ state, onSend, onDecline, onReset }: FeedbackProps) {
-  if (state === "sent" || state === "declined") {
-    const sent = state === "sent";
+  const delivered = state === "sent" || state === "replying" || state === "replied";
+  if (delivered || state === "declined") {
+    const sent = delivered;
     return (
       <div className="cad-b-result">
         <p className={`cad-b-done${sent ? " ok" : ""}`}>
@@ -144,7 +155,7 @@ function Feedback({ state, onSend, onDecline, onReset }: FeedbackProps) {
             {sent ? "✓" : "○"}
           </span>
           {sent
-            ? "Reminder sent to Jordan Lee."
+            ? "Reminder sent to Jordan Lee in a direct message."
             : "Feedback marked not required. No reminder was sent to Jordan Lee."}
         </p>
         <button type="button" className="cad-btn ghost" onClick={onReset}>
@@ -281,6 +292,11 @@ function Blocks({ blocks, feedback }: { blocks: CadenceBlock[]; feedback: Feedba
 function Message({ m, last, feedback }: { m: CadenceMessage; last: boolean; feedback: FeedbackProps }) {
   return (
     <div className="cad-msg-wrap" data-last={last ? "" : undefined}>
+      {m.dividerBefore && (
+        <div className="cad-time-jump" aria-label={m.dividerBefore}>
+          <span>{m.dividerBefore}</span>
+        </div>
+      )}
       {m.label && <p className="cad-msg-label">{m.label}</p>}
       <div className="cad-msg">
         <div className="cad-avatar" style={{ background: m.color }} aria-hidden="true">
@@ -313,11 +329,12 @@ function Message({ m, last, feedback }: { m: CadenceMessage; last: boolean; feed
 
 const CHANNELS = cadenceChannels.filter((c) => c.kind === "channel");
 const WORKFLOWS = cadenceChannels.filter((c) => c.kind === "workflow");
-/** Arrow-key order follows the order the rail actually renders. */
-const CHANNEL_ORDER = [...CHANNELS, ...WORKFLOWS].map((c) => c.id);
-
+const DIRECT_MESSAGES = cadenceChannels.filter((c) => c.kind === "dm");
 const DEMO = cadenceChannels.find((c) => c.id === cadenceDefaultChannel) as CadenceChannel;
+const FEEDBACK_DM = cadenceChannels.find((c) => c.id === "jordan-lee") as CadenceChannel;
+const OFFER = cadenceChannels.find((c) => c.id === "offer-accepted") as CadenceChannel;
 const DEMO_TOTAL = DEMO.messages.length;
+const OFFER_TOTAL = OFFER.messages.length;
 /** Indexes the composer types out live, in order. */
 const TYPED = DEMO.typed ?? [];
 
@@ -349,19 +366,26 @@ function CadenceAppImpl() {
   /** null collapses the composer to its footer; a string shows the box. */
   const [composer, setComposer] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
+  const [offerRevealed, setOfferRevealed] = useState(() =>
+    offerDemoPlayed ? OFFER_TOTAL : OFFER_PRELUDE_COUNT,
+  );
+  const [offerIndicator, setOfferIndicator] = useState<Indicator | null>(null);
+  const [offerPlaying, setOfferPlaying] = useState(false);
+  const [feedbackIndicator, setFeedbackIndicator] = useState<Indicator | null>(null);
   const [announce, setAnnounce] = useState("");
   const [feedback, setFeedbackState] = useState<FeedbackState>("pending");
 
   /** The clock driving the sequence in flight, if any. */
   const clockRef = useRef<Clock | null>(null);
+  const offerClockRef = useRef<Clock | null>(null);
+  const feedbackClockRef = useRef<Clock | null>(null);
   const playingRef = useRef(false);
+  const offerPlayingRef = useRef(false);
   const streamRef = useRef<HTMLElement>(null);
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const scrollMem = useRef<Record<string, number>>({});
   const shownChannel = useRef(activeId);
   const activeRef = useRef(activeId);
-  /** The feedback simulation runs on its own timer, outside the story's token. */
-  const fbTimer = useRef(0);
   const feedbackRef = useRef<FeedbackState>("pending");
 
   useEffect(() => {
@@ -378,9 +402,24 @@ function CadenceAppImpl() {
     clockRef.current = null;
   }, []);
 
+  const cancelOffer = useCallback(() => {
+    offerClockRef.current?.cancel();
+    offerClockRef.current = null;
+  }, []);
+
+  const cancelFeedback = useCallback(() => {
+    feedbackClockRef.current?.cancel();
+    feedbackClockRef.current = null;
+  }, []);
+
   const setPlay = useCallback((on: boolean) => {
     playingRef.current = on;
     setPlaying(on);
+  }, []);
+
+  const setOfferPlay = useCallback((on: boolean) => {
+    offerPlayingRef.current = on;
+    setOfferPlaying(on);
   }, []);
 
   /** Jump to the finished conversation and drop everything in flight. */
@@ -391,6 +430,25 @@ function CadenceAppImpl() {
     setComposer(null);
     setPlay(false);
   }, [cancel, setPlay]);
+
+  const completeOffer = useCallback(() => {
+    cancelOffer();
+    setOfferRevealed(OFFER_TOTAL);
+    setOfferIndicator(null);
+    setOfferPlay(false);
+  }, [cancelOffer, setOfferPlay]);
+
+  const completeFeedback = useCallback(() => {
+    cancelFeedback();
+    setFeedbackIndicator(null);
+    if (
+      feedbackRef.current === "sending" ||
+      feedbackRef.current === "sent" ||
+      feedbackRef.current === "replying"
+    ) {
+      setFeedback("replied");
+    }
+  }, [cancelFeedback, setFeedback]);
 
   /**
    * Skip. Same jump to the end, but it says so: the report is the thing the
@@ -403,6 +461,60 @@ function CadenceAppImpl() {
     const report = DEMO.messages[DEMO_TOTAL - 1];
     setAnnounce(`${report.author}: ${firstText(report)}`);
   }, [complete]);
+
+  const skipOffer = useCallback(() => {
+    completeOffer();
+    const reply = OFFER.messages[OFFER_TOTAL - 1];
+    setAnnounce(`${reply.author}: ${firstText(reply)}`);
+  }, [completeOffer]);
+
+  /**
+   * The offer channel opens on the earlier recruiter / hiring-manager exchange.
+   * A short pause represents the intervening hours, then the event and Avery's
+   * incoming reply arrive the way they would in Slack: whole messages, with a
+   * real typing indicator before the human response.
+   */
+  const playOffer = useCallback(() => {
+    cancelOffer();
+    const clock = makeClock();
+    offerClockRef.current = clock;
+    const alive = () => clock.alive();
+    const accepted = OFFER.messages[OFFER_PRELUDE_COUNT];
+    const reply = OFFER.messages[OFFER_TOTAL - 1];
+
+    setOfferRevealed(OFFER_PRELUDE_COUNT);
+    setOfferIndicator(null);
+    setOfferPlay(true);
+
+    const run = async () => {
+      if (reducedMotion()) {
+        setOfferRevealed(OFFER_TOTAL);
+        setAnnounce(`${reply.author}: ${firstText(reply)}`);
+        setOfferPlay(false);
+        return;
+      }
+
+      await clock.sleep(OFFER_ORIENT_MS);
+      if (!alive()) return;
+      setOfferRevealed(OFFER_PRELUDE_COUNT + 1);
+      setAnnounce(`${accepted.author}: ${firstText(accepted)}`);
+
+      await clock.sleep(OFFER_AFTER_ALERT_MS);
+      if (!alive()) return;
+      setOfferIndicator(indicatorFor(reply, `${reply.author} is typing…`));
+      await clock.sleep(typingDurationMs(firstText(reply), INCOMING_WPM));
+      if (!alive()) return;
+
+      setOfferIndicator(null);
+      setOfferRevealed(OFFER_TOTAL);
+      setAnnounce(`${reply.author}: ${firstText(reply)}`);
+      await clock.sleep(OFFER_TAIL_MS);
+      if (!alive()) return;
+      setOfferPlay(false);
+    };
+
+    void run();
+  }, [cancelOffer, setOfferPlay]);
 
   /**
    * The opening conversation.
@@ -511,34 +623,71 @@ function CadenceAppImpl() {
    */
   useEffect(() => {
     const onVisibility = () => {
-      const clock = clockRef.current;
-      if (!clock) return;
-      if (document.hidden) clock.pause();
-      else clock.resume();
+      for (const clock of [clockRef.current, offerClockRef.current, feedbackClockRef.current]) {
+        if (!clock) continue;
+        if (document.hidden) clock.pause();
+        else clock.resume();
+      }
     };
     document.addEventListener("visibilitychange", onVisibility);
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
 
-  useEffect(() => cancel, [cancel]);
-  useEffect(() => () => clearTimeout(fbTimer.current), []);
+  useEffect(
+    () => () => {
+      cancel();
+      cancelOffer();
+      cancelFeedback();
+    },
+    [cancel, cancelFeedback, cancelOffer],
+  );
 
   /* ------------------------------------------- feedback workflow actions */
 
   const sendFollowUp = useCallback(() => {
     if (feedbackRef.current !== "pending") return;
-    const done = () => {
-      setFeedback("sent");
-      setAnnounce("Reminder sent to Jordan Lee.");
-    };
+    if (playingRef.current) complete();
+    if (offerPlayingRef.current) completeOffer();
+    cancelFeedback();
+    setActiveId(FEEDBACK_DM.id);
+
+    const outgoing = FEEDBACK_DM.messages[0];
+    const reply = FEEDBACK_DM.messages[1];
     if (reducedMotion()) {
-      done();
+      setFeedback("replied");
+      setFeedbackIndicator(null);
+      setAnnounce(`${reply.author}: ${firstText(reply)}`);
       return;
     }
+
+    const clock = makeClock();
+    feedbackClockRef.current = clock;
+    const alive = () => clock.alive();
     setFeedback("sending");
-    clearTimeout(fbTimer.current);
-    fbTimer.current = window.setTimeout(done, FEEDBACK_MS);
-  }, [setFeedback]);
+    setFeedbackIndicator(indicatorFor(outgoing, "Cadence is sending the follow-up…"));
+
+    const run = async () => {
+      await clock.sleep(FEEDBACK_SEND_MS);
+      if (!alive()) return;
+      setFeedback("sent");
+      setFeedbackIndicator(null);
+      setAnnounce(`${outgoing.author}: ${firstText(outgoing)}`);
+
+      await clock.sleep(FEEDBACK_READ_MS);
+      if (!alive()) return;
+      setFeedback("replying");
+      setFeedbackIndicator(indicatorFor(reply, `${reply.author} is typing…`));
+      await clock.sleep(typingDurationMs(firstText(reply), INCOMING_WPM));
+      if (!alive()) return;
+
+      setFeedback("replied");
+      setFeedbackIndicator(null);
+      setAnnounce(`${reply.author}: ${firstText(reply)}`);
+      feedbackClockRef.current = null;
+    };
+
+    void run();
+  }, [cancelFeedback, complete, completeOffer, setFeedback]);
 
   const declineFollowUp = useCallback(() => {
     if (feedbackRef.current !== "pending") return;
@@ -547,10 +696,12 @@ function CadenceAppImpl() {
   }, [setFeedback]);
 
   const resetFeedback = useCallback(() => {
-    clearTimeout(fbTimer.current);
+    cancelFeedback();
+    setFeedbackIndicator(null);
     setFeedback("pending");
+    setActiveId("feedback-reminder");
     setAnnounce("Feedback example reset.");
-  }, [setFeedback]);
+  }, [cancelFeedback, setFeedback]);
 
   const feedbackProps: FeedbackProps = {
     state: feedback,
@@ -559,21 +710,44 @@ function CadenceAppImpl() {
     onReset: resetFeedback,
   };
 
-  // The simulated DM appears below the fold; bring it into view once, in
-  // direct response to the visitor's own button press.
+  // Keep the newest part of the recruiter-triggered DM in view without ever
+  // allowing its scroll to escape the Slack conversation pane.
   useEffect(() => {
-    if (feedback !== "sent") return;
+    if (activeId !== FEEDBACK_DM.id || feedback === "pending" || feedback === "declined") return;
     const s = streamRef.current;
     if (!s) return;
     s.scrollTo({ top: s.scrollHeight, behavior: reducedMotion() ? "auto" : "smooth" });
-  }, [feedback]);
+  }, [activeId, feedback, feedbackIndicator]);
 
   /* --------------------------------------------------------- navigation */
 
   const active = cadenceChannels.find((c) => c.id === activeId) ?? DEMO;
   const isDemo = active.id === DEMO.id;
-  const visible = active.messages.filter((m) => !m.showWhen || m.showWhen === feedback);
-  const messages = isDemo ? visible.slice(0, revealed) : visible;
+  const isOffer = active.id === OFFER.id;
+  const isFeedbackDm = active.id === FEEDBACK_DM.id;
+  const visible = active.messages.filter((m) => {
+    if (!m.showWhen) return true;
+    return Array.isArray(m.showWhen) ? m.showWhen.includes(feedback) : m.showWhen === feedback;
+  });
+  const messages = isDemo
+    ? visible.slice(0, revealed)
+    : isOffer
+      ? visible.slice(0, offerRevealed)
+      : visible;
+  const activeIndicator = isDemo
+    ? indicator
+    : isOffer
+      ? offerIndicator
+      : isFeedbackDm
+        ? feedbackIndicator
+        : null;
+  const activeStoryPlaying = playing || offerPlaying || Boolean(feedbackIndicator);
+  const showDirectMessages = feedback !== "pending" && feedback !== "declined";
+  const channelOrder = [
+    ...CHANNELS,
+    ...WORKFLOWS,
+    ...(showDirectMessages ? DIRECT_MESSAGES : []),
+  ].map((c) => c.id);
   // Composer keystrokes and the read-only footer belong to the story channel.
   const typedText = isDemo ? composer : null;
 
@@ -584,9 +758,21 @@ function CadenceAppImpl() {
       const s = streamRef.current;
       if (s) scrollMem.current[activeId] = s.scrollTop;
       if (playingRef.current) complete();
+      if (offerPlayingRef.current) completeOffer();
+      if (
+        feedbackRef.current === "sending" ||
+        feedbackRef.current === "sent" ||
+        feedbackRef.current === "replying"
+      ) {
+        completeFeedback();
+      }
+      if (id === OFFER.id && !offerDemoPlayed) {
+        offerDemoPlayed = true;
+        playOffer();
+      }
       setActiveId(id);
     },
-    [activeId, complete],
+    [activeId, complete, completeFeedback, completeOffer, playOffer],
   );
 
   // Each channel comes back to where it was left; new ones open at the top.
@@ -600,7 +786,7 @@ function CadenceAppImpl() {
   // While the demo runs, keep the newest thing on screen. Once playback is
   // over this stops entirely, so a visitor's own scrolling is never fought.
   useEffect(() => {
-    if (!playing) return;
+    if (!activeStoryPlaying) return;
     const s = streamRef.current;
     if (!s) return;
     const last = s.querySelector<HTMLElement>("[data-last]");
@@ -610,18 +796,18 @@ function CadenceAppImpl() {
       top: Math.min(Math.max(last.offsetTop - 10, 0), max),
       behavior: reducedMotion() ? "auto" : "smooth",
     });
-  }, [playing, revealed, indicator]);
+  }, [activeIndicator, activeStoryPlaying, feedback, offerRevealed, revealed]);
 
   const onTabKey = (e: ReactKeyboardEvent, id: string) => {
-    const i = CHANNEL_ORDER.indexOf(id);
+    const i = channelOrder.indexOf(id);
     let next = -1;
-    if (e.key === "ArrowDown") next = (i + 1) % CHANNEL_ORDER.length;
-    else if (e.key === "ArrowUp") next = (i - 1 + CHANNEL_ORDER.length) % CHANNEL_ORDER.length;
+    if (e.key === "ArrowDown") next = (i + 1) % channelOrder.length;
+    else if (e.key === "ArrowUp") next = (i - 1 + channelOrder.length) % channelOrder.length;
     else if (e.key === "Home") next = 0;
-    else if (e.key === "End") next = CHANNEL_ORDER.length - 1;
+    else if (e.key === "End") next = channelOrder.length - 1;
     else return;
     e.preventDefault();
-    const id2 = CHANNEL_ORDER[next];
+    const id2 = channelOrder[next];
     selectChannel(id2);
     tabRefs.current[id2]?.focus();
   };
@@ -644,9 +830,15 @@ function CadenceAppImpl() {
         onClick={() => selectChannel(c.id)}
         onKeyDown={(e) => onTabKey(e, c.id)}
       >
-        <span className="cad-hash" aria-hidden="true">
-          {c.kind === "workflow" ? "⚡" : "#"}
-        </span>
+        {c.kind === "dm" ? (
+          <span className="cad-dm-avatar" aria-hidden="true">
+            {c.avatar}
+          </span>
+        ) : (
+          <span className="cad-hash" aria-hidden="true">
+            {c.kind === "workflow" ? "⚡" : "#"}
+          </span>
+        )}
         <span className="cad-chan-name">{c.name}</span>
         {c.unread > 0 && (
           <span className="cad-unread">
@@ -675,7 +867,7 @@ function CadenceAppImpl() {
           className="cad-channels"
           role="tablist"
           aria-orientation="vertical"
-          aria-label="Cadence channels and workflows"
+          aria-label="Cadence channels, workflows, and direct messages"
         >
           <p className="cad-group" aria-hidden="true">
             Channels
@@ -685,6 +877,14 @@ function CadenceAppImpl() {
             Cadence workflows
           </p>
           {WORKFLOWS.map(renderTab)}
+          {showDirectMessages && (
+            <>
+              <p className="cad-group" aria-hidden="true">
+                Direct messages
+              </p>
+              {DIRECT_MESSAGES.map(renderTab)}
+            </>
+          )}
         </div>
       </div>
 
@@ -697,8 +897,8 @@ function CadenceAppImpl() {
             <p className="cad-topbar-topic">{active.topic}</p>
           </div>
           {/* One control, two jobs: get me past this, or show me again. */}
-          {isDemo &&
-            (playing ? (
+          {isDemo ? (
+            playing ? (
               <button
                 className="cad-replay"
                 type="button"
@@ -716,7 +916,28 @@ function CadenceAppImpl() {
               >
                 <span aria-hidden="true">↻</span> Replay conversation
               </button>
-            ))}
+            )
+          ) : isOffer ? (
+            offerPlaying ? (
+              <button
+                className="cad-replay"
+                type="button"
+                aria-label="Skip the offer conversation and show its outcome"
+                onClick={skipOffer}
+              >
+                <span aria-hidden="true">⏭</span> Skip animation
+              </button>
+            ) : (
+              <button
+                className="cad-replay"
+                type="button"
+                aria-label="Replay the offer acceptance conversation"
+                onClick={playOffer}
+              >
+                <span aria-hidden="true">↻</span> Replay conversation
+              </button>
+            )
+          ) : null}
         </div>
 
         {/* One restrained live region for the whole app: it carries the newest
@@ -740,16 +961,20 @@ function CadenceAppImpl() {
             <Message
               key={m.id}
               m={m}
-              last={!indicator && i === messages.length - 1}
+              last={!activeIndicator && i === messages.length - 1}
               feedback={feedbackProps}
             />
           ))}
           {/* Whoever is composing right now, wearing their own avatar. The
               words in the label carry the meaning; the dots are decoration. */}
-          {indicator && (
+          {activeIndicator && (
             <div className="cad-msg cad-typing" data-last="" aria-hidden="true">
-              <div className="cad-avatar" style={{ background: indicator.color }}>
-                {indicator.mark ? <CadenceMark className="cad-avatar-mark" /> : indicator.initials}
+              <div className="cad-avatar" style={{ background: activeIndicator.color }}>
+                {activeIndicator.mark ? (
+                  <CadenceMark className="cad-avatar-mark" />
+                ) : (
+                  activeIndicator.initials
+                )}
               </div>
               <div className="cad-msg-main">
                 <div className="cad-typing-row">
@@ -758,7 +983,7 @@ function CadenceAppImpl() {
                     <i />
                     <i />
                   </span>
-                  <span className="cad-typing-label">{indicator.label}</span>
+                  <span className="cad-typing-label">{activeIndicator.label}</span>
                 </div>
               </div>
             </div>

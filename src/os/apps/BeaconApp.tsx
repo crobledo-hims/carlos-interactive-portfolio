@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { ScrollArea } from "../ScrollArea";
 import {
   SIGNAL_LABEL,
@@ -78,6 +78,13 @@ function Brief({ role, open, onToggle }: BriefProps) {
             {role.title}
           </h3>
           <p className="beacon-brief-team">{role.team}</p>
+          <p className="beacon-role-meta">
+            <span>Hiring manager: {role.hiringManager}</span>
+            <span>{role.location}</span>
+            <span>
+              {role.openings} {role.openings === 1 ? "opening" : "openings"}
+            </span>
+          </p>
         </div>
         <div className="beacon-brief-status">
           <SignalChip signal={role.signal} />
@@ -86,6 +93,33 @@ function Brief({ role, open, onToggle }: BriefProps) {
       </div>
 
       <p className="beacon-reason">{role.reason}</p>
+
+      <section className="beacon-pipeline" aria-label="Pipeline shape">
+        <h4>Pipeline shape</h4>
+        <dl>
+          {role.pipeline.map((stage) => (
+            <div key={stage.label}>
+              <dt>{stage.label}</dt>
+              <dd>{stage.count}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <div className="beacon-role-context">
+        <section>
+          <h4>Priority profile</h4>
+          <p>{role.priorityProfile}</p>
+        </section>
+        <section>
+          <h4>Recent movement</h4>
+          <p>{role.recentMovement}</p>
+        </section>
+        <section>
+          <h4>Next milestone</h4>
+          <p>{role.nextMilestone}</p>
+        </section>
+      </div>
 
       <div className="beacon-evidence">
         <h4>Current snapshot</h4>
@@ -138,6 +172,7 @@ function BeaconAppImpl() {
   const [activeId, setActiveId] = useState(beaconDefaultRole);
   const [whyOpen, setWhyOpen] = useState(false);
   const [announce, setAnnounce] = useState("");
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   const active = beaconRoles.find((r) => r.id === activeId) ?? beaconRoles[0];
   const others = beaconRoles.filter((r) => r.id !== active.id);
@@ -148,6 +183,10 @@ function BeaconAppImpl() {
   const select = (role: BeaconRole) => {
     setActiveId(role.id);
     setAnnounce(`Now showing ${role.title}, ${role.team}. Signal: ${SIGNAL_LABEL[role.signal]}.`);
+    bodyRef.current?.scrollTo({
+      top: 0,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
   };
 
   const toggleWhy = () => setWhyOpen((v) => !v);
@@ -180,7 +219,7 @@ function BeaconAppImpl() {
         {announce}
       </p>
 
-      <ScrollArea className="beacon-body">
+      <ScrollArea className="beacon-body" innerRef={bodyRef}>
         <Brief role={active} open={whyOpen} onToggle={toggleWhy} />
 
         <h3 className="beacon-eyebrow standalone">Other roles</h3>
@@ -193,6 +232,13 @@ function BeaconAppImpl() {
                   <span className="beacon-row-team">{r.team}</span>
                 </span>
                 <SignalChip signal={r.signal} small />
+                <span className="beacon-row-meta">
+                  {r.pipeline.reduce((sum, stage) => sum + stage.count, 0)} active
+                  <span aria-hidden="true"> · </span>
+                  {r.evidence[0]}
+                  <span aria-hidden="true"> · </span>
+                  HM: {r.hiringManager}
+                </span>
                 <span className="beacon-row-reason">{r.reason}</span>
               </button>
             </li>

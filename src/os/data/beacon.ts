@@ -26,10 +26,18 @@ export type BeaconSignal = "needs-review" | "watch" | "on-track";
 /** How long the condition has been visible, in plain words. */
 export type BeaconTrend = "new" | "persistent" | "improving";
 
+export interface BeaconStage {
+  label: string;
+  count: number;
+}
+
 export interface BeaconRole {
   id: string;
   title: string;
   team: string;
+  hiringManager: string;
+  location: string;
+  openings: number;
   signal: BeaconSignal;
   trend: BeaconTrend;
   /** Short supporting phrase, e.g. "Needs review for 12 days". */
@@ -43,6 +51,12 @@ export interface BeaconRole {
   evidence: string[];
   /** The "why this signal" body: still observation, never mechanism. */
   explanation: string;
+  /** A concise recruiter-calibration summary, not a copied job description. */
+  priorityProfile: string;
+  /** Aggregate pipeline shape only; Beacon deliberately does not list candidates. */
+  pipeline: BeaconStage[];
+  recentMovement: string;
+  nextMilestone: string;
   reviewFocus: string;
   reviewWith: string;
 }
@@ -58,6 +72,9 @@ export const beaconRoles: BeaconRole[] = [
     id: "role-1",
     title: "Staff Data Engineer",
     team: "Data Infrastructure",
+    hiringManager: "Priya Raman",
+    location: "Remote · United States",
+    openings: 1,
     signal: "needs-review",
     trend: "persistent",
     trendLabel: "Needs review for 12 days",
@@ -65,13 +82,25 @@ export const beaconRoles: BeaconRole[] = [
     evidence: ["58 days open", "3 active candidates", "0 late-stage candidates"],
     explanation:
       "Three candidates are active, but none has reached a late-stage interview. The combination of role age and limited progression is why this role is flagged for review.",
-    reviewFocus: "Revisit search calibration",
+    priorityProfile: "Platform-minded data engineer with streaming systems ownership",
+    pipeline: [
+      { label: "Recruiter screen", count: 2 },
+      { label: "Hiring manager", count: 1 },
+      { label: "Interview loop", count: 0 },
+      { label: "Offer", count: 0 },
+    ],
+    recentMovement: "1 new candidate · 0 stage advances in the last 7 days",
+    nextMilestone: "Search calibration with Priya · Aug 22",
+    reviewFocus: "Revisit must-haves and the outbound target pool",
     reviewWith: "Recruiter + Hiring Manager",
   },
   {
     id: "role-2",
     title: "Platform Engineer",
     team: "Developer Platform",
+    hiringManager: "Devon Price",
+    location: "Remote · US or Canada",
+    openings: 2,
     signal: "watch",
     trend: "new",
     trendLabel: "New this week",
@@ -79,6 +108,15 @@ export const beaconRoles: BeaconRole[] = [
     evidence: ["41 days open", "5 active candidates", "2 with no recent movement"],
     explanation:
       "Two active candidates have remained in their current stages without recent movement. Reviewing their current status will help confirm that the recorded pipeline is up to date.",
+    priorityProfile: "Backend engineer with developer tooling and Kubernetes depth",
+    pipeline: [
+      { label: "Recruiter screen", count: 1 },
+      { label: "Hiring manager", count: 2 },
+      { label: "Interview loop", count: 2 },
+      { label: "Offer", count: 0 },
+    ],
+    recentMovement: "1 stage advance · 2 candidates awaiting next steps",
+    nextMilestone: "Two technical interviews scheduled by Aug 26",
     reviewFocus: "Confirm next steps for the two inactive candidates",
     reviewWith: "Recruiter",
   },
@@ -86,6 +124,9 @@ export const beaconRoles: BeaconRole[] = [
     id: "role-3",
     title: "Product Lead",
     team: "Customer Experience",
+    hiringManager: "Alina Grant",
+    location: "New York · Hybrid",
+    openings: 1,
     signal: "on-track",
     trend: "improving",
     trendLabel: "Improving since the last snapshot",
@@ -98,6 +139,15 @@ export const beaconRoles: BeaconRole[] = [
     ],
     explanation:
       "The current snapshot does not show a condition that needs attention. Late-stage representation has improved since the previous snapshot, and Beacon will continue monitoring the role for changes.",
+    priorityProfile: "Product leader who has scaled customer-facing workflows across functions",
+    pipeline: [
+      { label: "Recruiter screen", count: 1 },
+      { label: "Hiring manager", count: 2 },
+      { label: "Interview loop", count: 2 },
+      { label: "Offer", count: 1 },
+    ],
+    recentMovement: "1 new candidate · 2 stage advances in the last 7 days",
+    nextMilestone: "Final-loop debrief · Aug 25",
     reviewFocus: "No immediate review needed",
     reviewWith: "Recruiter",
   },
@@ -105,6 +155,9 @@ export const beaconRoles: BeaconRole[] = [
     id: "role-4",
     title: "Design Manager",
     team: "Core Product",
+    hiringManager: "Marcus Reed",
+    location: "San Francisco · Hybrid",
+    openings: 1,
     signal: "watch",
     trend: "persistent",
     trendLabel: "Unchanged for 7 days",
@@ -117,6 +170,15 @@ export const beaconRoles: BeaconRole[] = [
     ],
     explanation:
       "The pipeline is active, but four of six candidates are currently in the same stage. Beacon is surfacing that concentration so the recruiting team can review candidate progression.",
+    priorityProfile: "Design leader with systems thinking and hands-on people management",
+    pipeline: [
+      { label: "Recruiter screen", count: 1 },
+      { label: "Hiring manager", count: 4 },
+      { label: "Portfolio / loop", count: 1 },
+      { label: "Offer", count: 0 },
+    ],
+    recentMovement: "2 hiring-manager screens completed · 0 stage changes",
+    nextMilestone: "Hiring-manager pipeline review · Aug 22",
     reviewFocus: "Review progression through hiring-manager screens",
     reviewWith: "Recruiter + Hiring Manager",
   },
