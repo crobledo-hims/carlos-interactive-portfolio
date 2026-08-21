@@ -37,7 +37,7 @@ export const APPS: Record<AppId, AppDef> = {
   pulse: {
     id: "pulse",
     name: "Pulse",
-    subtitle: "Explainable role intelligence",
+    subtitle: "Role signals with supporting evidence",
     tile: "linear-gradient(155deg,#1f9d6b,#0e5540)",
     glyph: <PulseGlyph />,
     rect: { x: 92, y: 44, w: 910, h: 560 },

@@ -4,7 +4,6 @@ import {
   SIGNAL_LABEL,
   pulseDefaultRole,
   pulseDisclaimer,
-  pulseEvidence,
   pulseHowItWorks,
   pulseRoles,
   pulseSummary,
@@ -20,7 +19,7 @@ import type { PulseRole, PulseSignal } from "../data/pulse";
 function SignalIcon({ signal }: { signal: PulseSignal }) {
   return (
     <svg className="pulse-sig-icon" viewBox="0 0 12 12" aria-hidden="true">
-      {signal === "needs-action" && <path d="M6 1.6l4.6 8.2H1.4L6 1.6zM6 5v2.1M6 8.6v.1" />}
+      {signal === "needs-review" && <path d="M6 1.6l4.6 8.2H1.4L6 1.6zM6 5v2.1M6 8.6v.1" />}
       {signal === "watch" && <path d="M1.2 6S3.3 2.6 6 2.6 10.8 6 10.8 6 8.7 9.4 6 9.4 1.2 6 1.2 6zM6 4.8v2.4" />}
       {signal === "on-track" && <path d="M2.2 6.3l2.6 2.5 5-5.6" />}
     </svg>
@@ -56,10 +55,9 @@ interface BriefProps {
 }
 
 function Brief({ role, open, onToggle }: BriefProps) {
-  const evidence = pulseEvidence(role);
   return (
     <section className={`pulse-brief ${role.signal}`} aria-labelledby="pulse-brief-title">
-      <p className="pulse-eyebrow">Focus now</p>
+      <p className="pulse-eyebrow">Role brief</p>
 
       <div className="pulse-brief-head">
         <div>
@@ -77,9 +75,9 @@ function Brief({ role, open, onToggle }: BriefProps) {
       <p className="pulse-reason">{role.reason}</p>
 
       <div className="pulse-evidence">
-        <h4>Observed evidence</h4>
+        <h4>Current snapshot</h4>
         <p>
-          {evidence.map((e, i) => (
+          {role.evidence.map((e, i) => (
             <span key={e}>
               {i > 0 && <span aria-hidden="true"> · </span>}
               {e}
@@ -90,12 +88,12 @@ function Brief({ role, open, onToggle }: BriefProps) {
 
       <dl className="pulse-next">
         <div>
-          <dt>Suggested review</dt>
-          <dd>{role.suggestedReview}</dd>
+          <dt>Review focus</dt>
+          <dd>{role.reviewFocus}</dd>
         </div>
         <div>
-          <dt>Owner</dt>
-          <dd>{role.owner}</dd>
+          <dt>Review with</dt>
+          <dd>{role.reviewWith}</dd>
         </div>
       </dl>
 
@@ -115,9 +113,6 @@ function Brief({ role, open, onToggle }: BriefProps) {
       {open && (
         <div className="pulse-why-panel" id="pulse-why-panel">
           <p>{role.explanation}</p>
-          <p className="pulse-why-note">
-            Pulse is surfacing this condition for review. It does not determine the cause.
-          </p>
         </div>
       )}
     </section>
@@ -151,10 +146,10 @@ function PulseAppImpl() {
           <Waveform />
           <div>
             <p className="pulse-name">Pulse</p>
-            <p className="pulse-tagline">Explainable role intelligence</p>
+            <p className="pulse-tagline">Role signals with supporting evidence</p>
           </div>
         </div>
-        <p className="pulse-updated">Updated today</p>
+        <p className="pulse-updated">Demo snapshot</p>
       </header>
 
       <p className="pulse-summary">
@@ -175,7 +170,7 @@ function PulseAppImpl() {
       <ScrollArea className="pulse-body">
         <Brief role={active} open={whyOpen} onToggle={toggleWhy} />
 
-        <h3 className="pulse-eyebrow standalone">Other signals</h3>
+        <h3 className="pulse-eyebrow standalone">Other roles</h3>
         <ul className="pulse-rows">
           {others.map((r) => (
             <li key={r.id}>
@@ -208,8 +203,7 @@ function PulseAppImpl() {
         </section>
 
         <footer className="pulse-foot">
-          <p className="pulse-disclaimer">{pulseDisclaimer.primary}</p>
-          <p className="pulse-disclaimer sub">{pulseDisclaimer.secondary}</p>
+          <p className="pulse-disclaimer">{pulseDisclaimer}</p>
         </footer>
       </ScrollArea>
     </div>
