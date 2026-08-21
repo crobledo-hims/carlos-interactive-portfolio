@@ -6,6 +6,7 @@ import { Trinkets } from "./assets/Trinkets";
 import { DeskObjects } from "./assets/DeskObjects";
 import { AeronChair } from "./assets/Chair";
 import { Corner } from "./assets/Corner";
+import { Dog } from "./assets/Dog";
 import { Plant } from "./assets/Plant";
 import { WallTV } from "./assets/WallTV";
 import { Lighting } from "./assets/Lighting";
@@ -38,6 +39,7 @@ export function DeskScene() {
       <AeronChair />
       <Plant />
       <Corner />
+      <Dog />
     </group>
   );
 }
