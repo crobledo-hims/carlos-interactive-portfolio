@@ -185,7 +185,7 @@ function GradedCard() {
 function Letterboard() {
   const M = materials();
   const felt = useMemo(() => {
-    const tex = photoTexture("/textures/letterboard.jpg");
+    const tex = photoTexture("/textures/letterboard-corrected.webp");
     return new THREE.MeshStandardMaterial({
       map: tex,
       bumpMap: tex,
