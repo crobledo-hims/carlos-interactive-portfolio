@@ -1,7 +1,6 @@
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { useGLTF } from "@react-three/drei";
 import { lathe, mergeParts, parametricGeometry, profile, type ControlPoint } from "../geometry";
 import { leafSkin, prng, satinRoughness } from "../textures";
 import { usePrefersReducedMotion } from "../reducedMotion";
@@ -245,92 +244,11 @@ function ProceduralPlant() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Photoscanned replacement                                            */
-/* ------------------------------------------------------------------ */
 
 /**
- * Poly Haven "Potted Plant 01" (CC0, polyhaven.com/a/potted_plant_01):
- * a photoscanned ficus in a terracotta pot. Taken from the 1k glTF at
- * 176k triangles and cut to ~10.2k with meshoptimizer (gltf-transform
- * simplify), diffuse maps at 512 and normal maps at 256, then
- * meshopt-compressed — 246 KB on the wire.
- *
- * Roughness/AO maps were dropped for constant roughness factors: at three
- * metres they were paying ~90 KB for detail no pixel resolves. The 1k
- * source ships no alpha channel, so the leaves are real geometry and the
- * material's MASK mode was a no-op — it is OPAQUE here, which also spares
- * the alpha-test branch on 6k triangles.
- *
- * The procedural plant above stays as the Suspense fallback.
+ * Carlos prefers the original procedural plant over the photoscanned
+ * Poly Haven swap (removed 2026-08-21) - keep this one.
  */
-const PLANT_GLB = "/models/potted-plant.glb";
-
-/** 1.336 m tall in the file; 0.72 puts it at 0.96 m with a 0.34 m pot, which
- *  is the footprint the procedural version was blocked out to occupy. */
-const MODEL_SCALE = 0.72;
-const MODEL_ROT: [number, number, number] = [0, 0.5, 0];
-
-/** Model-space height where the stems leave the soil — the sway pivot. */
-const FOLIAGE_PIVOT = 0.4;
-
-/** Node names carrying stems and leaves; the pot and its fill stay put. */
-const FOLIAGE_NODES = ["potted_plant_01_stem", "potted_plant_01_leaves"];
-
-const MODEL_SWAY = 0.009;
-const MODEL_SWAY_PERIOD = 11.3;
-
-function PlantModel() {
-  const reduced = usePrefersReducedMotion();
-  const { scene } = useGLTF(PLANT_GLB, false);
-
-  /**
-   * The loaded scene is cached by url, so it is cloned before being taken
-   * apart. Stems and leaves are re-parented under one group pivoted at the
-   * soil line: that group is what sways, so the pot stays nailed to the
-   * floor instead of rocking with the canopy.
-   */
-  const { root, pivot } = useMemo(() => {
-    const root = scene.clone(true);
-    const pivot = new THREE.Group();
-    pivot.position.set(0, FOLIAGE_PIVOT, 0);
-
-    for (const name of FOLIAGE_NODES) {
-      const node = root.getObjectByName(name);
-      if (!node) continue;
-      node.position.y -= FOLIAGE_PIVOT;
-      pivot.add(node);
-    }
-    root.add(pivot);
-
-    root.traverse((o) => {
-      if ((o as THREE.Mesh).isMesh) {
-        o.castShadow = true;
-        o.receiveShadow = true;
-      }
-    });
-    return { root, pivot };
-  }, [scene]);
-
-  // Same contract as the procedural version: one slow sine, well under the
-  // threshold of notice, and nothing at all under reduced motion.
-  useFrame(({ clock }) => {
-    if (reduced) return;
-    const t = clock.elapsedTime;
-    const w = (Math.PI * 2) / MODEL_SWAY_PERIOD;
-    pivot.rotation.z = Math.sin(t * w) * MODEL_SWAY;
-    pivot.rotation.x = Math.sin(t * w * 0.73 + 3.7) * MODEL_SWAY * 0.7;
-  });
-
-  return <primitive object={root} position={POS} rotation={MODEL_ROT} scale={MODEL_SCALE} />;
-}
-
-useGLTF.preload(PLANT_GLB, false);
-
 export function Plant() {
-  return (
-    <Suspense fallback={<ProceduralPlant />}>
-      <PlantModel />
-    </Suspense>
-  );
+  return <ProceduralPlant />;
 }
