@@ -1,7 +1,15 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type { AppId, AppProps } from "../types";
+import { useScreenLive } from "../screenLive";
+import { makeClock, typeOut } from "./cadence/clock";
+import type { Clock } from "./cadence/clock";
+import {
+  beginManualHireCarlos,
+  completeHireCarlos,
+  useHireCarlosSnapshot,
+} from "../../easterEgg/hireCarlos";
 
-type LineKind = "in" | "out" | "dim" | "err" | "ok";
+type LineKind = "in" | "out" | "dim" | "err" | "ok" | "action";
 
 interface Line {
   id: number;
@@ -10,6 +18,7 @@ interface Line {
 }
 
 const PROMPT = "carlos@portfolio ~ %";
+const HIRE_COMMAND = "sudo hire carlos";
 
 const INTRO: string[] = [
   "PortfolioOS 1.0 (zsh)",
@@ -57,24 +66,116 @@ const OPENABLE: Record<string, AppId> = {
 };
 
 function TerminalAppImpl({ openApp }: AppProps) {
+  const screenLive = useScreenLive();
+  const hireCarlos = useHireCarlosSnapshot();
   const seed = useRef(INTRO.length);
   const [lines, setLines] = useState<Line[]>(() =>
     INTRO.map((text, i) => ({ id: i, kind: "dim" as LineKind, text })),
   );
   const [value, setValue] = useState("");
+  const [busy, setBusy] = useState(false);
   const history = useRef<string[]>([]);
   const histPos = useRef(-1);
   const bodyRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const scriptClock = useRef<Clock | null>(null);
+  const lastAutoRun = useRef(0);
 
   useEffect(() => {
     const el = bodyRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [lines]);
 
-  const emit = (items: { kind: LineKind; text: string }[]) => {
+  const emit = useCallback((items: { kind: LineKind; text: string }[]) => {
     setLines((prev) => [...prev, ...items.map((i) => ({ ...i, id: seed.current++ }))]);
-  };
+  }, []);
+
+  const pauseForVisibility = useCallback(() => {
+    if (document.hidden) scriptClock.current?.pause();
+    else scriptClock.current?.resume();
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("visibilitychange", pauseForVisibility);
+    return () => document.removeEventListener("visibilitychange", pauseForVisibility);
+  }, [pauseForVisibility]);
+
+  useEffect(
+    () => () => {
+      scriptClock.current?.cancel();
+    },
+    [],
+  );
+
+  const playHireSequence = useCallback(
+    async (clock: Clock, manual: boolean) => {
+      if (manual) beginManualHireCarlos();
+      setBusy(true);
+      emit([{ kind: "in", text: HIRE_COMMAND }]);
+
+      const appendAfter = async (ms: number, kind: LineKind, text: string) => {
+        await clock.sleep(ms);
+        if (!clock.alive()) return false;
+        emit([{ kind, text }]);
+        return true;
+      };
+
+      if (!(await appendAfter(360, "out", "Evaluating candidate..."))) return;
+      if (!(await appendAfter(520, "ok", "Technical sourcing ........ PASS"))) return;
+      if (!(await appendAfter(330, "ok", "Recruiting systems ......... PASS"))) return;
+      if (!(await appendAfter(330, "ok", "AI-enabled workflows ....... PASS"))) return;
+      if (!(await appendAfter(330, "ok", "Stakeholder partnership .... PASS"))) return;
+      if (!(await appendAfter(330, "ok", "Follow-through ............. PASS"))) return;
+      if (!(await appendAfter(620, "out", ""))) return;
+      if (!(await appendAfter(120, "ok", "Recommendation: STRONG HIRE"))) return;
+      if (!(await appendAfter(480, "dim", "Preparing next step..."))) return;
+      if (!(await appendAfter(520, "action", "Send Carlos a message →"))) return;
+
+      if (scriptClock.current === clock) {
+        scriptClock.current = null;
+        setBusy(false);
+      }
+      completeHireCarlos();
+    },
+    [emit],
+  );
+
+  // The TV trigger opens this window immediately, but the typing waits for the
+  // Personal monitor to be both on camera and settled. A run id makes React's
+  // effect replay semantics harmless: every launch can execute only once.
+  useEffect(() => {
+    if (
+      !screenLive ||
+      !hireCarlos.auto ||
+      hireCarlos.phase !== "running" ||
+      hireCarlos.runId <= lastAutoRun.current
+    ) {
+      return;
+    }
+
+    lastAutoRun.current = hireCarlos.runId;
+    scriptClock.current?.cancel();
+    const clock = makeClock();
+    scriptClock.current = clock;
+    setBusy(true);
+
+    void (async () => {
+      await clock.sleep(Math.max(0, hireCarlos.readyAt - performance.now()));
+      if (!clock.alive()) return;
+      setValue("");
+      await typeOut(clock, HIRE_COMMAND, setValue);
+      if (!clock.alive()) return;
+      setValue("");
+      await playHireSequence(clock, false);
+    })();
+
+    return () => {
+      if (scriptClock.current !== clock) return;
+      clock.cancel();
+      scriptClock.current = null;
+      setBusy(false);
+    };
+  }, [hireCarlos, playHireSequence, screenLive]);
 
   const run = (raw: string) => {
     const cmd = raw.trim();
@@ -132,6 +233,13 @@ function TerminalAppImpl({ openApp }: AppProps) {
         ]);
         return;
       case "sudo":
+        if (arg === "hire carlos") {
+          scriptClock.current?.cancel();
+          const clock = makeClock();
+          scriptClock.current = clock;
+          void playHireSequence(clock, true);
+          return;
+        }
         emit([...echo, { kind: "err", text: "carlos is not in the sudoers file. This incident has been reported." }]);
         return;
       case "date":
@@ -155,18 +263,22 @@ function TerminalAppImpl({ openApp }: AppProps) {
       onMouseDown={(e) => {
         // Without preventDefault the browser's own focus handling fires after
         // ours and drops focus back to <body>, so typing would go nowhere.
-        if (e.target === inputRef.current) return;
+        if (e.target === inputRef.current || (e.target as Element).closest?.("button, a")) return;
         e.preventDefault();
         inputRef.current?.focus();
       }}
     >
-      <div className="term-body" ref={bodyRef}>
+      <div className="term-body" ref={bodyRef} aria-busy={busy}>
         {lines.map((l) => (
           <div className={`term-line ${l.kind}`} key={l.id}>
             {l.kind === "in" ? (
               <>
                 <span className="term-prompt">{PROMPT}</span> {l.text}
               </>
+            ) : l.kind === "action" ? (
+              <button type="button" className="term-action" onClick={() => openApp("mail")}>
+                {l.text}
+              </button>
             ) : (
               l.text || " "
             )}
@@ -184,8 +296,10 @@ function TerminalAppImpl({ openApp }: AppProps) {
             spellCheck={false}
             autoComplete="off"
             aria-label="Terminal input"
+            readOnly={busy}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
+              if (busy) return;
               if (e.key === "Enter") {
                 run(value);
                 setValue("");

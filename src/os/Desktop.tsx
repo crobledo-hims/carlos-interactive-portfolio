@@ -22,6 +22,7 @@ import { ScreenLiveContext } from "./screenLive";
 import { Window } from "./Window";
 import type { AppId, ScreenId } from "./types";
 import "./os.css";
+import { getHireCarlosSnapshot, subscribeHireCarlos } from "../easterEgg/hireCarlos";
 
 /**
  * One desktop per monitor. Both instances stay mounted for the whole visit —
@@ -34,6 +35,22 @@ export function Desktop({ screen }: { screen: ScreenId }) {
   const scaleRef = useRef(1);
   const compactRef = useRef(false);
   const [live, setLive] = useState(false);
+  const lastHireRun = useRef(0);
+
+  // The TV easter egg belongs to the Personal desktop. Open (or raise) its
+  // Terminal as soon as the launch happens; Terminal itself waits until the
+  // camera has arrived before it starts typing.
+  useEffect(() => {
+    if (screen !== "right") return;
+    const receive = () => {
+      const event = getHireCarlosSnapshot();
+      if (!event.auto || event.phase !== "running" || event.runId <= lastHireRun.current) return;
+      lastHireRun.current = event.runId;
+      dispatch({ type: "open", appId: "terminal" });
+    };
+    receive();
+    return subscribeHireCarlos(receive);
+  }, [screen]);
 
   // The desktop is a fixed logical display scaled to fit the overlay, so every
   // window coordinate is deterministic regardless of viewport size — and one

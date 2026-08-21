@@ -1,9 +1,16 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { RoundedBox } from "@react-three/drei";
 import { materials } from "../materials";
-import { CLOCK_H, CLOCK_W, createMutableCanvas, paintClockFace } from "../textures";
+import {
+  CLOCK_H,
+  CLOCK_W,
+  createMutableCanvas,
+  paintClockFace,
+  paintTvCommandFace,
+} from "../textures";
 import { getLocalTime, onLocalMinute } from "../../lib/localClock";
+import { getHireCarlosSnapshot, useHireCarlosSnapshot } from "../../easterEgg/hireCarlos";
 
 /**
  * Wall-mounted TV on the back wall, centred on x = 0 behind the monitors,
@@ -29,28 +36,51 @@ const SCREEN_W = TV_W - BEZEL * 2;
 const SCREEN_H = TV_H - BEZEL * 2 - 0.006; // marginally deeper chin
 const SCREEN_CY = 0.003;
 
+interface MutableTvClock {
+  canvas: HTMLCanvasElement;
+  texture: THREE.CanvasTexture;
+}
+
+function createTvClock(): MutableTvClock {
+  const canvas = createMutableCanvas(CLOCK_W, CLOCK_H);
+  paintClockFace(canvas, getLocalTime());
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 4;
+  texture.needsUpdate = true;
+  return { canvas, texture };
+}
+
+function showClockTime(clock: MutableTvClock, time: string) {
+  paintClockFace(clock.canvas, time);
+  clock.texture.needsUpdate = true;
+}
+
+function showCommandFace(clock: MutableTvClock, phase: "hint" | "running" | "complete") {
+  paintTvCommandFace(clock.canvas, phase);
+  clock.texture.needsUpdate = true;
+}
+
 export function WallTV() {
   const M = materials();
+  const hireCarlos = useHireCarlosSnapshot();
 
   // Painted with the correct time at construction, so the first rendered
   // frame is already right — no placeholder flash on init.
-  const clock = useMemo(() => {
-    const canvas = createMutableCanvas(CLOCK_W, CLOCK_H);
-    paintClockFace(canvas, getLocalTime());
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = 4;
-    texture.needsUpdate = true;
-    return { canvas, texture };
-  }, []);
+  const [clock] = useState(createTvClock);
 
   useEffect(() => {
     return onLocalMinute((time) => {
-      paintClockFace(clock.canvas, time);
+      if (getHireCarlosSnapshot().phase !== "idle") return;
       // Uploaded by the next render of the existing loop; no rAF of our own.
-      clock.texture.needsUpdate = true;
+      showClockTime(clock, time);
     });
   }, [clock]);
+
+  useEffect(() => {
+    if (hireCarlos.phase === "idle") showClockTime(clock, getLocalTime());
+    else showCommandFace(clock, hireCarlos.phase);
+  }, [clock, hireCarlos.phase]);
 
   const screenMat = useMemo(
     () =>
