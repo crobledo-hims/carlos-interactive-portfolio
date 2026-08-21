@@ -81,13 +81,28 @@ export function Desktop({ screen }: { screen: ScreenId }) {
     dockRefs.current[id] = el;
   }, []);
 
+  // A closing window asks for its opener back, but the focus itself has to wait
+  // for the commit that hides the window.
+  const pendingFocus = useRef<AppId | null>(null);
+
   const focusOpener = useCallback((id: AppId) => {
-    // After React has removed the window from the tree.
-    requestAnimationFrame(() => {
-      const el = iconRefs.current[id] ?? dockRefs.current[id];
-      el?.focus({ preventScroll: true });
-    });
+    pendingFocus.current = id;
   }, []);
+
+  // Restoring focus has to be the *last* thing that touches it in this commit,
+  // because two effects in Window.tsx move focus first: the closing window
+  // blurs itself on the way to hidden, and whatever window is left on top may
+  // pull focus in on its focus epoch. Both are child effects, so running this
+  // as a plain effect on the parent puts it after both of them — and unlike the
+  // requestAnimationFrame this replaces, it still runs in a background tab,
+  // where frame callbacks are never delivered.
+  useEffect(() => {
+    const id = pendingFocus.current;
+    if (id === null) return;
+    pendingFocus.current = null;
+    const el = iconRefs.current[id] ?? dockRefs.current[id];
+    el?.focus({ preventScroll: true });
+  });
 
   const openApp = useCallback((id: AppId) => {
     const def = APPS[id];
@@ -147,6 +162,7 @@ export function Desktop({ screen }: { screen: ScreenId }) {
           menu={state.menu}
           dispatch={dispatch}
           openApp={openApp}
+          onClosed={focusOpener}
         />
 
         <Dock

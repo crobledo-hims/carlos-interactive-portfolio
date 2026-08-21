@@ -42,9 +42,11 @@ interface MenuBarProps {
   menu: string | null;
   dispatch: (a: OsAction) => void;
   openApp: (id: AppId) => void;
+  /** Hands focus back to the icon that opened the app when it closes. */
+  onClosed: (appId: AppId) => void;
 }
 
-export function MenuBar({ focusedApp, wins, focusedId, menu, dispatch, openApp }: MenuBarProps) {
+export function MenuBar({ focusedApp, wins, focusedId, menu, dispatch, openApp, onClosed }: MenuBarProps) {
   const live = wins.filter((w) => !w.closing);
   const appName = focusedApp ? focusedApp.name : "Desk";
 
@@ -97,7 +99,14 @@ export function MenuBar({ focusedApp, wins, focusedId, menu, dispatch, openApp }
           label: "Close Window",
           shortcut: "⌘W",
           disabled: focusedId === null,
-          run: () => focusedId !== null && dispatch({ type: "close", id: focusedId }),
+          // Closing from the menu has to hand focus back the same way the
+          // window's own close button does, or it lands on the page body when
+          // the menu item that was clicked unmounts with the menu.
+          run: () => {
+            if (focusedId === null) return;
+            dispatch({ type: "close", id: focusedId });
+            if (focusedApp) onClosed(focusedApp.id);
+          },
         },
         {
           label: "Minimize",
