@@ -12,15 +12,108 @@
     <meta property="og:title" content="Carlos Robledo — Interactive Portfolio" />
     <meta
       property="og:description"
-      content="Technical Sourcing Lead & Recruiting Systems Builder. Step into Carlos's office and explore the recruiting systems he builds."
+      content="Technical Sourcing Lead & Recruiting Systems Builder. Step into Carlos's office and explore Cadence, Beacon, Lens, and Relay — the recruiting systems he builds."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://carlosrobledo.dev/" />
+    <meta property="og:site_name" content="Carlos Robledo" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Carlos Robledo — Interactive Portfolio" />
+    <meta
+      name="twitter:description"
+      content="Technical Sourcing Lead & Recruiting Systems Builder. Explore Cadence, Beacon, Lens, and Relay — the recruiting systems he builds."
+    />
     <link rel="canonical" href="https://carlosrobledo.dev/" />
     <meta name="theme-color" content="#cfc9bf" />
+    <style>
+      /* Static fallback: what crawlers, link previews, and JS-less visitors
+         see. React replaces this on mount, so normal visitors never do. */
+      .static-fallback {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 56px 24px 96px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #1e1e24;
+        line-height: 1.6;
+      }
+      .static-fallback h1 { font-size: 32px; margin: 0 0 4px; }
+      .static-fallback .tagline { font-size: 17px; color: #4c4c55; margin: 0 0 28px; }
+      .static-fallback h2 { font-size: 20px; margin: 32px 0 6px; }
+      .static-fallback h3 { font-size: 16px; margin: 20px 0 4px; }
+      .static-fallback p { margin: 0 0 8px; }
+      .static-fallback a { color: #2f5d9e; }
+    </style>
+    <noscript>
+      <style>
+        html, body, #root { overflow: auto !important; height: auto !important; }
+      </style>
+    </noscript>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main class="static-fallback">
+        <h1>Carlos Robledo</h1>
+        <p class="tagline">Technical Sourcing Lead &amp; Recruiting Systems Builder</p>
+        <p>
+          I build recruiting systems that make complex technical hiring faster, clearer, and
+          more consistent. This site is an interactive office: walk up to the desk and explore
+          the systems on the monitors.
+        </p>
+
+        <h2>Recruiting systems</h2>
+
+        <h3>Cadence — Recruiting Operations</h3>
+        <p>Keeps recruiting teams informed and workflows moving.</p>
+        <p>
+          A Slack-first workflow layer: on-demand pipeline reports, alerts when interview
+          feedback passes its SLA with a one-click interviewer reminder the recruiter controls,
+          weekly stale-candidate nudges, and immediate offer-acceptance posts. Follow-through
+          stops depending on someone remembering to check.
+        </p>
+
+        <h3>Beacon — Role Intelligence</h3>
+        <p>See where recruiting attention is needed.</p>
+        <p>
+          Turns recruiting activity into explainable role-level signals — which search needs
+          review, the evidence behind it, and who should look next — so prioritization is a
+          decision brief instead of a dashboard hunt.
+        </p>
+
+        <h3>Lens — Candidate Evaluation</h3>
+        <p>Evaluate candidate evidence against role criteria.</p>
+        <p>
+          Criteria are defined and locked before any candidate is reviewed; the evaluation then
+          maps every conclusion to explicit evidence and names what remains unconfirmed. The
+          recruiter keeps the decision.
+        </p>
+
+        <h3>Relay — Candidate communication and recruiter preparation</h3>
+        <p>
+          Structured workflows for the writing recruiting runs on: hiring-team candidate briefs,
+          role-level outreach sequences, and call-ready talk tracks, each grounded in the
+          intake notes and role context rather than invented detail.
+        </p>
+
+        <h2>Background</h2>
+        <p>
+          15 years in technical recruiting across Meta, Google, Databricks, and Hims &amp; Hers,
+          specializing in Staff+ engineering, applied AI, and org-building searches — and
+          building the tooling that makes that work scale.
+        </p>
+        <p>
+          <a href="/resume.html">Read the full resume</a> ·
+          <a href="https://linkedin.com/in/thecarlosrobledo">LinkedIn</a> ·
+          <a href="mailto:thecarlosrobledo@gmail.com">thecarlosrobledo@gmail.com</a>
+        </p>
+      </main>
+    </div>
+    <noscript>
+      <p class="static-fallback" style="padding-top: 0">
+        The interactive office needs JavaScript. The
+        <a href="/resume.html">static resume</a> works without it.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

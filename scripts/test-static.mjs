@@ -135,6 +135,30 @@ if (bundle) {
   }
 }
 
+/* --------------------------------------------------------------------------
+   Crawler fallback. index.html must carry real content inside #root so
+   crawlers, link previews and JS-less visitors see more than an empty div.
+   React replaces it on mount; normal visitors never see it.
+   -------------------------------------------------------------------------- */
+const indexPath = join(dist, "index.html");
+if (existsSync(indexPath)) {
+  const html = readFileSync(indexPath, "utf8");
+  const root = html.match(/<div id="root">([\s\S]*?)<\/div>\s*<noscript>/)?.[1] ?? "";
+  check("index.html: #root has static fallback content", root.trim().length > 200);
+  check("index.html: fallback has <h1>Carlos Robledo</h1>", /<h1>\s*Carlos Robledo\s*<\/h1>/.test(root));
+  for (const app of ["Cadence", "Beacon", "Lens", "Relay"]) {
+    check(`index.html: fallback names ${app}`, root.includes(app));
+  }
+  check("index.html: fallback links the static resume", root.includes('href="/resume.html"'));
+  check("index.html: has <noscript> resume pointer", /<noscript>[\s\S]*resume\.html[\s\S]*<\/noscript>/.test(html));
+  for (const tag of ["og:title", "og:description", "og:url", "og:image", "twitter:card"]) {
+    const present = html.includes(`property="${tag}"`) || html.includes(`name="${tag}"`);
+    // og:image is optional until an image asset exists; report, don't fail.
+    if (tag === "og:image") console.log(`  ${present ? "ok " : "-- "} index.html: ${tag} ${present ? "present" : "not set (optional)"}`);
+    else check(`index.html: ${tag} present`, present);
+  }
+}
+
 if (failures > 0) {
   console.error(`\n${failures} static check(s) failed.`);
   process.exit(1);
